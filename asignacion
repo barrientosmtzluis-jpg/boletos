@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generador de Boletos Digitales</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        body {
+            background-color: #f3f4f6;
+            color: #1f2937;
+            display: block;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px 0;
+        }
+
+        header h1 {
+            font-size: 24px;
+            color: #111827;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        header p {
+            font-size: 14px;
+            color: #6b7280;
+        }
+
+        /* Diseño en dos columnas usando tablas estables para máxima compatibilidad con el renderizado */
+        .layout-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 20px 0;
+        }
+
+        .layout-td {
+            vertical-align: top;
+            width: 50%;
+        }
+
+        .card {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 25px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            border: 1px solid #e5e7eb;
+        }
+
+        .card h2 {
+            font-size: 18px;
+            margin-bottom: 20px;
+            color: #374151;
+            font-weight: 600;
+            border-bottom: 2px solid #f3f4f6;
+            padding-bottom: 10px;
+        }
+
+        /* Estilos de Formulario */
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #4b5563;
+            margin-bottom: 6px;
+        }
+
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.2s;
+            background-color: #f9fafb;
+        }
+
+        .form-group input:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: #2563eb;
+            background-color: #fff;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        /* Botón de envío a WhatsApp */
+        .btn-whatsapp {
+            display: block;
+            width: 100%;
+            background-color: #25d366;
+            color: white;
+            border: none;
+            padding: 14px;
+            font-size: 15px;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: center;
+            text-decoration: none;
+            transition: background 0.2s;
+            margin-top: 15px;
+            box-shadow: 0 4px 12px rgba(37, 211, 102, 0.2);
+        }
+
+        .btn-whatsapp:hover {
+            background-color: #20ba56;
+        }
+
+        .btn-whatsapp i {
+            margin-right: 8px;
+            font-size: 18px;
+        }
+
+        /* Estilizado del Boleto de Gala */
+        .ticket-preview {
+            background: linear-gradient(135deg, #1e3a8a 0%, #0f172a 100%);
+            color: white;
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Cortes laterales simulando boleto clásico */
+        .ticket-preview::before, .ticket-preview::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            width: 20px;
+            height: 20px;
+            background-color: #f3f4f6;
+            border-radius: 50%;
+            margin-top: -10px;
+        }
+        .ticket-preview::before { left: -10px; }
+        .ticket-preview::after { right: -10px; }
+
+        .ticket-title {
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            color: #fbeeac;
+        }
+
+        .ticket-subtitle {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #93c5fd;
+            margin-bottom: 25px;
+        }
+
+        .ticket-guest {
+            font-size: 22px;
+            font-weight: 600;
+            margin-bottom: 5px;
+            word-wrap: break-word;
+        }
+
+        .ticket-label {
+            font-size: 10px;
+            text-transform: uppercase;
+            color: #94a3b8;
+            letter-spacing: 1px;
+        }
+
+        .ticket-passes {
+            font-size: 32px;
+            font-weight: 700;
+            color: #ffffff;
+            margin: 15px 0;
+            display: inline-block;
+            border-bottom: 2px dashed rgba(255,255,255,0.2);
+            padding-bottom: 5px;
+            width: 100%;
+        }
+
+        .qr-wrapper {
+            background: white;
+            padding: 12px;
+            border-radius: 12px;
+            display: inline-block;
+            margin: 15px auto;
+        }
+
+        .ticket-footer {
+            font-size: 11px;
+            color: #94a3b8;
+            margin-top: 15px;
+        }
+
+        /* Responsividad para móviles */
+        @media (max-width: 768px) {
+            .layout-table, .layout-td {
+                display: block;
+                width: 100%;
+            }
+            .layout-td {
+                margin-bottom: 25px;
+            }
+            body {
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>Control de Accesos & Boletos Digitales</h1>
+        <p>Genera pases personalizados y envíalos instantáneamente por WhatsApp</p>
+    </header>
+
+    <table class="layout-table">
+        <tr>
+            <td class="layout-td">
+                <div class="card">
+                    <h2>1. Datos del Invitado</h2>
+                    
+                    <div class="form-group">
+                        <label for="invitadoName">Nombre del Invitado / Familia</label>
+                        <input type="text" id="invitadoName" placeholder="Ej. Familia Pérez Mendoza" value="Familia Pérez Mendoza" oninput="actualizarBoleto()">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="pasesNum">Número de Personas (Pases)</label>
+                        <input type="number" id="pasesNum" min="1" max="20" value="4" oninput="actualizarBoleto()">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="whatsappNum">Teléfono de WhatsApp (Con código de país)</label>
+                        <input type="text" id="whatsappNum" placeholder="Ej. 5215512345678" value="521">
+                        <small style="font-size:11px; color:#6b7280; display:block; margin-top:4px;">Utiliza formato internacional sin espacios (Ej: 521... para México).</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="mensajeTexto">Mensaje personalizado para enviar</label>
+                        <textarea id="mensajeTexto" rows="5" style="resize: none;"></textarea>
+                    </div>
+
+                    <button class="btn-whatsapp" onclick="enviarWhatsApp()">
+                        <i class="fab fa-whatsapp"></i> Enviar por WhatsApp
+                    </button>
+                </div>
+            </td>
+
+            <td class="layout-td">
+                <div class="card" style="background: transparent; box-shadow: none; border: none; padding: 0;">
+                    <h2 id="titulo-columna-derecha">2. Vista Previa del Pase</h2>
+                    
+                    <div class="ticket-preview">
+                        <div class="ticket-title">Pase de Acceso</div>
+                        <div class="ticket-subtitle">Invitación Oficial</div>
+                        
+                        <div class="ticket-label">Invitado Especial</div>
+                        <div class="ticket-guest" id="lbl-nombre">Familia Pérez Mendoza</div>
+                        
+                        <div class="ticket-passes" id="lbl-pases">4 PASES</div>
+                        
+                        <div class="qr-wrapper">
+                            <div id="qrcode"></div>
+                        </div>
+                        
+                        <div class="ticket-footer">
+                            <p>Código Único e Intransferible</p>
+                            <p style="margin-top:4px; font-weight:600; color:#fbeeac;">Presenta esta pantalla en la entrada</p>
+                        </div>
+                    </div>
+                </div>
+            </td>
+        </tr>
+    </table>
+</div>
+
+<script>
+    // ==========================================
+    // CRUCIAL: Modifica esta línea con la URL de tu invitación principal
+    // ==========================================
+    const URL_INVITACION_PRINCIPAL = "https://TU_USUARIO.github.io/REPOSITORIO_INVITACION";
+    
+    window.onload = function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const invitadoUrl = urlParams.get('invitado');
+        const pasesUrl = urlParams.get('pases');
+
+        // DETECCIÓN DE MODO: Si la URL contiene datos, es tu invitado abriendo su boleto
+        if (invitadoUrl && pasesUrl) {
+            // Ocultamos la interfaz de administración por completo
+            document.getElementsByClassName('layout-td')[0].style.display = 'none';
+            document.getElementsByClassName('layout-td')[1].style.width = '100%';
+            document.getElementById('titulo-columna-derecha').style.display = 'none';
+            document.querySelector('header').style.display = 'none';
+            
+            // Asignamos los datos obtenidos de la URL
+            document.getElementById('invitadoName').value = invitadoUrl;
+            document.getElementById('pasesNum').value = pasesUrl;
+        }
+        
+        actualizarBoleto();
+    };
+
+    function actualizarBoleto() {
+        const nombre = document.getElementById('invitadoName').value || "Invitado Especial";
+        const pases = document.getElementById('pasesNum').value || "1";
+        
+        // Renderizar textos dinámicos
+        document.getElementById('lbl-nombre').innerText = nombre;
+        document.getElementById('lbl-pases').innerText = `${pases} ${pases == 1 ? 'PASE' : 'PASES'}`;
+        
+        // Contenido codificado en el QR para el día del evento
+        const contenidoQR = `INVITADO: ${nombre} | PASES: ${pases} | STATUS: ACTIVO`;
+        
+        // Renderizado del QR
+        const qrContainer = document.getElementById("qrcode");
+        qrContainer.innerHTML = ""; 
+        
+        new QRCode(qrContainer, {
+            text: contenidoQR,
+            width: 160,
+            height: 160,
+            colorDark : "#0f172a",
+            colorLight : "#ffffff",
+            correctLevel : QRCode.CorrectLevel.M
+        });
+
+        // Actualizar la caja del texto para WhatsApp
+        actualizarPlantillaMensaje(nombre, pases);
+    }
+
+    function actualizarPlantillaMensaje(nombre, pases) {
+        // Obtiene la URL limpia de este repositorio sin parámetros extras
+        const urlBaseBoletos = window.location.href.split('?')[0];
+        
+        // Construye el enlace único del boleto personalizado
+        const urlBoletoInvitado = `${urlBaseBoletos}?invitado=${encodeURIComponent(nombre)}&pases=${pases}`;
+        
+        // Formato con negritas compatibles con WhatsApp (*texto*)
+        const mensaje = `¡Hola *${nombre}*! 👋\n\nNos hace muy felices invitarte a nuestro evento especial. 🥂✨\n\n👉 Aquí puedes ver todos los detalles y ubicación en nuestra invitación digital:\n${URL_INVITACION_PRINCIPAL}\n\n🎟️ Y este es tu *Pase Digital Inteligente* válido para *${pases}* ${pases == 1 ? 'persona' : 'personas'}. Por favor, muéstralo en la entrada al llegar:\n${urlBoletoInvitado}\n\n¡Esperamos contar con tu hermosa presencia!`;
+        
+        document.getElementById('mensajeTexto').value = mensaje;
+    }
+
+    function enviarWhatsApp() {
+        const telefono = document.getElementById('whatsappNum').value.replace(/[^0-9]/g, '');
+        const mensaje = document.getElementById('mensajeTexto').value;
+        
+        if (!telefono || telefono === "521" || telefono.length < 8) {
+            alert("Por favor, pon un número telefónico válido con su prefijo de país (Ej: 521 + número a 10 dígitos).");
+            return;
+        }
+        
+        // Despachar hacia la API universal de mensajería de WhatsApp
+        const whatsappUrl = `https://api.whatsapp.com/send?phone=${telefono}&text=${encodeURIComponent(mensaje)}`;
+        window.open(whatsappUrl, '_blank');
+    }
+</script>
+</body>
+</html>
