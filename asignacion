@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Confirmación de Asistencia y Pase Digital</title>
+    <title>Panel de Control - Accesos Especiales</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -18,43 +18,64 @@
         body {
             background-color: #f3f4f6;
             color: #1f2937;
+            display: block;
             padding: 20px;
             min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
         }
 
         .container {
-            max-width: 500px;
+            max-width: 950px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px 0;
+        }
+
+        header h1 {
+            font-size: 24px;
+            color: #111827;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        header p {
+            font-size: 14px;
+            color: #6b7280;
+        }
+
+        .layout-table {
             width: 100%;
+            border-collapse: separate;
+            border-spacing: 20px 0;
+        }
+
+        .layout-td {
+            vertical-align: top;
+            width: 50%;
         }
 
         .card {
             background: #ffffff;
-            border-radius: 20px;
-            padding: 30px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            border-radius: 16px;
+            padding: 25px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
             border: 1px solid #e5e7eb;
-            text-align: center;
         }
 
-        h1 {
-            font-size: 22px;
-            color: #111827;
-            font-weight: 700;
-            margin-bottom: 10px;
-        }
-
-        p.subtitle {
-            font-size: 14px;
-            color: #6b7280;
-            margin-bottom: 25px;
+        .card h2 {
+            font-size: 18px;
+            margin-bottom: 20px;
+            color: #374151;
+            font-weight: 600;
+            border-bottom: 2px solid #f3f4f6;
+            padding-bottom: 10px;
         }
 
         .form-group {
-            margin-bottom: 20px;
-            text-align: left;
+            margin-bottom: 18px;
         }
 
         .form-group label {
@@ -67,91 +88,104 @@
             margin-bottom: 6px;
         }
 
-        .form-group input, .form-group select {
+        .form-group input, .form-group select, .form-group textarea {
             width: 100%;
-            padding: 14px;
+            padding: 12px;
             border: 1px solid #d1d5db;
-            border-radius: 10px;
-            font-size: 15px;
-            background-color: #f9fafb;
+            border-radius: 8px;
+            font-size: 14px;
             transition: all 0.2s;
+            background-color: #f9fafb;
         }
 
-        .form-group input:focus, .form-group select:focus {
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
             outline: none;
             border-color: #1e3a8a;
             background-color: #fff;
             box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1);
         }
 
-        .btn-primary {
+        .btn-whatsapp {
             display: block;
             width: 100%;
-            background-color: #1e3a8a;
+            background-color: #25d366;
             color: white;
             border: none;
-            padding: 15px;
-            font-size: 16px;
+            padding: 14px;
+            font-size: 15px;
             font-weight: 600;
-            border-radius: 10px;
+            border-radius: 8px;
             cursor: pointer;
+            text-align: center;
+            text-decoration: none;
             transition: background 0.2s;
-            box-shadow: 0 4px 12px rgba(30, 58, 138, 0.2);
+            margin-top: 15px;
+            box-shadow: 0 4px 12px rgba(37, 211, 102, 0.2);
         }
 
-        .btn-primary:hover {
-            background-color: #111827;
+        .btn-whatsapp:hover {
+            background-color: #20ba56;
         }
 
-        /* Diseño del Boleto Digital (Oculto al inicio) */
-        #seccion-boleto {
-            display: none;
+        .btn-whatsapp i {
+            margin-right: 8px;
+            font-size: 18px;
         }
 
-        .ticket {
+        /* Estilizado del Boleto de Gala */
+        .ticket-preview {
             background: linear-gradient(135deg, #1e3a8a 0%, #0f172a 100%);
             color: white;
             border-radius: 20px;
             padding: 30px;
+            text-align: center;
             position: relative;
             overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-            margin-top: 10px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
         }
 
-        .ticket::before, .ticket::after {
+        .ticket-preview::before, .ticket-preview::after {
             content: '';
             position: absolute;
             top: 45%;
-            width: 24px;
-            height: 24px;
+            width: 20px;
+            height: 20px;
             background-color: #f3f4f6;
             border-radius: 50%;
+            margin-top: -10px;
         }
-        .ticket::before { left: -12px; }
-        .ticket::after { right: -12px; }
+        .ticket-preview::before { left: -10px; }
+        .ticket-preview::after { right: -10px; }
 
         .ticket-title {
             font-size: 20px;
             font-weight: 700;
             letter-spacing: 1px;
-            color: #fbeeac;
+            margin-bottom: 5px;
             text-transform: uppercase;
-            margin-bottom: 20px;
+            color: #fbeeac;
+        }
+
+        .ticket-subtitle {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #93c5fd;
+            margin-bottom: 25px;
+        }
+
+        .ticket-guest {
+            font-size: 22px;
+            font-weight: 600;
+            margin-bottom: 5px;
+            word-wrap: break-word;
         }
 
         .ticket-label {
-            font-size: 11px;
+            font-size: 10px;
             text-transform: uppercase;
             color: #94a3b8;
             letter-spacing: 1px;
-            margin-top: 10px;
-        }
-
-        .ticket-value {
-            font-size: 20px;
-            font-weight: 600;
-            margin-bottom: 12px;
         }
 
         .ticket-info-grid {
@@ -159,7 +193,7 @@
             justify-content: space-between;
             border-top: 1px dashed rgba(255,255,255,0.2);
             border-bottom: 1px dashed rgba(255,255,255,0.2);
-            padding: 15px 0;
+            padding: 12px 0;
             margin: 15px 0;
         }
 
@@ -170,7 +204,6 @@
         .info-item .val {
             font-size: 24px;
             font-weight: 700;
-            color: #ffffff;
         }
 
         .qr-wrapper {
@@ -181,231 +214,187 @@
             margin: 10px auto;
         }
 
-        .btn-whatsapp {
-            display: block;
-            width: 100%;
-            background-color: #25d366;
-            color: white;
-            border: none;
-            padding: 15px;
-            font-size: 15px;
-            font-weight: 600;
-            border-radius: 10px;
-            cursor: pointer;
-            text-decoration: none;
-            margin-top: 20px;
-            box-shadow: 0 4px 12px rgba(37, 211, 102, 0.2);
+        .ticket-footer {
+            font-size: 11px;
+            color: #94a3b8;
+            margin-top: 15px;
         }
 
-        .btn-whatsapp:hover {
-            background-color: #20ba56;
+        @media (max-width: 768px) {
+            .layout-table, .layout-td {
+                display: block;
+                width: 100%;
+            }
+            .layout-td {
+                margin-bottom: 25px;
+            }
+            body {
+                padding: 10px;
+            }
         }
     </style>
 </head>
 <body>
 
 <div class="container">
-    
-    <div id="seccion-formulario" class="card">
-        <h1>Confirmación de Acceso</h1>
-        <p class="subtitle">Introduce tus datos para generar tus pases digitales</p>
-        
-        <div class="form-group">
-            <label for="input-familia">Apellido o Nombre de Familia</label>
-            <input type="text" id="input-familia" placeholder="Ej. Pérez Mendoza" required>
-        </div>
+    <header id="main-header">
+        <h1>Generador de Invitaciones & Pases Especiales</h1>
+        <p>Completa la información del invitado y despacha el acceso directo a su teléfono móvil</p>
+    </header>
 
-        <div class="form-group">
-            <label for="select-asistentes">¿Cuántas personas asistirán?</label>
-            <select id="select-asistentes">
-                <option value="1">1 Persona</option>
-                <option value="2">2 Personas</option>
-                <option value="3">3 Personas</option>
-                <option value="4" selected>4 Personas</option>
-                <option value="5">5 Personas</option>
-                <option value="6">6 Personas</option>
-            </select>
-        </div>
+    <table class="layout-table">
+        <tr>
+            <td class="layout-td" id="col-formulario">
+                <div class="card">
+                    <h2>1. Control de Asignación</h2>
+                    
+                    <div class="form-group">
+                        <label for="invitadoName">Nombre del Invitado / Familia</label>
+                        <input type="text" id="invitadoName" value="Familia Pérez Mendoza" oninput="actualizarBoleto()">
+                    </div>
 
-        <div class="form-group">
-            <label for="input-telefono">Tu número de WhatsApp</label>
-            <input type="text" id="input-telefono" placeholder="Ej. 5215512345678" value="521">
-            <small style="font-size:11px; color:#6b7280; display:block; margin-top:4px;">Código de país + número (sin espacios).</small>
-        </div>
+                    <div class="form-group">
+                        <label for="pasesNum">Cantidad de Personas Permitidas</label>
+                        <input type="number" id="pasesNum" min="1" max="50" value="4" oninput="actualizarBoleto()">
+                    </div>
 
-        <button class="btn-primary" onclick="procesarAsistencia()">Confirmar y Generar Pases</button>
-    </div>
+                    <div class="form-group">
+                        <label for="mesaNum">Mesa Asignada</label>
+                        <input type="text" id="mesaNum" value="Mesa 5" placeholder="Ej. Mesa 3 o General" oninput="actualizarBoleto()">
+                    </div>
 
-    <div id="seccion-boleto" class="container">
-        <div class="ticket">
-            <div class="ticket-title">Pase Digital de Acceso</div>
-            
-            <div class="ticket-label">Familia / Invitado</div>
-            <div class="ticket-value" id="ticket-familia">Familia Pérez</div>
-            
-            <div class="ticket-info-grid">
-                <div class="info-item" style="border-right: 1px dashed rgba(255,255,255,0.2);">
-                    <div class="ticket-label" style="margin:0">Asistentes</div>
-                    <div class="val" id="ticket-asistentes">0</div>
+                    <div class="form-group">
+                        <label for="whatsappNum">Destinatario WhatsApp (Teléfono del Invitado)</label>
+                        <input type="text" id="whatsappNum" placeholder="Ej. 5215512345678" value="521">
+                        <small style="font-size:11px; color:#6b7280; display:block; margin-top:4px;">Código de país + número completo sin espacios.</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="mensajeTexto">Texto Preliminar del Mensaje</label>
+                        <textarea id="mensajeTexto" rows="8" style="resize: none; font-size:12px;"></textarea>
+                    </div>
+
+                    <button class="btn-whatsapp" onclick="enviarWhatsApp()">
+                        <i class="fab fa-whatsapp"></i> Despachar Invitación y Boletos
+                    </button>
                 </div>
-                <div class="info-item">
-                    <div class="ticket-label" style="margin:0">Mesa Asignada</div>
-                    <div class="val" id="ticket-mesa" style="color: #fbeeac;">-</div>
+            </td>
+
+            <td class="layout-td" id="col-boleto">
+                <div class="card" style="background: transparent; box-shadow: none; border: none; padding: 0;">
+                    <h2 id="titulo-columna-derecha">2. Vista del Pase del Invitado</h2>
+                    
+                    <div class="ticket-preview">
+                        <div class="ticket-title">Pase de Acceso</div>
+                        <div class="ticket-subtitle">Invitación Oficial</div>
+                        
+                        <div class="ticket-label">Invitado de Honor</div>
+                        <div class="ticket-guest" id="lbl-nombre">Familia Pérez Mendoza</div>
+                        
+                        <div class="ticket-info-grid">
+                            <div class="info-item" style="border-right: 1px dashed rgba(255,255,255,0.2);">
+                                <div class="ticket-label" style="margin:0">Personas</div>
+                                <div class="val" id="lbl-pases">4</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="ticket-label" style="margin:0">Mesa</div>
+                                <div class="val" id="lbl-mesa" style="color: #fbeeac;">Mesa 5</div>
+                            </div>
+                        </div>
+                        
+                        <div class="qr-wrapper">
+                            <div id="qrcode"></div>
+                        </div>
+                        
+                        <div class="ticket-footer">
+                            <p>Código Único e Intransferible</p>
+                            <p style="margin-top:4px; font-weight:600; color:#fbeeac;">Presenta esta pantalla al ingresar</p>
+                        </div>
+                    </div>
                 </div>
-            </div>
-            
-            <div class="qr-wrapper">
-                <div id="qrcode"></div>
-            </div>
-            
-            <div class="ticket-footer">
-                <p>Muestra este código QR en la entrada</p>
-                <p style="margin-top:2px; font-size:10px; color:#94a3b8;">Sistema Autónomo de Control</p>
-            </div>
-        </div>
-
-        <button class="btn-whatsapp" onclick="enviarBoletoPorWhatsApp()">
-            <i class="fab fa-whatsapp"></i> Recibir Boleto en mi WhatsApp
-        </button>
-    </div>
-
+            </td>
+        </tr>
+    </table>
 </div>
 
 <script>
-    // ==========================================
-    // ASIGNACIÓN DE MESAS (TU BASE DE DATOS)
-    // Escribe aquí los apellidos tal como los escribirían tus invitados (en minúsculas y sin acentos)
-    // ==========================================
-    const LISTADO_MESAS = {
-        "perez": "Mesa 1",
-        "perez mendoza": "Mesa 1",
-        "martinez": "Mesa 2",
-        "barrientos": "Mesa 3",
-        "gonzalez": "Mesa 4",
-        "rodriguez": "Mesa 5"
-    };
-    
-    // Mesa por defecto si el apellido no está en la lista anterior
-    const MESA_GENERAL = "Mesa General";
+    // =========================================================================
+    // CONFIGURACIÓN: Reemplaza este link por la URL de tu invitación interactiva
+    // =========================================================================
+    const URL_INVITACION_WEB = "https://barrientosmtzluis-jpg.github.io/invitacion";
 
-    // Variables globales para almacenar la sesión actual
-    let datosInvitado Actual = {};
-
-    // Función auxiliar para quitar acentos y dejar en minúsculas
-    function limpiarTexto(texto) {
-        return texto.toLowerCase()
-                    .normalize("NFD")
-                    .replace(/[\u0300-\u036f]/g, "")
-                    .trim();
-    }
-
-    function procesarAsistencia() {
-        const familiaOriginal = document.getElementById('input-familia').value.trim();
-        const asistentes = document.getElementById('select-asistentes').value;
-        const telefono = document.getElementById('input-telefono').value.replace(/[^0-9]/g, '');
-
-        if (!familiaOriginal) {
-            alert("Por favor, ingresa el nombre de tu familia.");
-            return;
-        }
-        if (telefono.length < 10) {
-            alert("Por favor, introduce un número de WhatsApp válido.");
-            return;
-        }
-
-        // Buscar mesa de manera inteligente
-        const familiaLimpia = limpiarTexto(familiaOriginal);
-        let mesaAsignada = MESA_GENERAL;
-
-        // Comprobar si coincide con nuestra base de datos
-        if (LISTADO_MESAS[familiaLimpia]) {
-            mesaAsignada = LISTADO_MESAS[familiaLimpia];
-        } else {
-            // Búsqueda parcial por si escriben "Familia Pérez" en vez de solo "Pérez"
-            for (let clave in LISTADO_MESAS) {
-                if (familiaLimpia.includes(clave)) {
-                    mesaAsignada = LISTADO_MESAS[clave];
-                    break;
-                }
-            }
-        }
-
-        // Guardar datos en el objeto global
-        datosInvitadoActual = {
-            familia: familiaOriginal,
-            asistentes: asistentes,
-            mesa: mesaAsignada,
-            telefono: telefono
-        };
-
-        // Pintar los datos en el Boleto
-        document.getElementById('ticket-familia').innerText = familiaOriginal;
-        document.getElementById('ticket-asistentes').innerText = asistentes;
-        document.getElementById('ticket-mesa').innerText = mesaAsignada;
-
-        // Estructurar el contenido estricto dentro del QR
-        const contenidoQR = `FAMILIA: ${familiaOriginal}\nASISTENTES: ${asistentes}\nMESA: ${mesaAsignada}\nSTATUS: CONFIRMADO`;
-
-        // Generar Código QR
-        const qrContainer = document.getElementById("qrcode");
-        qrContainer.innerHTML = ""; 
-        new QRCode(qrContainer, {
-            text: contenidoQR,
-            width: 180,
-            height: 180,
-            colorDark : "#0f172a",
-            colorLight : "#ffffff",
-            correctLevel : QRCode.CorrectLevel.H
-        });
-
-        // Intercambiar pantallas de forma animada/limpia
-        document.getElementById('seccion-formulario').style.display = 'none';
-        document.getElementById('seccion-boleto').style.display = 'block';
-    }
-
-    function enviarBoletoPorWhatsApp() {
-        const d = datosInvitadoActual;
-        
-        // Generar el link de reentrada por si quieren consultar el pase después
-        const urlBase = window.location.href.split('?')[0];
-        const urlPaseUnico = `${urlBase}?invitado=${encodeURIComponent(d.familia)}&pases=${d.asistentes}&mesa=${encodeURIComponent(d.mesa)}`;
-
-        // Mensaje estructurado que se autoenviará el usuario
-        const mensaje = `🎟️ *MI PASE DIGITAL DE ACCESO* 🎟️\n\n✅ *Confirmación Exitosa*\n\n👨‍👩‍👧‍👦 *Familia:* ${d.familia}\n👥 *Asistentes:* ${d.asistentes} ${d.asistentes == 1 ? 'persona' : 'personas'}\n📍 *Mesa Asignada:* ${d.mesa}\n\n🔗 Puedes volver a ver tu código QR de acceso desde este enlace en cualquier momento:\n${urlPaseUnico}\n\n¡Nos vemos en el evento! ✨`;
-
-        const whatsappUrl = `https://api.whatsapp.com/send?phone=${d.telefono}&text=${encodeURIComponent(mensaje)}`;
-        window.open(whatsappUrl, '_blank');
-    }
-
-    // Al cargar, verificar si entran directo o mediante link de reconsulta
-    document.addEventListener("DOMContentLoaded", function() {
+    window.onload = function() {
         const urlParams = new URLSearchParams(window.location.search);
         const invitadoUrl = urlParams.get('invitado');
         const pasesUrl = urlParams.get('pases');
         const mesaUrl = urlParams.get('mesa');
 
-        // MODO CONSULTA: El invitado ya tiene pase y solo abrió el link desde su WhatsApp
-        if (invitadoUrl && pasesUrl && mesaUrl) {
-            document.getElementById('seccion-formulario').style.display = 'none';
-            document.getElementById('seccion-boleto').style.display = 'block';
-            document.querySelector('.btn-whatsapp').style.display = 'none'; // No necesita volver a enviárselo
-
-            document.getElementById('ticket-familia').innerText = invitadoUrl;
-            document.getElementById('ticket-asistentes').innerText = pasesUrl;
-            document.getElementById('ticket-mesa').innerText = mesaUrl;
-
-            const contenidoQR = `FAMILIA: ${invitadoUrl}\nASISTENTES: ${pasesUrl}\nMESA: ${mesaUrl}\nSTATUS: CONFIRMADO`;
-            new QRCode(document.getElementById("qrcode"), {
-                text: contenidoQR,
-                width: 180,
-                height: 180,
-                colorDark : "#0f172a",
-                colorLight : "#ffffff",
-                correctLevel : QRCode.CorrectLevel.H
-            });
+        // MODO INVITADO: Si el link tiene parámetros, oculta el panel de administración
+        if (invitadoUrl && pasesUrl) {
+            document.getElementById('col-formulario').style.display = 'none';
+            document.getElementById('col-boleto').style.width = '100%';
+            document.getElementById('titulo-columna-derecha').style.display = 'none';
+            document.getElementById('main-header').style.display = 'none';
+            
+            document.getElementById('invitadoName').value = invitadoUrl;
+            document.getElementById('pasesNum').value = pasesUrl;
+            document.getElementById('mesaNum').value = mesaUrl || "General";
         }
-    });
-</script>
+        
+        actualizarBoleto();
+    };
 
+    function actualizarBoleto() {
+        const nombre = document.getElementById('invitadoName').value || "Invitado Especial";
+        const pases = document.getElementById('pasesNum').value || "1";
+        const mesa = document.getElementById('mesaNum').value || "General";
+        
+        // Renderizado visual en la tarjeta
+        document.getElementById('lbl-nombre').innerText = nombre;
+        document.getElementById('lbl-pases').innerText = pases;
+        document.getElementById('lbl-mesa').innerText = mesa;
+        
+        // Datos encriptados dentro del QR para lectura rápida en la puerta del evento
+        const contenidoQR = `INVITADO: ${nombre}\nPASES: ${pases}\nMESA: ${mesa}\nCONTROL: ACCESO VALIDADO`;
+        
+        const qrContainer = document.getElementById("qrcode");
+        qrContainer.innerHTML = ""; 
+        
+        new QRCode(qrContainer, {
+            text: contenidoQR,
+            width: 170,
+            height: 170,
+            colorDark : "#0f172a",
+            colorLight : "#ffffff",
+            correctLevel : QRCode.CorrectLevel.M
+        });
+
+        actualizarPlantillaMensaje(nombre, pases, mesa);
+    }
+
+    function actualizarPlantillaMensaje(nombre, pases, mesa) {
+        // Captura de forma automática la URL base donde tienes alojados tus boletos
+        const urlBaseBoletos = window.location.href.split('?')[0];
+        const urlBoletoInvitado = `${urlBaseBoletos}?invitado=${encodeURIComponent(nombre)}&pases=${pases}&mesa=${encodeURIComponent(mesa)}`;
+        
+        // Redacción elegante, agradable y clara para el invitado
+        const mensaje = `✨ *¡Tenemos una invitación muy especial para ti!* ✨\n\nEstimada familia / amigo *${nombre}*,\n\nNos complace enormemente invitarte a compartir con nosotros un momento inolvidable. En el siguiente enlace podrás conocer todos los detalles de nuestro evento, itinerario y locación:\n\n👉 *Nuestra Invitación Digital:*\n${URL_INVITACION_WEB}\n\n🎫 De igual manera, te hacemos llegar tu *Pase Digital Inteligente* válido para *${pases}* ${pases == 1 ? 'persona' : 'personas'}.\n📍 *Mesa asignada:* ${mesa}\n\nPara ingresar de forma ágil el día del evento, solo haz clic aquí abajo y presenta el código QR desde tu pantalla:\n\n👉 *Tu Boleto de Acceso:*\n${urlBoletoInvitado}\n\n¡Tu presencia hará que este día sea aún más especial! Esperamos contar contigo. ✨🥂`;
+        
+        document.getElementById('mensajeTexto').value = mensaje;
+    }
+
+    function enviarWhatsApp() {
+        const telefono = document.getElementById('whatsappNum').value.replace(/[^0-9]/g, '');
+        const mensaje = document.getElementById('mensajeTexto').value;
+        
+        if (!telefono || telefono === "521" || telefono.length < 8) {
+            alert("Por favor, pon el número de teléfono del invitado completo (código de país + 10 dígitos).");
+            return;
+        }
+        
+        const whatsappUrl = `https://api.whatsapp.com/send?phone=${telefono}&text=${encodeURIComponent(mensaje)}`;
+        window.open(whatsappUrl, '_blank');
+    }
+</script>
 </body>
 </html>
