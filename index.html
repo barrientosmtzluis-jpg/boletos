@@ -420,23 +420,61 @@ function iniciarSesion(){
     }
 
 }
+window.onload = function () {
 
-    window.onload = function() {
-window.onload = function(){
+    const urlParams = new URLSearchParams(window.location.search);
 
-    if(sessionStorage.getItem("autenticado")=="si"){
+    const invitadoUrl = urlParams.get('invitado');
+    const pasesUrl = urlParams.get('pases');
+    const mesaUrl = urlParams.get('mesa');
 
-        document.getElementById("loginScreen").style.display="none";
-        document.getElementById("panelPrincipal").style.display="block";
+    const esModoInvitado = invitadoUrl && pasesUrl;
 
-    }else{
+    // =========================
+    // MODO INVITADO (SIN LOGIN)
+    // =========================
+    if (esModoInvitado) {
 
-        document.getElementById("loginScreen").style.display="flex";
-        document.getElementById("panelPrincipal").style.display="none";
+        // Ocultar login siempre
+        document.getElementById("loginScreen").style.display = "none";
+        document.getElementById("panelPrincipal").style.display = "block";
+
+        // Ocultar elementos de administración
+        document.getElementById('col-formulario').style.display = 'none';
+        document.getElementById('titulo-columna-derecha').style.display = 'none';
+        document.getElementById('main-header').style.display = 'none';
+
+        // Cargar datos del invitado
+        document.getElementById('invitadoName').value = invitadoUrl;
+        document.getElementById('pasesNum').value = pasesUrl;
+        document.getElementById('mesaNum').value = mesaUrl || "General";
+
+        mostrarLugaresDisponibles();
+        actualizarBoleto();
+
+        return; // IMPORTANTE: corta ejecución
+    }
+
+    // =========================
+    // MODO ADMIN (CON LOGIN)
+    // =========================
+    if (sessionStorage.getItem("autenticado") == "si") {
+
+        document.getElementById("loginScreen").style.display = "none";
+        document.getElementById("panelPrincipal").style.display = "block";
+
+    } else {
+
+        document.getElementById("loginScreen").style.display = "flex";
+        document.getElementById("panelPrincipal").style.display = "none";
 
         return;
-
     }
+
+    // Admin puede ver todo
+    mostrarLugaresDisponibles();
+    actualizarBoleto();
+};
 
     const urlParams = new URLSearchParams(window.location.search);
 
