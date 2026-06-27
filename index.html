@@ -3,83 +3,76 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Panel de Control - Accesos Especiales</title>
+<title>Panel de Invitaciones</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
 <style>
-*{
-    box-sizing:border-box;
-    margin:0;
-    padding:0;
-    font-family:'Montserrat',sans-serif;
-}
+*{box-sizing:border-box;margin:0;padding:0;font-family:Montserrat,sans-serif;}
 
 body{
-    background:#f3f4f6;
-    color:#1f2937;
-    padding:20px;
-    min-height:100vh;
+background:#f3f4f6;
+padding:20px;
 }
 
-.container{max-width:950px;margin:auto;}
+.container{max-width:900px;margin:auto;}
 
 header{text-align:center;margin-bottom:20px;}
 
-.layout-container{display:flex;gap:20px;}
-.layout-col{flex:1;}
+.layout{display:flex;gap:20px;flex-wrap:wrap;}
 
 .card{
-    background:#fff;
-    border-radius:16px;
-    padding:25px;
-    border:1px solid #e5e7eb;
+background:#fff;
+padding:20px;
+border-radius:12px;
+flex:1;
+min-width:300px;
 }
 
-.form-group{margin-bottom:15px;}
-.form-group input,.form-group textarea{
-    width:100%;
-    padding:10px;
-    border:1px solid #d1d5db;
-    border-radius:8px;
+input,textarea{
+width:100%;
+padding:10px;
+margin:5px 0;
+border-radius:8px;
+border:1px solid #ccc;
 }
 
-.btn-whatsapp{
-    width:100%;
-    padding:14px;
-    background:#25d366;
-    color:#fff;
-    border:none;
-    border-radius:8px;
-    cursor:pointer;
+button{
+width:100%;
+padding:12px;
+background:#25d366;
+color:#fff;
+border:none;
+border-radius:8px;
+cursor:pointer;
 }
 
-.ticket-preview{
-    background:linear-gradient(135deg,#1e3a8a,#0f172a);
-    color:#fff;
-    padding:25px;
-    border-radius:20px;
-    text-align:center;
+.ticket{
+background:linear-gradient(135deg,#1e3a8a,#0f172a);
+color:#fff;
+padding:20px;
+border-radius:16px;
+text-align:center;
 }
 
-.qr-wrapper{background:#fff;padding:10px;border-radius:10px;display:inline-block;margin-top:10px;}
+.qr{background:#fff;padding:10px;border-radius:10px;display:inline-block;margin-top:10px;}
 
-.login-screen{
-    position:fixed;inset:0;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    background:#f3f4f6;
-    z-index:9999;
+.login{
+position:fixed;
+inset:0;
+display:flex;
+align-items:center;
+justify-content:center;
+background:#f3f4f6;
 }
 
 .login-box{
-    background:#fff;
-    padding:30px;
-    border-radius:12px;
-    width:320px;
+background:#fff;
+padding:25px;
+border-radius:12px;
+width:300px;
 }
 </style>
 </head>
@@ -87,159 +80,166 @@ header{text-align:center;margin-bottom:20px;}
 <body>
 
 <!-- LOGIN -->
-<div id="loginScreen" class="login-screen">
-    <div class="login-box">
-        <h3>Acceso</h3>
-        <input id="loginUser" placeholder="Usuario">
-        <input id="loginPassword" type="password" placeholder="Contraseña">
-        <button onclick="iniciarSesion()">Entrar</button>
-        <p id="loginError" style="color:red"></p>
-    </div>
+<div id="login" class="login">
+<div class="login-box">
+<h3>Acceso</h3>
+<input id="user" placeholder="Usuario">
+<input id="pass" type="password" placeholder="Contraseña">
+<button onclick="login()">Entrar</button>
+<p id="error" style="color:red"></p>
+</div>
 </div>
 
 <!-- PANEL -->
-<div class="container" id="panelPrincipal" style="display:none">
+<div id="panel" class="container" style="display:none">
 
-<header id="main-header">
-    <h1>Generador de Invitaciones</h1>
+<header>
+<h2>Panel de Invitaciones</h2>
 </header>
 
-<div class="layout-container">
+<div class="layout">
 
 <!-- FORM -->
-<div class="layout-col" id="col-formulario">
 <div class="card">
+<h3>Datos</h3>
 
-<h3>Control</h3>
+<p>Lugares: <span id="lugares">200</span></p>
 
-<div>Disponibles: <span id="lugares-disponibles">200</span></div>
+<input id="nombre" oninput="update()">
+<input id="pases" type="number" oninput="update()" value="1">
+<input id="mesa" oninput="update()" value="Mesa 1">
+<input id="tel" placeholder="521...">
 
-<input id="invitadoName" oninput="actualizarBoleto()" value="Familia">
-<input id="pasesNum" type="number" oninput="actualizarBoleto()" value="4">
-<input id="mesaNum" oninput="actualizarBoleto()" value="Mesa 1">
-<input id="whatsappNum" placeholder="521...">
+<textarea id="msg"></textarea>
 
-<textarea id="mensajeTexto"></textarea>
-
-<button class="btn-whatsapp" onclick="enviarWhatsApp()">
-Enviar WhatsApp
-</button>
-
-</div>
+<button onclick="send()">Enviar WhatsApp</button>
 </div>
 
 <!-- TICKET -->
-<div class="layout-col">
-<div class="card" style="background:none;border:none">
+<div class="card ticket">
 
-<div class="ticket-preview">
-    <h2>Pase de Acceso</h2>
+<h3>Pase Digital</h3>
 
-    <p id="lbl-nombre">Familia</p>
-    <p id="lbl-pases">4</p>
-    <p id="lbl-mesa">Mesa 1</p>
+<p id="tNombre">Invitado</p>
+<p id="tPases">1</p>
+<p id="tMesa">Mesa 1</p>
 
-    <div class="qr-wrapper">
-        <div id="qrcode"></div>
-    </div>
-
+<div class="qr">
+<div id="qrcode"></div>
 </div>
 
-</div>
 </div>
 
 </div>
 </div>
 
 <script>
-const USUARIO="administrador";
-const PASSWORD="XVPau";
+
+const USER="administrador";
+const PASS="XVPau";
 const TOTAL=200;
 
-function iniciarSesion(){
-    const u=document.getElementById("loginUser").value;
-    const p=document.getElementById("loginPassword").value;
+/* LOGIN */
+function login(){
+const u=document.getElementById("user").value.trim();
+const p=document.getElementById("pass").value.trim();
 
-    if(u===USUARIO && p===PASSWORD){
-        sessionStorage.setItem("ok","1");
-        document.getElementById("loginScreen").style.display="none";
-        document.getElementById("panelPrincipal").style.display="block";
-        init();
-    }else{
-        document.getElementById("loginError").innerText="Error";
-    }
+if(u===USER && p===PASS){
+sessionStorage.setItem("ok","1");
+document.getElementById("login").style.display="none";
+document.getElementById("panel").style.display="block";
+init();
+}else{
+document.getElementById("error").innerText="Error de acceso";
+}
 }
 
+/* INIT */
 function init(){
-    if(!localStorage.getItem("lugares")) localStorage.setItem("lugares",TOTAL);
-    mostrar();
-    actualizarBoleto();
+if(!localStorage.getItem("lugares")){
+localStorage.setItem("lugares",TOTAL);
+}
+mostrar();
+update();
 }
 
+/* ON LOAD */
 window.onload=function(){
 
 const url=new URLSearchParams(location.search);
+
 if(url.get("invitado")){
-    document.getElementById("loginScreen").style.display="none";
-    document.getElementById("panelPrincipal").style.display="block";
-    document.getElementById("col-formulario").style.display="none";
-    document.getElementById("main-header").style.display="none";
+document.getElementById("login").style.display="none";
+document.getElementById("panel").style.display="block";
 
-    document.getElementById("invitadoName").value=url.get("invitado");
-    document.getElementById("pasesNum").value=url.get("pases");
-    document.getElementById("mesaNum").value=url.get("mesa")||"General";
+document.getElementById("nombre").value=url.get("invitado");
+document.getElementById("pases").value=url.get("pases");
+document.getElementById("mesa").value=url.get("mesa")||"General";
 
-    init();
-    return;
+init();
+return;
 }
 
 if(sessionStorage.getItem("ok")==="1"){
-    document.getElementById("loginScreen").style.display="none";
-    document.getElementById("panelPrincipal").style.display="block";
-    init();
+document.getElementById("login").style.display="none";
+document.getElementById("panel").style.display="block";
+init();
 }
-
 };
 
+/* LUGARES */
 function mostrar(){
-document.getElementById("lugares-disponibles").innerText=
-localStorage.getItem("lugares");
+let l=localStorage.getItem("lugares");
+if(!l){l=TOTAL;localStorage.setItem("lugares",TOTAL);}
+document.getElementById("lugares").innerText=l;
 }
 
-function actualizarBoleto(){
+/* UPDATE TICKET */
+function update(){
 
-let n=document.getElementById("invitadoName").value;
-let p=document.getElementById("pasesNum").value;
-let m=document.getElementById("mesaNum").value;
+let n=document.getElementById("nombre").value;
+let p=document.getElementById("pases").value;
+let m=document.getElementById("mesa").value;
 
-document.getElementById("lbl-nombre").innerText=n;
-document.getElementById("lbl-pases").innerText=p;
-document.getElementById("lbl-mesa").innerText=m;
+document.getElementById("tNombre").innerText=n;
+document.getElementById("tPases").innerText=p;
+document.getElementById("tMesa").innerText=m;
 
-let url=`https://wa.me/521000000000?text=${encodeURIComponent(n+" "+p+" "+m)}`;
+/* QR seguro */
+try{
+let url="https://wa.me/521000000000?text="+encodeURIComponent(n+" "+p+" "+m);
 
 document.getElementById("qrcode").innerHTML="";
 new QRCode(document.getElementById("qrcode"),url);
 
-document.getElementById("mensajeTexto").value=
+}catch(e){
+console.log("QR error",e);
+}
+
+document.getElementById("msg").value=
 `Invitación para ${n}, ${p} personas, ${m}`;
 }
 
-function enviarWhatsApp(){
+/* SEND */
+function send(){
 
-let tel=document.getElementById("whatsappNum").value;
-let p=parseInt(document.getElementById("pasesNum").value);
-let disp=parseInt(localStorage.getItem("lugares"));
+let tel=document.getElementById("tel").value;
+let p=parseInt(document.getElementById("pases").value);
+let l=parseInt(localStorage.getItem("lugares"));
 
-if(disp-p<0 && !confirm("No hay lugares suficientes")) return;
+if(l-p<0 && !confirm("No hay suficientes lugares")) return;
 
-localStorage.setItem("lugares",disp-p);
+localStorage.setItem("lugares",l-p);
 mostrar();
 
-let msg=document.getElementById("mensajeTexto").value;
+let msg=document.getElementById("msg").value;
 
-window.open(`https://api.whatsapp.com/send?phone=${tel}&text=${encodeURIComponent(msg)}`);
+window.open(
+`https://api.whatsapp.com/send?phone=${tel}&text=${encodeURIComponent(msg)}`
+);
+
 }
+
 </script>
 
 </body>
