@@ -268,11 +268,18 @@
                 padding: 10px;
             }
         }
-    </style>
+    
+.login-screen{position:fixed;inset:0;background:#f3f4f6;display:flex;justify-content:center;align-items:center;z-index:9999;}
+.login-box{background:#fff;padding:30px;border-radius:16px;width:350px;box-shadow:0 10px 30px rgba(0,0,0,.15);}
+.login-box input{width:100%;padding:12px;margin-bottom:15px;}
+.login-box button{width:100%;padding:12px;}
+
+</style>
 </head>
 <body>
+<div id="loginScreen" class="login-screen"><div class="login-box"><h2>Acceso al Panel</h2><input type="password" id="loginPassword" placeholder="Contraseña"><button onclick="iniciarSesion()">Entrar</button><p id="loginError" style="color:red"></p></div></div>
 
-<div class="container">
+<div class="container" id="panelPrincipal" style="display:none;">
     <header id="main-header">
         <h1>Generador de Invitaciones & Pases Especiales</h1>
         <p>Completa la información del invitado y despacha el acceso directo a su teléfono móvil</p>
@@ -363,12 +370,15 @@
     const URL_INVITACION_WEB = "https://barrientosmtzluis-jpg.github.io/XV-ANAPAU/";
     const TOTAL_ACCESOS = 200;
     const CONTRASEÑA_SEGURIDAD = "1234";
+const PASSWORD_LOGIN='1234';
+function iniciarSesion(){const p=document.getElementById('loginPassword').value;if(p===PASSWORD_LOGIN){sessionStorage.setItem('autenticado','si');document.getElementById('loginScreen').style.display='none';document.getElementById('panelPrincipal').style.display='block';}else{document.getElementById('loginError').innerText='Contraseña incorrecta';}}
 
     if (localStorage.getItem('lugaresDisponibles') === null) {
         localStorage.setItem('lugaresDisponibles', TOTAL_ACCESOS);
     }
 
     window.onload = function() {
+if(sessionStorage.getItem('autenticado')!=='si'){document.getElementById('loginScreen').style.display='flex';document.getElementById('panelPrincipal').style.display='none';return;}document.getElementById('loginScreen').style.display='none';document.getElementById('panelPrincipal').style.display='block';
         const urlParams = new URLSearchParams(window.location.search);
         const invitadoUrl = urlParams.get('invitado');
         const pasesUrl = urlParams.get('pases');
