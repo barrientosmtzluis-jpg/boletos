@@ -31,10 +31,18 @@ flex:1;
 min-width:300px;
 }
 
+label{
+font-size: 13px;
+font-weight: 600;
+color: #4b5563;
+display: block;
+margin-top: 10px;
+}
+
 input,textarea{
 width:100%;
 padding:10px;
-margin:5px 0;
+margin:5px 0 10px 0;
 border-radius:8px;
 border:1px solid #ccc;
 }
@@ -47,6 +55,7 @@ color:#fff;
 border:none;
 border-radius:8px;
 cursor:pointer;
+font-weight: bold;
 }
 
 .ticket{
@@ -79,7 +88,6 @@ width:300px;
 
 <body>
 
-<!-- LOGIN -->
 <div id="login" class="login">
 <div class="login-box">
 <h3>Acceso</h3>
@@ -90,7 +98,6 @@ width:300px;
 </div>
 </div>
 
-<!-- PANEL -->
 <div id="panel" class="container" style="display:none">
 
 <header>
@@ -102,24 +109,33 @@ width:300px;
 <div class="card">
 <h3>Datos</h3>
 
-<p>Lugares: <span id="lugares">200</span></p>
+<p style="font-weight: bold; color: #2563eb;">Lugares Disponibles: <span id="lugares">200</span></p>
 
-<input id="nombre" oninput="update()">
-<input id="pases" type="number" oninput="update()" value="1">
+<label>Familia / Invitado:</label>
+<input id="nombre" placeholder="Ej. Familia Hernández García" oninput="update()">
+
+<label>Número de pases / lugares:</label>
+<input id="pases" type="number" oninput="update()" value="1" min="1">
+
+<label>Mesa asignada:</label>
 <input id="mesa" oninput="update()" value="Mesa 1">
+
+<label>WhatsApp (Sin signos ni espacios):</label>
 <input id="tel" placeholder="521...">
 
-<textarea id="msg"></textarea>
+<label>Vista previa del mensaje:</label>
+<textarea id="msg" rows="10"></textarea>
 
-<button onclick="send()">Enviar WhatsApp</button>
+<button onclick="send()"><i class="fab fa-whatsapp"></i> Enviar WhatsApp</button>
 </div>
 
 <div class="card ticket">
 <h3>Pase Digital</h3>
-
-<p id="tNombre">Invitado</p>
-<p id="tPases">1</p>
-<p id="tMesa">Mesa 1</p>
+<br>
+<p>Invitación para:</p>
+<h2 id="tNombre" style="color: #f59e0b; margin: 10px 0;">Invitado</h2>
+<p>Lugares: <strong id="tPases">1</strong></p>
+<p>Asiento: <strong id="tMesa">Mesa 1</strong></p>
 
 <div class="qr">
 <div id="qrcode"></div>
@@ -177,7 +193,7 @@ init();
 return;
 }
 
-if(sessionStorage.getItem("ok")==="1"){
+if(sessionStorage.getItem("ok")===="1"){
 document.getElementById("login").style.display="none";
 document.getElementById("panel").style.display="block";
 init();
@@ -194,9 +210,9 @@ document.getElementById("lugares").innerText=l;
 /* UPDATE */
 function update(){
 
-let n=document.getElementById("nombre").value;
-let p=document.getElementById("pases").value;
-let m=document.getElementById("mesa").value;
+let n=document.getElementById("nombre").value || "Invitado";
+let p=document.getElementById("pases").value || "1";
+let m=document.getElementById("mesa").value || "Mesa 1";
 
 document.getElementById("tNombre").innerText=n;
 document.getElementById("tPases").innerText=p;
@@ -206,43 +222,29 @@ try{
 let url="https://wa.me/521000000000?text="+encodeURIComponent(n+" "+p+" "+m);
 
 document.getElementById("qrcode").innerHTML="";
-new QRCode(document.getElementById("qrcode"),url);
+new QRCode(document.getElementById("qrcode"), {
+    text: url,
+    width: 128,
+    height: 128
+});
 
 }catch(e){
 console.log(e);
 }
 
-document.getElementById("msg").value=
-`Invitación para ${n}, ${p} personas, ${m}`;
-}
+/* AQUÍ SE CONSTRUYE EL MENSAJE DINÁMICO EN TIEMPO REAL */
+document.getElementById("msg").value = 
+`✨ ¡Tenemos una invitación muy especial para ti! ✨
 
-/* SEND */
-function send(){
-
-let tel=document.getElementById("tel").value;
-let n=document.getElementById("nombre").value;
-let p=document.getElementById("pases").value;
-let m=document.getElementById("mesa").value;
-
-let l=parseInt(localStorage.getItem("lugares"));
-
-if(l-p<0 && !confirm("No hay suficientes lugares")) return;
-
-localStorage.setItem("lugares",l-p);
-mostrar();
-
-/* MENSAJE COMPLETO AGREGADO */
-let msg = `✨ ¡Tenemos una invitación muy especial para ti! ✨
-
-Estimada familia / amigo Familia Hernandez García,
+Estimada familia / amigo *${n}*,
 
 Nos complace enormemente invitarte a compartir con nosotros un momento inolvidable. En el siguiente enlace podrás conocer todos los detalles de nuestro evento, itinerario y locación:
 
 👉 Nuestra Invitación Digital:
 https://barrientosmtzluis-jpg.github.io/XV-ANAPAU/
 
-🎫 De igual manera, te hacemos llegar tu Pase Digital Inteligente válido para ${p} personas.
-📍 Mesa asignada: ${m}
+🎫 De igual manera, te hacemos llegar tu Pase Digital Inteligente válido para *${p}* personas.
+📍 Mesa asignada: *${m}*
 
 Para ingresar de forma ágil el día del evento, solo haz clic aquí abajo y presenta el código QR desde tu pantalla:
 
@@ -250,10 +252,34 @@ Para ingresar de forma ágil el día del evento, solo haz clic aquí abajo y pre
 https://barrientosmtzluis-jpg.github.io/boletos/?invitado=${encodeURIComponent(n)}&pases=${p}&mesa=${encodeURIComponent(m)}
 
 ¡Tu presencia hará que este día sea aún más especial! Esperamos contar contigo. ✨🥂`;
+}
 
-/* ENVÍO */
+/* SEND */
+function send(){
+
+let tel=document.getElementById("tel").value.trim();
+let p=parseInt(document.getElementById("pases").value) || 0;
+let l=parseInt(localStorage.getItem("lugares"));
+
+if(!tel){
+    alert("Por favor, introduce un número de teléfono válido.");
+    return;
+}
+
+if(l-p<0){
+    if(!confirm("No hay suficientes lugares disponibles. ¿Deseas continuar?")) return;
+}
+
+localStorage.setItem("lugares", l-p);
+mostrar();
+
+/* OBTENEMOS EL TEXTO DIRECTAMENTE DE LA CAJA DE TEXTO ACTUALIZADA */
+let msg = document.getElementById("msg").value;
+
+/* API MODERNA DE WHATSAPP WEB / MÓVIL */
 window.open(
-`https://api.whatsapp.com/send?phone=${tel}&text=${encodeURIComponent(msg)}`
+`https://api.whatsapp.com/send?phone=${tel}&text=${encodeURIComponent(msg)}`, 
+'_blank'
 );
 
 }
