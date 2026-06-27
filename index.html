@@ -442,13 +442,36 @@
     }
 
     function actualizarPlantillaMensaje(nombre, pases, mesa) {
-        const urlBaseBoletos = window.location.href.split('?')[0];
-        const urlBoletoInvitado = `${urlBaseBoletos}?invitado=${encodeURIComponent(nombre)}&pases=${pases}&mesa=${encodeURIComponent(mesa)}`;
-        
-        const mensaje = `✨ *¡Tenemos una invitación muy especial para ti!* ✨\n\nEstimada familia / amigo *${nombre}*,\n\nNos complace enormemente invitarte a compartir con nosotros un momento inolvidable. En el siguiente enlace podrás conocer todos los detalles de nuestro evento, itinerario y locación:\n\n👉 *Nuestra Invitación Digital:*\n${URL_INVITACION_WEB}\n\n🎫 De igual manera, te hacemos llegar tu *Pase Digital Inteligente* válido para *${pases}* ${parseInt(pases) === 1 ? 'persona' : 'personas'}.\n📍 *Mesa asignada:* ${mesa}\n\nPara ingresar de forma ágil el día del evento, solo haz clic aquí abajo y presenta el código QR desde tu pantalla:\n\n👉 *Tu Boleto de Acceso:*\n${urlBoletoInvitado}\n\n¡Tu presencia hará que este día sea aún más especial! Esperamos contar contigo. ✨🥂`;
-        
-        document.getElementById('mensajeTexto').value = mensaje;
-    }
+    const urlBaseBoletos = window.location.href.split('?')[0];
+    const urlBoletoInvitado = `${urlBaseBoletos}?invitado=${encodeURIComponent(nombre)}&pases=${pases}&mesa=${encodeURIComponent(mesa)}`;
+
+    const mensaje = `✨ *¡Con mucha alegría queremos compartir este momento tan especial contigo y tu familia!* ✨
+
+Con enorme cariño, te invitamos a celebrar los *XV Años de Ana Paula*, un día lleno de alegría, amor y momentos inolvidables.
+
+💌 *Tu invitación digital* la encontrarás aquí:
+https://www.qrcreator.dev/es-ES/p/9824EADF
+
+🌸 *Conoce todos los detalles del evento* (ubicación, horario e información importante) en:
+https://barrientosmtzluis-jpg.github.io/XV-ANAPAU/
+
+🎫 *Tu Pase Digital Inteligente*
+👨‍👩‍👧 Invitado: *${nombre}*
+👥 Acceso para: *${pases}* ${parseInt(pases) === 1 ? 'persona' : 'personas'}
+📍 Mesa asignada: *${mesa}*
+
+📲 El día del evento solo presenta este pase en la entrada:
+${urlBoletoInvitado}
+
+📸 Después de la celebración nos encantará que compartas las fotografías y recuerdos que captures durante este día tan especial:
+https://photos.app.goo.gl/iSC1tNw1zkRConxv6
+
+💖 Tu presencia será el mejor regalo y hará que este momento sea aún más significativo para nosotros.
+
+¡Te esperamos con mucho cariño para celebrar juntos este sueño hecho realidad! ✨🎉`;
+
+    document.getElementById('mensajeTexto').value = mensaje;
+}
 
     function enviarWhatsApp() {
         const telefono = document.getElementById('whatsappNum').value.replace(/[^0-9]/g, '');
