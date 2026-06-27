@@ -348,3 +348,137 @@
                     <div class="qr-wrapper">
                         <div id="qrcode"></div>
                     </div>
+                    
+                    <div class="ticket-footer">
+                        <p>Código Único e Intransferible</p>
+                        <p style="margin-top:4px; font-weight:600; color:#fbeeac;">Presenta esta pantalla al ingresar</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const URL_INVITACION_WEB = "https://barrientosmtzluis-jpg.github.io/XV-ANAPAU/";
+    const TOTAL_ACCESOS = 200;
+    const CONTRASEÑA_SEGURIDAD = "1234";
+
+    if (localStorage.getItem('lugaresDisponibles') === null) {
+        localStorage.setItem('lugaresDisponibles', TOTAL_ACCESOS);
+    }
+
+    window.onload = function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const invitadoUrl = urlParams.get('invitado');
+        const pasesUrl = urlParams.get('pases');
+        const mesaUrl = urlParams.get('mesa');
+
+        if (invitadoUrl && pasesUrl) {
+            document.getElementById('col-formulario').style.display = 'none';
+            document.getElementById('titulo-columna-derecha').style.display = 'none';
+            document.getElementById('main-header').style.display = 'none';
+            
+            document.getElementById('invitadoName').value = invitadoUrl;
+            document.getElementById('pasesNum').value = pasesUrl;
+            document.getElementById('mesaNum').value = mesaUrl || "General";
+        }
+        
+        mostrarLugaresDisponibles();
+        actualizarBoleto();
+    };
+
+    function mostrarLugaresDisponibles() {
+        const actuales = localStorage.getItem('lugaresDisponibles');
+        document.getElementById('lugares-disponibles').innerText = actuales;
+    }
+
+    function reiniciarContador() {
+        const password = prompt("Por seguridad, ingresa la contraseña para restablecer a 200 lugares:");
+        
+        if (password === null) return;
+        
+        if (password === CONTRASEÑA_SEGURIDAD) {
+            localStorage.setItem('lugaresDisponibles', TOTAL_ACCESOS);
+            mostrarLugaresDisponibles();
+            actualizarBoleto();
+            alert("El conteo ha sido reiniciado con éxito a 200 lugares.");
+        } else {
+            alert("Contraseña incorrecta. El conteo no ha sido modificado.");
+        }
+    }
+
+    function actualizarBoleto() {
+        const nombre = document.getElementById('invitadoName').value || "Invitado Especial";
+        const pases = parseInt(document.getElementById('pasesNum').value) || 1;
+        const mesa = document.getElementById('mesaNum').value || "General";
+        
+        document.getElementById('lbl-nombre').innerText = nombre;
+        document.getElementById('lbl-pases').innerText = pases;
+        document.getElementById('lbl-mesa').innerText = mesa;
+        
+        // CORRECCIÓN: Leemos la cantidad real que hay guardada en el almacenamiento local.
+        const lugaresActualesEnAlmacen = parseInt(localStorage.getItem('lugaresDisponibles'));
+        const numeroDestino = "529841174935"; 
+        
+        // El QR ya no realiza cálculos matemáticos innecesarios que duplicaban el descuento.
+        const textoNotificacion = `🔔 *NOTIFICACIÓN DE ACCESO*\n\nHa llegado: *${nombre}*\nCantidad de personas: *${pases}*\nMesa asignada: *${mesa}*\n\n📉 *Lugares disponibles en sistema:* ${lugaresActualesEnAlmacen} de 200.\n\n✅ _Ingreso confirmado en puerta._`;
+        
+        const enlaceQR = `https://wa.me/${numeroDestino}?text=${encodeURIComponent(textoNotificacion)}`;
+        
+        const qrContainer = document.getElementById("qrcode");
+        qrContainer.innerHTML = ""; 
+        
+        new QRCode(qrContainer, {
+            text: enlaceQR,
+            width: 170,
+            height: 170,
+            colorDark : "#0f172a",
+            colorLight : "#ffffff",
+            correctLevel : QRCode.CorrectLevel.M
+        });
+
+        actualizarPlantillaMensaje(nombre, pases, mesa);
+    }
+
+    function actualizarPlantillaMensaje(nombre, pases, mesa) {
+        const urlBaseBoletos = window.location.href.split('?')[0];
+        const urlBoletoInvitado = `${urlBaseBoletos}?invitado=${encodeURIComponent(nombre)}&pases=${pases}&mesa=${encodeURIComponent(mesa)}`;
+        
+        const mensaje = `✨ *¡Tenemos una invitación muy especial para ti!* ✨\n\nEstimada familia / amigo *${nombre}*,\n\nNos complace enormemente invitarte a compartir con nosotros un momento inolvidable. En el siguiente enlace podrás conocer todos los detalles de nuestro evento, itinerario y locación:\n\n👉 *Nuestra Invitación Digital:*\n${URL_INVITACION_WEB}\n\n🎫 De igual manera, te hacemos llegar tu *Pase Digital Inteligente* válido para *${pases}* ${parseInt(pases) === 1 ? 'persona' : 'personas'}.\n📍 *Mesa asignada:* ${mesa}\n\nPara ingresar de forma ágil el día del evento, solo haz clic aquí abajo y presenta el código QR desde tu pantalla:\n\n👉 *Tu Boleto de Acceso:*\n${urlBoletoInvitado}\n\n¡Tu presencia hará que este día sea aún más especial! Esperamos contar contigo. ✨🥂`;
+        
+        document.getElementById('mensajeTexto').value = mensaje;
+    }
+
+    function enviarWhatsApp() {
+        const telefono = document.getElementById('whatsappNum').value.replace(/[^0-9]/g, '');
+        const mensaje = document.getElementById('mensajeTexto').value;
+        const pases = parseInt(document.getElementById('pasesNum').value) || 1;
+        
+        if (!telefono || telefono === "521" || telefono.length < 8) {
+            alert("Por favor, pon el número de teléfono del invitado completo (código de país + 10 dígitos).");
+            return;
+        }
+
+        let disponibles = parseInt(localStorage.getItem('lugaresDisponibles'));
+        
+        if (disponibles - pases < 0) {
+            if (!confirm(`⚠️ ¡Atención! Solo quedan ${disponibles} lugares disponibles y estás intentando registrar ${pases}. ¿Deseas proceder de todos modos?`)) {
+                return; 
+            }
+        }
+
+        // Único punto matemático donde se resta exactamente el número de pases ingresado
+        let nuevosDisponibles = disponibles - pases;
+        localStorage.setItem('lugaresDisponibles', nuevosDisponibles);
+        
+        // Sincronizamos las funciones visuales
+        mostrarLugaresDisponibles();
+        actualizarBoleto();
+        
+        const whatsappUrl = `https://api.whatsapp.com/send?phone=${telefono}&text=${encodeURIComponent(mensaje)}`;
+        window.open(whatsappUrl, '_blank');
+    }
+</script>
+</body>
+</html>
