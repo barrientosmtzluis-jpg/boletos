@@ -1,622 +1,246 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel de Control - Accesos Especiales</title>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Montserrat', sans-serif;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panel de Control - Accesos Especiales</title>
 
-        body {
-            background-color: #f3f4f6;
-            color: #1f2937;
-            display: block;
-            padding: 20px;
-            min-height: 100vh;
-        }
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
-        .container {
-            max-width: 950px;
-            margin: 0 auto;
-        }
+<style>
+*{
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
+    font-family:'Montserrat',sans-serif;
+}
 
-        header {
-            text-align: center;
-            margin-bottom: 30px;
-            padding: 20px 0;
-        }
+body{
+    background:#f3f4f6;
+    color:#1f2937;
+    padding:20px;
+    min-height:100vh;
+}
 
-        header h1 {
-            font-size: 24px;
-            color: #111827;
-            font-weight: 700;
-            margin-bottom: 5px;
-        }
+.container{max-width:950px;margin:auto;}
 
-        header p {
-            font-size: 14px;
-            color: #6b7280;
-        }
+header{text-align:center;margin-bottom:20px;}
 
-        .layout-container {
-            display: flex;
-            gap: 20px;
-            width: 100%;
-        }
+.layout-container{display:flex;gap:20px;}
+.layout-col{flex:1;}
 
-        .layout-col {
-            flex: 1;
-            min-width: 0;
-        }
+.card{
+    background:#fff;
+    border-radius:16px;
+    padding:25px;
+    border:1px solid #e5e7eb;
+}
 
-        .card {
-            background: #ffffff;
-            border-radius: 16px;
-            padding: 25px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-            border: 1px solid #e5e7eb;
-        }
+.form-group{margin-bottom:15px;}
+.form-group input,.form-group textarea{
+    width:100%;
+    padding:10px;
+    border:1px solid #d1d5db;
+    border-radius:8px;
+}
 
-        .card h2 {
-            font-size: 18px;
-            margin-bottom: 20px;
-            color: #374151;
-            font-weight: 600;
-            border-bottom: 2px solid #f3f4f6;
-            padding-bottom: 10px;
-        }
+.btn-whatsapp{
+    width:100%;
+    padding:14px;
+    background:#25d366;
+    color:#fff;
+    border:none;
+    border-radius:8px;
+    cursor:pointer;
+}
 
-        /* Caja del contador de capacidad */
-        .capacidad-box {
-            background-color: #f0fdf4;
-            border: 1px solid #bbf7d0;
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 18px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .capacidad-text {
-            font-size: 13px;
-            color: #166534;
-            font-weight: 600;
-        }
-        .capacidad-numero {
-            font-size: 22px;
-            font-weight: 700;
-            color: #15803d;
-        }
-        .btn-reset {
-            background: #fee2e2;
-            border: 1px solid #fca5a5;
-            color: #991b1b;
-            cursor: pointer;
-            font-size: 11px;
-            font-weight: 600;
-            padding: 4px 8px;
-            border-radius: 4px;
-            margin-top: 5px;
-            transition: all 0.2s;
-        }
-        .btn-reset:hover {
-            background: #fca5a5;
-            color: #7f1d1d;
-        }
+.ticket-preview{
+    background:linear-gradient(135deg,#1e3a8a,#0f172a);
+    color:#fff;
+    padding:25px;
+    border-radius:20px;
+    text-align:center;
+}
 
-        .form-group {
-            margin-bottom: 18px;
-        }
+.qr-wrapper{background:#fff;padding:10px;border-radius:10px;display:inline-block;margin-top:10px;}
 
-        .form-group label {
-            display: block;
-            font-size: 12px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            color: #4b5563;
-            margin-bottom: 6px;
-        }
+.login-screen{
+    position:fixed;inset:0;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    background:#f3f4f6;
+    z-index:9999;
+}
 
-        .form-group input, .form-group select, .form-group textarea {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #d1d5db;
-            border-radius: 8px;
-            font-size: 14px;
-            transition: all 0.2s;
-            background-color: #f9fafb;
-        }
-
-        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
-            outline: none;
-            border-color: #1e3a8a;
-            background-color: #fff;
-            box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1);
-        }
-
-        .btn-whatsapp {
-            display: block;
-            width: 100%;
-            background-color: #25d366;
-            color: white;
-            border: none;
-            padding: 14px;
-            font-size: 15px;
-            font-weight: 600;
-            border-radius: 8px;
-            cursor: pointer;
-            text-align: center;
-            text-decoration: none;
-            transition: background 0.2s;
-            margin-top: 15px;
-            box-shadow: 0 4px 12px rgba(37, 211, 102, 0.2);
-        }
-
-        .btn-whatsapp:hover {
-            background-color: #20ba56;
-        }
-
-        .btn-whatsapp i {
-            margin-right: 8px;
-            font-size: 18px;
-        }
-
-        .ticket-preview {
-            background: linear-gradient(135deg, #1e3a8a 0%, #0f172a 100%);
-            color: white;
-            border-radius: 20px;
-            padding: 30px;
-            text-align: center;
-            position: relative;
-            overflow: hidden;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
-        }
-
-        .ticket-preview::before, .ticket-preview::after {
-            content: '';
-            position: absolute;
-            top: 45%;
-            width: 20px;
-            height: 20px;
-            background-color: #f3f4f6;
-            border-radius: 50%;
-            margin-top: -10px;
-        }
-        .ticket-preview::before { left: -10px; }
-        .ticket-preview::after { right: -10px; }
-
-        .ticket-title {
-            font-size: 20px;
-            font-weight: 700;
-            letter-spacing: 1px;
-            margin-bottom: 5px;
-            text-transform: uppercase;
-            color: #fbeeac;
-        }
-
-        .ticket-subtitle {
-            font-size: 11px;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            color: #93c5fd;
-            margin-bottom: 25px;
-        }
-
-        .ticket-guest {
-            font-size: 22px;
-            font-weight: 600;
-            margin-bottom: 5px;
-            word-wrap: break-word;
-        }
-
-        .ticket-label {
-            font-size: 10px;
-            text-transform: uppercase;
-            color: #94a3b8;
-            letter-spacing: 1px;
-        }
-
-        .ticket-info-grid {
-            display: flex;
-            justify-content: space-between;
-            border-top: 1px dashed rgba(255,255,255,0.2);
-            border-bottom: 1px dashed rgba(255,255,255,0.2);
-            padding: 12px 0;
-            margin: 15px 0;
-        }
-
-        .info-item {
-            flex: 1;
-        }
-
-        .info-item .val {
-            font-size: 24px;
-            font-weight: 700;
-        }
-
-        .qr-wrapper {
-            background: white;
-            padding: 12px;
-            border-radius: 12px;
-            display: inline-block;
-            margin: 10px auto;
-        }
-
-        .ticket-footer {
-            font-size: 11px;
-            color: #94a3b8;
-            margin-top: 15px;
-        }
-
-        @media (max-width: 768px) {
-            .layout-container {
-                flex-direction: column;
-            }
-            .layout-col {
-                width: 100%;
-            }
-            body {
-                padding: 10px;
-            }
-        }
-    
-.login-screen{position:fixed;inset:0;background:#f3f4f6;display:flex;justify-content:center;align-items:center;z-index:9999;}
-.login-box{background:#fff;padding:30px;border-radius:16px;width:350px;box-shadow:0 10px 30px rgba(0,0,0,.15);}
-.login-box input{width:100%;padding:12px;margin-bottom:15px;}
-.login-box button{width:100%;padding:12px;}
-
+.login-box{
+    background:#fff;
+    padding:30px;
+    border-radius:12px;
+    width:320px;
+}
 </style>
 </head>
+
 <body>
+
+<!-- LOGIN -->
 <div id="loginScreen" class="login-screen">
     <div class="login-box">
-
-        <h2>🔒 Acceso al Panel</h2>
-
-        <input type="text" id="loginUser" placeholder="Usuario">
-
-        <input type="password" id="loginPassword" placeholder="Contraseña">
-           
-
-        <button onclick="iniciarSesion()">
-            Iniciar sesión
-        </button>
-
-        <p id="loginError"
-           style="color:red;text-align:center;margin-top:10px;"></p>
-
+        <h3>Acceso</h3>
+        <input id="loginUser" placeholder="Usuario">
+        <input id="loginPassword" type="password" placeholder="Contraseña">
+        <button onclick="iniciarSesion()">Entrar</button>
+        <p id="loginError" style="color:red"></p>
     </div>
 </div>
 
-<div class="container" id="panelPrincipal" style="display:none;">
-    <header id="main-header">
-        <h1>Generador de Invitaciones & Pases Especiales</h1>
-        <p>Completa la información del invitado y despacha el acceso directo a su teléfono móvil</p>
-    </header>
+<!-- PANEL -->
+<div class="container" id="panelPrincipal" style="display:none">
 
-    <div class="layout-container">
-        <div class="layout-col" id="col-formulario">
-            <div class="card">
-                <h2>1. Control de Asignación</h2>
+<header id="main-header">
+    <h1>Generador de Invitaciones</h1>
+</header>
 
-                <div class="capacidad-box">
-                    <div>
-                        <div class="capacidad-text">Lugares Disponibles:</div>
-                        <button class="btn-reset" onclick="reiniciarContador()"><i class="fas fa-sync-alt"></i> Reiniciar Conteo</button>
-                    </div>
-                    <div class="capacidad-numero" id="lugares-disponibles">200</div>
-                </div>
-                
-                <div class="form-group">
-                    <label for="invitadoName">Nombre del Invitado / Familia</label>
-                    <input type="text" id="invitadoName" value="Familia Pérez Mendoza" oninput="actualizarBoleto()">
-                </div>
+<div class="layout-container">
 
-                <div class="form-group">
-                    <label for="pasesNum">Cantidad de Personas Permitidas</label>
-                    <input type="number" id="pasesNum" min="1" max="50" value="4" oninput="actualizarBoleto()">
-                </div>
+<!-- FORM -->
+<div class="layout-col" id="col-formulario">
+<div class="card">
 
-                <div class="form-group">
-                    <label for="mesaNum">Mesa Asignada</label>
-                    <input type="text" id="mesaNum" value="Mesa 5" placeholder="Ej. Mesa 3 o General" oninput="actualizarBoleto()">
-                </div>
+<h3>Control</h3>
 
-                <div class="form-group">
-                    <label for="whatsappNum">Destinatario WhatsApp (Teléfono del Invitado)</label>
-                    <input type="text" id="whatsappNum" placeholder="Ej. 5215512345678" value="521">
-                    <small style="font-size:11px; color:#6b7280; display:block; margin-top:4px;">Código de país + número completo sin espacios.</small>
-                </div>
+<div>Disponibles: <span id="lugares-disponibles">200</span></div>
 
-                <div class="form-group">
-                    <label for="mensajeTexto">Texto Preliminar del Mensaje</label>
-                    <textarea id="mensajeTexto" rows="8" style="resize: none; font-size:12px; line-height: 1.4;"></textarea>
-                </div>
+<input id="invitadoName" oninput="actualizarBoleto()" value="Familia">
+<input id="pasesNum" type="number" oninput="actualizarBoleto()" value="4">
+<input id="mesaNum" oninput="actualizarBoleto()" value="Mesa 1">
+<input id="whatsappNum" placeholder="521...">
 
-                <button class="btn-whatsapp" onclick="enviarWhatsApp()">
-                    <i class="fab fa-whatsapp"></i> Despachar Invitación y Registrar Lugares
-                </button>
-            </div>
-        </div>
+<textarea id="mensajeTexto"></textarea>
 
-        <div class="layout-col" id="col-boleto">
-            <div class="card" style="background: transparent; box-shadow: none; border: none; padding: 0;">
-                <h2 id="titulo-columna-derecha">2. Vista del Pase del Invitado</h2>
-                
-                <div class="ticket-preview">
-                    <div class="ticket-title">Pase de Acceso</div>
-                    <div class="ticket-subtitle">Invitación Oficial</div>
-                    
-                    <div class="ticket-label">Invitado de Honor</div>
-                    <div class="ticket-guest" id="lbl-nombre">Familia Pérez Mendoza</div>
-                    
-                    <div class="ticket-info-grid">
-                        <div class="info-item" style="border-right: 1px dashed rgba(255,255,255,0.2);">
-                            <div class="ticket-label" style="margin:0">Personas</div>
-                            <div class="val" id="lbl-pases">4</div>
-                        </div>
-                        <div class="info-item">
-                            <div class="ticket-label" style="margin:0">Mesa</div>
-                            <div class="val" id="lbl-mesa" style="color: #fbeeac;">Mesa 5</div>
-                        </div>
-                    </div>
-                    
-                    <div class="qr-wrapper">
-                        <div id="qrcode"></div>
-                    </div>
-                    
-                    <div class="ticket-footer">
-                        <p>Código Único e Intransferible</p>
-                        <p style="margin-top:4px; font-weight:600; color:#fbeeac;">Presenta esta pantalla al ingresar</p>
-                    </div>
-                </div>
-            </div>
-        </div>
+<button class="btn-whatsapp" onclick="enviarWhatsApp()">
+Enviar WhatsApp
+</button>
+
+</div>
+</div>
+
+<!-- TICKET -->
+<div class="layout-col">
+<div class="card" style="background:none;border:none">
+
+<div class="ticket-preview">
+    <h2>Pase de Acceso</h2>
+
+    <p id="lbl-nombre">Familia</p>
+    <p id="lbl-pases">4</p>
+    <p id="lbl-mesa">Mesa 1</p>
+
+    <div class="qr-wrapper">
+        <div id="qrcode"></div>
     </div>
+
+</div>
+
+</div>
+</div>
+
+</div>
 </div>
 
 <script>
-const URL_INVITACION_WEB = "https://barrientosmtzluis-jpg.github.io/XV-ANAPAU/";
-const TOTAL_ACCESOS = 200;
-const CONTRASEÑA_SEGURIDAD = "1234";
-const USUARIO_LOGIN = "administrador";
-const PASSWORD_LOGIN = "XVPau";
-    
+const USUARIO="administrador";
+const PASSWORD="XVPau";
+const TOTAL=200;
+
 function iniciarSesion(){
+    const u=document.getElementById("loginUser").value;
+    const p=document.getElementById("loginPassword").value;
 
-    const usuario =
-        document.getElementById("loginUser").value.trim();
-
-    const password =
-        document.getElementById("loginPassword").value.trim();
-
-    if(
-        usuario===USUARIO_LOGIN &&
-        password===PASSWORD_LOGIN
-    ){
-
-        sessionStorage.setItem("autenticado","si");
-
+    if(u===USUARIO && p===PASSWORD){
+        sessionStorage.setItem("ok","1");
         document.getElementById("loginScreen").style.display="none";
         document.getElementById("panelPrincipal").style.display="block";
-
-        mostrarLugaresDisponibles();
-        actualizarBoleto();
-
+        init();
     }else{
-
-        document.getElementById("loginError").innerHTML=
-            "Usuario o contraseña incorrectos.";
-
+        document.getElementById("loginError").innerText="Error";
     }
-
 }
-window.onload = function () {
 
-    const urlParams = new URLSearchParams(window.location.search);
-
-    const invitadoUrl = urlParams.get('invitado');
-    const pasesUrl = urlParams.get('pases');
-    const mesaUrl = urlParams.get('mesa');
-
-    const esModoInvitado = invitadoUrl && pasesUrl;
-
-    // =========================
-    // MODO INVITADO (SIN LOGIN)
-    // =========================
-    if (esModoInvitado) {
-
-        // Ocultar login siempre
-        document.getElementById("loginScreen").style.display = "none";
-        document.getElementById("panelPrincipal").style.display = "block";
-
-        // Ocultar elementos de administración
-        document.getElementById('col-formulario').style.display = 'none';
-        document.getElementById('titulo-columna-derecha').style.display = 'none';
-        document.getElementById('main-header').style.display = 'none';
-
-        // Cargar datos del invitado
-        document.getElementById('invitadoName').value = invitadoUrl;
-        document.getElementById('pasesNum').value = pasesUrl;
-        document.getElementById('mesaNum').value = mesaUrl || "General";
-
-        mostrarLugaresDisponibles();
-        actualizarBoleto();
-
-        return; // IMPORTANTE: corta ejecución
-    }
-
-    // =========================
-    // MODO ADMIN (CON LOGIN)
-    // =========================
-    if (sessionStorage.getItem("autenticado") == "si") {
-
-        document.getElementById("loginScreen").style.display = "none";
-        document.getElementById("panelPrincipal").style.display = "block";
-
-    } else {
-
-        document.getElementById("loginScreen").style.display = "flex";
-        document.getElementById("panelPrincipal").style.display = "none";
-
-        return;
-    }
-
-    // Admin puede ver todo
-    mostrarLugaresDisponibles();
+function init(){
+    if(!localStorage.getItem("lugares")) localStorage.setItem("lugares",TOTAL);
+    mostrar();
     actualizarBoleto();
+}
+
+window.onload=function(){
+
+const url=new URLSearchParams(location.search);
+if(url.get("invitado")){
+    document.getElementById("loginScreen").style.display="none";
+    document.getElementById("panelPrincipal").style.display="block";
+    document.getElementById("col-formulario").style.display="none";
+    document.getElementById("main-header").style.display="none";
+
+    document.getElementById("invitadoName").value=url.get("invitado");
+    document.getElementById("pasesNum").value=url.get("pases");
+    document.getElementById("mesaNum").value=url.get("mesa")||"General";
+
+    init();
+    return;
+}
+
+if(sessionStorage.getItem("ok")==="1"){
+    document.getElementById("loginScreen").style.display="none";
+    document.getElementById("panelPrincipal").style.display="block";
+    init();
+}
+
 };
 
-    const urlParams = new URLSearchParams(window.location.search);
-
-    const invitadoUrl = urlParams.get('invitado');
-    const pasesUrl = urlParams.get('pases');
-    const mesaUrl = urlParams.get('mesa');
-
-    if (invitadoUrl && pasesUrl) {
-
-        document.getElementById('col-formulario').style.display='none';
-        document.getElementById('titulo-columna-derecha').style.display='none';
-        document.getElementById('main-header').style.display='none';
-
-        document.getElementById('invitadoName').value=invitadoUrl;
-        document.getElementById('pasesNum').value=pasesUrl;
-        document.getElementById('mesaNum').value=mesaUrl || "General";
-
-    }
-
-    mostrarLugaresDisponibles();
-    actualizarBoleto();
-
-}
-        
-        mostrarLugaresDisponibles();
-        actualizarBoleto();
-    };
-
-    function mostrarLugaresDisponibles() {
-        const actuales = localStorage.getItem('lugaresDisponibles');
-        document.getElementById('lugares-disponibles').innerText = actuales;
-    }
-
-    function reiniciarContador() {
-        const password = prompt("Por seguridad, ingresa la contraseña para restablecer a 200 lugares:");
-        
-        if (password === null) return;
-        
-        if (password === CONTRASEÑA_SEGURIDAD) {
-            localStorage.setItem('lugaresDisponibles', TOTAL_ACCESOS);
-            mostrarLugaresDisponibles();
-            actualizarBoleto();
-            alert("El conteo ha sido reiniciado con éxito a 200 lugares.");
-        } else {
-            alert("Contraseña incorrecta. El conteo no ha sido modificado.");
-        }
-    }
-
-    function actualizarBoleto() {
-        const nombre = document.getElementById('invitadoName').value || "Invitado Especial";
-        const pases = parseInt(document.getElementById('pasesNum').value) || 1;
-        const mesa = document.getElementById('mesaNum').value || "General";
-        
-        document.getElementById('lbl-nombre').innerText = nombre;
-        document.getElementById('lbl-pases').innerText = pases;
-        document.getElementById('lbl-mesa').innerText = mesa;
-        
-        // CORRECCIÓN: Leemos la cantidad real que hay guardada en el almacenamiento local.
-        const lugaresActualesEnAlmacen = parseInt(localStorage.getItem('lugaresDisponibles'));
-        const numeroDestino = "529841174935"; 
-        
-        // El QR ya no realiza cálculos matemáticos innecesarios que duplicaban el descuento.
-        const textoNotificacion = `🔔 *NOTIFICACIÓN DE ACCESO*\n\nHa llegado: *${nombre}*\nCantidad de personas: *${pases}*\nMesa asignada: *${mesa}*\n\n📉 *Lugares disponibles en sistema:* ${lugaresActualesEnAlmacen} de 200.\n\n✅ _Ingreso confirmado en puerta._`;
-        
-        const enlaceQR = `https://wa.me/${numeroDestino}?text=${encodeURIComponent(textoNotificacion)}`;
-        
-        const qrContainer = document.getElementById("qrcode");
-        qrContainer.innerHTML = ""; 
-        
-        new QRCode(qrContainer, {
-            text: enlaceQR,
-            width: 170,
-            height: 170,
-            colorDark : "#0f172a",
-            colorLight : "#ffffff",
-            correctLevel : QRCode.CorrectLevel.M
-        });
-
-        actualizarPlantillaMensaje(nombre, pases, mesa);
-    }
-
-    function actualizarPlantillaMensaje(nombre, pases, mesa) {
-    const urlBaseBoletos = window.location.href.split('?')[0];
-    const urlBoletoInvitado = `${urlBaseBoletos}?invitado=${encodeURIComponent(nombre)}&pases=${pases}&mesa=${encodeURIComponent(mesa)}`;
-
-    const mensaje = `✨ *¡Con mucha alegría queremos compartir este momento tan especial contigo y tu familia!* ✨
-
-Con enorme cariño, te invitamos a celebrar los *XV Años de Ana Paula*, un día lleno de alegría, amor y momentos inolvidables.
-
-💌 *Tu invitación digital* la encontrarás aquí:
-https://www.qrcreator.dev/es-ES/p/9824EADF
-
-🌸 *Conoce todos los detalles del evento* (ubicación, horario e información importante) en:
-https://barrientosmtzluis-jpg.github.io/XV-ANAPAU/
-
-🎫 *Tu Pase Digital Inteligente*
-👨‍👩‍👧 Invitado: *${nombre}*
-👥 Acceso para: *${pases}* ${parseInt(pases) === 1 ? 'persona' : 'personas'}
-📍 Mesa asignada: *${mesa}*
-
-📲 El día del evento solo presenta este pase en la entrada:
-${urlBoletoInvitado}
-
-📸 Después de la celebración nos encantará que compartas las fotografías y recuerdos que captures durante este día tan especial:
-https://photos.app.goo.gl/iSC1tNw1zkRConxv6
-
-💖 Tu presencia será el mejor regalo y hará que este momento sea aún más significativo para nosotros.
-
-¡Te esperamos con mucho cariño para celebrar juntos este sueño hecho realidad! ✨🎉`;
-
-    document.getElementById('mensajeTexto').value = mensaje;
+function mostrar(){
+document.getElementById("lugares-disponibles").innerText=
+localStorage.getItem("lugares");
 }
 
-    function enviarWhatsApp() {
-        const telefono = document.getElementById('whatsappNum').value.replace(/[^0-9]/g, '');
-        const mensaje = document.getElementById('mensajeTexto').value;
-        const pases = parseInt(document.getElementById('pasesNum').value) || 1;
-        
-        if (!telefono || telefono === "521" || telefono.length < 8) {
-            alert("Por favor, pon el número de teléfono del invitado completo (código de país + 10 dígitos).");
-            return;
-        }
+function actualizarBoleto(){
 
-        let disponibles = parseInt(localStorage.getItem('lugaresDisponibles'));
-        
-        if (disponibles - pases < 0) {
-            if (!confirm(`⚠️ ¡Atención! Solo quedan ${disponibles} lugares disponibles y estás intentando registrar ${pases}. ¿Deseas proceder de todos modos?`)) {
-                return; 
-            }
-        }
+let n=document.getElementById("invitadoName").value;
+let p=document.getElementById("pasesNum").value;
+let m=document.getElementById("mesaNum").value;
 
-        // Único punto matemático donde se resta exactamente el número de pases ingresado
-        let nuevosDisponibles = disponibles - pases;
-        localStorage.setItem('lugaresDisponibles', nuevosDisponibles);
-        
-        // Sincronizamos las funciones visuales
-        mostrarLugaresDisponibles();
-        actualizarBoleto();
-        
-        const whatsappUrl = `https://api.whatsapp.com/send?phone=${telefono}&text=${encodeURIComponent(mensaje)}`;
-        window.open(whatsappUrl, '_blank');
-    }
+document.getElementById("lbl-nombre").innerText=n;
+document.getElementById("lbl-pases").innerText=p;
+document.getElementById("lbl-mesa").innerText=m;
+
+let url=`https://wa.me/521000000000?text=${encodeURIComponent(n+" "+p+" "+m)}`;
+
+document.getElementById("qrcode").innerHTML="";
+new QRCode(document.getElementById("qrcode"),url);
+
+document.getElementById("mensajeTexto").value=
+`Invitación para ${n}, ${p} personas, ${m}`;
+}
+
+function enviarWhatsApp(){
+
+let tel=document.getElementById("whatsappNum").value;
+let p=parseInt(document.getElementById("pasesNum").value);
+let disp=parseInt(localStorage.getItem("lugares"));
+
+if(disp-p<0 && !confirm("No hay lugares suficientes")) return;
+
+localStorage.setItem("lugares",disp-p);
+mostrar();
+
+let msg=document.getElementById("mensajeTexto").value;
+
+window.open(`https://api.whatsapp.com/send?phone=${tel}&text=${encodeURIComponent(msg)}`);
+}
 </script>
+
 </body>
 </html>
