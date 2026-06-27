@@ -178,20 +178,18 @@ update();
 
 /* ON LOAD */
 window.onload=function(){
-
 const url=new URLSearchParams(location.search);
 
+// CORRECCIÓN: Si viene de la URL, primero insertamos los datos y luego inicializamos
 if(url.get("invitado")){
 document.getElementById("login").style.display="none";
 document.getElementById("panel").style.display="block";
 
-init(); // Se movió init arriba para asegurar que los elementos estén listos
-
-document.getElementById("nombre").value=url.get("invitado");
-document.getElementById("pases").value=url.get("pases");
+document.getElementById("nombre").value=url.get("invitado") || "";
+document.getElementById("pases").value=url.get("pases") || "1";
 document.getElementById("mesa").value=url.get("mesa")||"General";
 
-update(); // Forzamos actualización tras rellenar los campos de la URL
+init(); 
 return;
 }
 
@@ -211,7 +209,6 @@ document.getElementById("lugares").innerText=l;
 
 /* UPDATE */
 function update(){
-
 let n=document.getElementById("nombre").value || "Invitado";
 let p=document.getElementById("pases").value || "1";
 let m=document.getElementById("mesa").value || "Mesa 1";
@@ -230,13 +227,52 @@ new QRCode(document.getElementById("qrcode"), {
     width: 128,
     height: 128
 });
-
 }catch(e){
 console.log(e);
 }
 
-/* CONSTRUCCIÓN DEL TEXTO */
+/* CONSTRUCCIÓN DEL TEXTO (CORREGIDO CIERRE DE STRING EN TU PLANTILLA) */
 let mensajeFormateado = "✨ ¡Tenemos una invitación muy especial para ti! ✨\n\n" +
 `Estimada familia / amigo *${n}*,\n\n` +
 "Nos complace enormemente invitarte a compartir con nosotros un momento inolvidable. En el siguiente enlace podrás conocer todos los detalles de nuestro evento, itinerario y locación:\n\n" +
 "👉 Nuestra Invitación Digital:\n" +
+"https://barrientosmtzluis-jpg.github.io/XV-ANAPAU/\n\n" +
+`🎫 De igual manera, te hacemos llegar tu Pase Digital Inteligente válido para *${p}* personas.\n` +
+`📍 Mesa asignada: *${m}*\n\n` +
+"Para ingresar de forma ágil el día del evento, solo haz clic aquí abajo y presenta el código QR desde tu pantalla:\n\n" +
+"👉 Tu Boleto de Acceso:\n" +
+urlBoleto + "\n\n" +
+"¡Tu presencia hará que este día sea aún más especial! Esperamos contar contigo. ✨🥂";
+
+document.getElementById("msg").value = mensajeFormateado;
+}
+
+/* SEND */
+function send(){
+let tel=document.getElementById("tel").value.trim();
+let p=parseInt(document.getElementById("pases").value) || 0;
+let l=parseInt(localStorage.getItem("lugares"));
+
+if(!tel){
+    alert("Por favor, introduce un número de teléfono válido.");
+    return;
+}
+
+if(l-p<0){
+    if(!confirm("No hay suficientes lugares disponibles. ¿Deseas continuar?")) return;
+}
+
+localStorage.setItem("lugares", l-p);
+mostrar();
+
+let msg = document.getElementById("msg").value;
+
+window.open(
+`https://api.whatsapp.com/send?phone=${tel}&text=${encodeURIComponent(msg)}`, 
+'_blank'
+);
+}
+</script>
+
+</body>
+</html>
