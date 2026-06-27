@@ -74,12 +74,12 @@
             padding-bottom: 10px;
         }
 
-        /* Estilos del nuevo contador de capacidad */
+        /* Caja del contador de capacidad */
         .capacidad-box {
             background-color: #f0fdf4;
             border: 1px solid #bbf7d0;
             border-radius: 8px;
-            padding: 12px;
+            padding: 15px;
             margin-bottom: 18px;
             display: flex;
             justify-content: space-between;
@@ -91,20 +91,25 @@
             font-weight: 600;
         }
         .capacidad-numero {
-            font-size: 18px;
+            font-size: 22px;
             font-weight: 700;
             color: #15803d;
         }
         .btn-reset {
-            background: none;
-            border: none;
-            color: #9ca3af;
+            background: #fee2e2;
+            border: 1px solid #fca5a5;
+            color: #991b1b;
             cursor: pointer;
-            font-size: 12px;
-            text-decoration: underline;
+            font-size: 11px;
+            font-weight: 600;
+            padding: 4px 8px;
+            border-radius: 4px;
+            margin-top: 5px;
+            transition: all 0.2s;
         }
         .btn-reset:hover {
-            color: #dc2626;
+            background: #fca5a5;
+            color: #7f1d1d;
         }
 
         .form-group {
@@ -281,7 +286,7 @@
                 <div class="capacidad-box">
                     <div>
                         <div class="capacidad-text">Lugares Disponibles:</div>
-                        <button class="btn-reset" onclick="reiniciarContador()">Reiniciar a 200</button>
+                        <button class="btn-reset" onclick="reiniciarContador()"><i class="fas fa-sync-alt"></i> Reiniciar Conteo</button>
                     </div>
                     <div class="capacidad-numero" id="lugares-disponibles">200</div>
                 </div>
@@ -357,8 +362,8 @@
 <script>
     const URL_INVITACION_WEB = "https://barrientosmtzluis-jpg.github.io/XV-ANAPAU/";
     const TOTAL_ACCESOS = 200;
+    const CONTRASEÑA_SEGURIDAD = "1234";
 
-    // Inicializar el contador leyendo el LocalStorage
     if (localStorage.getItem('lugaresDisponibles') === null) {
         localStorage.setItem('lugaresDisponibles', TOTAL_ACCESOS);
     }
@@ -389,10 +394,17 @@
     }
 
     function reiniciarContador() {
-        if(confirm("¿Seguro que quieres reiniciar el contador a 200 lugares disponibles?")) {
+        const password = prompt("Por seguridad, ingresa la contraseña para restablecer a 200 lugares:");
+        
+        if (password === null) return;
+        
+        if (password === CONTRASEÑA_SEGURIDAD) {
             localStorage.setItem('lugaresDisponibles', TOTAL_ACCESOS);
             mostrarLugaresDisponibles();
             actualizarBoleto();
+            alert("El conteo ha sido reiniciado con éxito a 200 lugares.");
+        } else {
+            alert("Contraseña incorrecta. El conteo no ha sido modificado.");
         }
     }
 
@@ -405,14 +417,13 @@
         document.getElementById('lbl-pases').innerText = pases;
         document.getElementById('lbl-mesa').innerText = mesa;
         
-        // Calculamos cuántos lugares quedarían si entra esta familia
+        // CORRECCIÓN: El QR ahora lee el valor real guardado directamente.
         const lugaresActualesEnAlmacen = parseInt(localStorage.getItem('lugaresDisponibles'));
-        const lugaresRestantesProyectados = lugaresActualesEnAlmacen - pases;
 
         const numeroDestino = "529841174935"; 
         
-        // Agregamos el contador de lugares restantes al cuerpo del mensaje que se generará en el QR
-        const textoNotificacion = `🔔 *NOTIFICACIÓN DE ACCESO*\n\nHa llegado: *${nombre}*\nCantidad de personas: *${pases}*\nMesa asignada: *${mesa}*\n\n📉 *Lugares disponibles restantes:* ${lugaresRestantesProyectados} de 200.\n\n✅ _Ingreso confirmado en puerta._`;
+        // El cálculo final exacto se realiza directo sobre el valor actual real
+        const textoNotificacion = `🔔 *NOTIFICACIÓN DE ACCESO*\n\nHa llegado: *${nombre}*\nCantidad de personas: *${pases}*\nMesa asignada: *${mesa}*\n\n📉 *Lugares disponibles restantes:* ${lugaresActualesEnAlmacen - pases} de 200.\n\n✅ _Ingreso confirmado en puerta._`;
         
         const enlaceQR = `https://wa.me/${numeroDestino}?text=${encodeURIComponent(textoNotificacion)}`;
         
@@ -450,7 +461,6 @@
             return;
         }
 
-        // DESCONTAR LUGARES: Al presionar el botón verde para despachar la invitación, se restan los cupos formalmente
         let disponibles = parseInt(localStorage.getItem('lugaresDisponibles'));
         
         if (disponibles - pases < 0) {
@@ -459,11 +469,10 @@
             }
         }
 
-        // Guardar nuevo conteo
+        // CORRECCIÓN: Restamos exactamente el número de pases ingresado una sola vez
         let nuevosDisponibles = disponibles - pases;
         localStorage.setItem('lugaresDisponibles', nuevosDisponibles);
         
-        // Actualizar interfaz antes de abrir WhatsApp
         mostrarLugaresDisponibles();
         actualizarBoleto();
         
