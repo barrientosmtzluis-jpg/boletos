@@ -218,12 +218,13 @@ document.getElementById("tNombre").innerText=n;
 document.getElementById("tPases").innerText=p;
 document.getElementById("tMesa").innerText=m;
 
-try{
-let url="https://wa.me/521000000000?text="+encodeURIComponent(n+" "+p+" "+m);
+// URL real del boleto para el código QR
+let urlBoleto = `https://barrientosmtzluis-jpg.github.io/boletos/?invitado=${encodeURIComponent(n)}&pases=${p}&mesa=${encodeURIComponent(m)}`;
 
+try{
 document.getElementById("qrcode").innerHTML="";
 new QRCode(document.getElementById("qrcode"), {
-    text: url,
+    text: urlBoleto,
     width: 128,
     height: 128
 });
@@ -232,26 +233,20 @@ new QRCode(document.getElementById("qrcode"), {
 console.log(e);
 }
 
-/* AQUÍ SE CONSTRUYE EL MENSAJE DINÁMICO EN TIEMPO REAL */
-document.getElementById("msg").value = 
-`✨ ¡Tenemos una invitación muy especial para ti! ✨
+/* CONSTRUCCIÓN IMPENETRABLE DEL TEXTO USANDO SALTOS DE LÍNEA EXPLÍCITOS (\n) */
+let mensajeFormateado = "✨ ¡Tenemos una invitación muy especial para ti! ✨\n\n" +
+`Estimada familia / amigo *${n}*,\n\n` +
+"Nos complace enormemente invitarte a compartir con nosotros un momento inolvidable. En el siguiente enlace podrás conocer todos los detalles de nuestro evento, itinerario y locación:\n\n" +
+"👉 Nuestra Invitación Digital:\n" +
+"https://barrientosmtzluis-jpg.github.io/XV-ANAPAU/\n\n" +
+`🎫 De igual manera, te hacemos llegar tu Pase Digital Inteligente válido para *${p}* personas.\n` +
+`📍 Mesa asignada: *${m}*\n\n` +
+"Para ingresar de forma ágil el día del evento, solo haz clic aquí abajo y presenta el código QR desde tu pantalla:\n\n" +
+"👉 Tu Boleto de Acceso:\n" +
+urlBoleto + "\n\n" +
+"¡Tu presencia hará que este día sea aún más especial! Esperamos contar contigo. ✨🥂";
 
-Estimada familia / amigo *${n}*,
-
-Nos complace enormemente invitarte a compartir con nosotros un momento inolvidable. En el siguiente enlace podrás conocer todos los detalles de nuestro evento, itinerario y locación:
-
-👉 Nuestra Invitación Digital:
-https://barrientosmtzluis-jpg.github.io/XV-ANAPAU/
-
-🎫 De igual manera, te hacemos llegar tu Pase Digital Inteligente válido para *${p}* personas.
-📍 Mesa asignada: *${m}*
-
-Para ingresar de forma ágil el día del evento, solo haz clic aquí abajo y presenta el código QR desde tu pantalla:
-
-👉 Tu Boleto de Acceso:
-https://barrientosmtzluis-jpg.github.io/boletos/?invitado=${encodeURIComponent(n)}&pases=${p}&mesa=${encodeURIComponent(m)}
-
-¡Tu presencia hará que este día sea aún más especial! Esperamos contar contigo. ✨🥂`;
+document.getElementById("msg").value = mensajeFormateado;
 }
 
 /* SEND */
@@ -273,10 +268,10 @@ if(l-p<0){
 localStorage.setItem("lugares", l-p);
 mostrar();
 
-/* OBTENEMOS EL TEXTO DIRECTAMENTE DE LA CAJA DE TEXTO ACTUALIZADA */
+/* OBTENEMOS EL TEXTO DIRECTAMENTE DESDE LA CAJA DE TEXTO */
 let msg = document.getElementById("msg").value;
 
-/* API MODERNA DE WHATSAPP WEB / MÓVIL */
+/* APERTURA CORRECTA */
 window.open(
 `https://api.whatsapp.com/send?phone=${tel}&text=${encodeURIComponent(msg)}`, 
 '_blank'
