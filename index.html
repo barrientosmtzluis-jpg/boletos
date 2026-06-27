@@ -46,15 +46,15 @@
             color: #6b7280;
         }
 
-        .layout-table {
+        .layout-container {
+            display: flex;
+            gap: 20px;
             width: 100%;
-            border-collapse: separate;
-            border-spacing: 20px 0;
         }
 
-        .layout-td {
-            vertical-align: top;
-            width: 50%;
+        .layout-col {
+            flex: 1;
+            min-width: 0;
         }
 
         .card {
@@ -72,6 +72,39 @@
             font-weight: 600;
             border-bottom: 2px solid #f3f4f6;
             padding-bottom: 10px;
+        }
+
+        /* Estilos del nuevo contador de capacidad */
+        .capacidad-box {
+            background-color: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 18px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .capacidad-text {
+            font-size: 13px;
+            color: #166534;
+            font-weight: 600;
+        }
+        .capacidad-numero {
+            font-size: 18px;
+            font-weight: 700;
+            color: #15803d;
+        }
+        .btn-reset {
+            background: none;
+            border: none;
+            color: #9ca3af;
+            cursor: pointer;
+            font-size: 12px;
+            text-decoration: underline;
+        }
+        .btn-reset:hover {
+            color: #dc2626;
         }
 
         .form-group {
@@ -132,7 +165,6 @@
             font-size: 18px;
         }
 
-        /* Estilizado del Boleto de Gala */
         .ticket-preview {
             background: linear-gradient(135deg, #1e3a8a 0%, #0f172a 100%);
             color: white;
@@ -221,12 +253,11 @@
         }
 
         @media (max-width: 768px) {
-            .layout-table, .layout-td {
-                display: block;
-                width: 100%;
+            .layout-container {
+                flex-direction: column;
             }
-            .layout-td {
-                margin-bottom: 25px;
+            .layout-col {
+                width: 100%;
             }
             body {
                 padding: 10px;
@@ -242,86 +273,95 @@
         <p>Completa la información del invitado y despacha el acceso directo a su teléfono móvil</p>
     </header>
 
-    <table class="layout-table">
-        <tr>
-            <td class="layout-td" id="col-formulario">
-                <div class="card">
-                    <h2>1. Control de Asignación</h2>
-                    
-                    <div class="form-group">
-                        <label for="invitadoName">Nombre del Invitado / Familia</label>
-                        <input type="text" id="invitadoName" value="Familia Pérez Mendoza" oninput="actualizarBoleto()">
-                    </div>
+    <div class="layout-container">
+        <div class="layout-col" id="col-formulario">
+            <div class="card">
+                <h2>1. Control de Asignación</h2>
 
-                    <div class="form-group">
-                        <label for="pasesNum">Cantidad de Personas Permitidas</label>
-                        <input type="number" id="pasesNum" min="1" max="50" value="4" oninput="actualizarBoleto()">
+                <div class="capacidad-box">
+                    <div>
+                        <div class="capacidad-text">Lugares Disponibles:</div>
+                        <button class="btn-reset" onclick="reiniciarContador()">Reiniciar a 200</button>
                     </div>
-
-                    <div class="form-group">
-                        <label for="mesaNum">Mesa Asignada</label>
-                        <input type="text" id="mesaNum" value="Mesa 5" placeholder="Ej. Mesa 3 o General" oninput="actualizarBoleto()">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="whatsappNum">Destinatario WhatsApp (Teléfono del Invitado)</label>
-                        <input type="text" id="whatsappNum" placeholder="Ej. 5215512345678" value="521">
-                        <small style="font-size:11px; color:#6b7280; display:block; margin-top:4px;">Código de país + número completo sin espacios.</small>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="mensajeTexto">Texto Preliminar del Mensaje</label>
-                        <textarea id="mensajeTexto" rows="8" style="resize: none; font-size:12px;"></textarea>
-                    </div>
-
-                    <button class="btn-whatsapp" onclick="enviarWhatsApp()">
-                        <i class="fab fa-whatsapp"></i> Despachar Invitación y Boletos
-                    </button>
+                    <div class="capacidad-numero" id="lugares-disponibles">200</div>
                 </div>
-            </td>
+                
+                <div class="form-group">
+                    <label for="invitadoName">Nombre del Invitado / Familia</label>
+                    <input type="text" id="invitadoName" value="Familia Pérez Mendoza" oninput="actualizarBoleto()">
+                </div>
 
-            <td class="layout-td" id="col-boleto">
-                <div class="card" style="background: transparent; box-shadow: none; border: none; padding: 0;">
-                    <h2 id="titulo-columna-derecha">2. Vista del Pase del Invitado</h2>
+                <div class="form-group">
+                    <label for="pasesNum">Cantidad de Personas Permitidas</label>
+                    <input type="number" id="pasesNum" min="1" max="50" value="4" oninput="actualizarBoleto()">
+                </div>
+
+                <div class="form-group">
+                    <label for="mesaNum">Mesa Asignada</label>
+                    <input type="text" id="mesaNum" value="Mesa 5" placeholder="Ej. Mesa 3 o General" oninput="actualizarBoleto()">
+                </div>
+
+                <div class="form-group">
+                    <label for="whatsappNum">Destinatario WhatsApp (Teléfono del Invitado)</label>
+                    <input type="text" id="whatsappNum" placeholder="Ej. 5215512345678" value="521">
+                    <small style="font-size:11px; color:#6b7280; display:block; margin-top:4px;">Código de país + número completo sin espacios.</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="mensajeTexto">Texto Preliminar del Mensaje</label>
+                    <textarea id="mensajeTexto" rows="8" style="resize: none; font-size:12px; line-height: 1.4;"></textarea>
+                </div>
+
+                <button class="btn-whatsapp" onclick="enviarWhatsApp()">
+                    <i class="fab fa-whatsapp"></i> Despachar Invitación y Registrar Lugares
+                </button>
+            </div>
+        </div>
+
+        <div class="layout-col" id="col-boleto">
+            <div class="card" style="background: transparent; box-shadow: none; border: none; padding: 0;">
+                <h2 id="titulo-columna-derecha">2. Vista del Pase del Invitado</h2>
+                
+                <div class="ticket-preview">
+                    <div class="ticket-title">Pase de Acceso</div>
+                    <div class="ticket-subtitle">Invitación Oficial</div>
                     
-                    <div class="ticket-preview">
-                        <div class="ticket-title">Pase de Acceso</div>
-                        <div class="ticket-subtitle">Invitación Oficial</div>
-                        
-                        <div class="ticket-label">Invitado de Honor</div>
-                        <div class="ticket-guest" id="lbl-nombre">Familia Pérez Mendoza</div>
-                        
-                        <div class="ticket-info-grid">
-                            <div class="info-item" style="border-right: 1px dashed rgba(255,255,255,0.2);">
-                                <div class="ticket-label" style="margin:0">Personas</div>
-                                <div class="val" id="lbl-pases">4</div>
-                            </div>
-                            <div class="info-item">
-                                <div class="ticket-label" style="margin:0">Mesa</div>
-                                <div class="val" id="lbl-mesa" style="color: #fbeeac;">Mesa 5</div>
-                            </div>
+                    <div class="ticket-label">Invitado de Honor</div>
+                    <div class="ticket-guest" id="lbl-nombre">Familia Pérez Mendoza</div>
+                    
+                    <div class="ticket-info-grid">
+                        <div class="info-item" style="border-right: 1px dashed rgba(255,255,255,0.2);">
+                            <div class="ticket-label" style="margin:0">Personas</div>
+                            <div class="val" id="lbl-pases">4</div>
                         </div>
-                        
-                        <div class="qr-wrapper">
-                            <div id="qrcode"></div>
-                        </div>
-                        
-                        <div class="ticket-footer">
-                            <p>Código Único e Intransferible</p>
-                            <p style="margin-top:4px; font-weight:600; color:#fbeeac;">Presenta esta pantalla al ingresar</p>
+                        <div class="info-item">
+                            <div class="ticket-label" style="margin:0">Mesa</div>
+                            <div class="val" id="lbl-mesa" style="color: #fbeeac;">Mesa 5</div>
                         </div>
                     </div>
+                    
+                    <div class="qr-wrapper">
+                        <div id="qrcode"></div>
+                    </div>
+                    
+                    <div class="ticket-footer">
+                        <p>Código Único e Intransferible</p>
+                        <p style="margin-top:4px; font-weight:600; color:#fbeeac;">Presenta esta pantalla al ingresar</p>
+                    </div>
                 </div>
-            </td>
-        </tr>
-    </table>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script>
-    // =========================================================================
-    // CONFIGURACIÓN: Reemplaza este link por la URL de tu invitación interactiva
-    // =========================================================================
     const URL_INVITACION_WEB = "https://barrientosmtzluis-jpg.github.io/XV-ANAPAU/";
+    const TOTAL_ACCESOS = 200;
+
+    // Inicializar el contador leyendo el LocalStorage
+    if (localStorage.getItem('lugaresDisponibles') === null) {
+        localStorage.setItem('lugaresDisponibles', TOTAL_ACCESOS);
+    }
 
     window.onload = function() {
         const urlParams = new URLSearchParams(window.location.search);
@@ -329,10 +369,8 @@
         const pasesUrl = urlParams.get('pases');
         const mesaUrl = urlParams.get('mesa');
 
-        // MODO INVITADO: Si el link tiene parámetros, oculta el panel de administración
         if (invitadoUrl && pasesUrl) {
             document.getElementById('col-formulario').style.display = 'none';
-            document.getElementById('col-boleto').style.width = '100%';
             document.getElementById('titulo-columna-derecha').style.display = 'none';
             document.getElementById('main-header').style.display = 'none';
             
@@ -341,27 +379,48 @@
             document.getElementById('mesaNum').value = mesaUrl || "General";
         }
         
+        mostrarLugaresDisponibles();
         actualizarBoleto();
     };
 
+    function mostrarLugaresDisponibles() {
+        const actuales = localStorage.getItem('lugaresDisponibles');
+        document.getElementById('lugares-disponibles').innerText = actuales;
+    }
+
+    function reiniciarContador() {
+        if(confirm("¿Seguro que quieres reiniciar el contador a 200 lugares disponibles?")) {
+            localStorage.setItem('lugaresDisponibles', TOTAL_ACCESOS);
+            mostrarLugaresDisponibles();
+            actualizarBoleto();
+        }
+    }
+
     function actualizarBoleto() {
         const nombre = document.getElementById('invitadoName').value || "Invitado Especial";
-        const pases = document.getElementById('pasesNum').value || "1";
+        const pases = parseInt(document.getElementById('pasesNum').value) || 1;
         const mesa = document.getElementById('mesaNum').value || "General";
         
-        // Renderizado visual en la tarjeta
         document.getElementById('lbl-nombre').innerText = nombre;
         document.getElementById('lbl-pases').innerText = pases;
         document.getElementById('lbl-mesa').innerText = mesa;
         
-        // Datos encriptados dentro del QR para lectura rápida en la puerta del evento
-        const contenidoQR = `INVITADO: ${nombre}\nPASES: ${pases}\nMESA: ${mesa}\nCONTROL: ACCESO VALIDADO`;
+        // Calculamos cuántos lugares quedarían si entra esta familia
+        const lugaresActualesEnAlmacen = parseInt(localStorage.getItem('lugaresDisponibles'));
+        const lugaresRestantesProyectados = lugaresActualesEnAlmacen - pases;
+
+        const numeroDestino = "529841174935"; 
+        
+        // Agregamos el contador de lugares restantes al cuerpo del mensaje que se generará en el QR
+        const textoNotificacion = `🔔 *NOTIFICACIÓN DE ACCESO*\n\nHa llegado: *${nombre}*\nCantidad de personas: *${pases}*\nMesa asignada: *${mesa}*\n\n📉 *Lugares disponibles restantes:* ${lugaresRestantesProyectados} de 200.\n\n✅ _Ingreso confirmado en puerta._`;
+        
+        const enlaceQR = `https://wa.me/${numeroDestino}?text=${encodeURIComponent(textoNotificacion)}`;
         
         const qrContainer = document.getElementById("qrcode");
         qrContainer.innerHTML = ""; 
         
         new QRCode(qrContainer, {
-            text: contenidoQR,
+            text: enlaceQR,
             width: 170,
             height: 170,
             colorDark : "#0f172a",
@@ -373,12 +432,10 @@
     }
 
     function actualizarPlantillaMensaje(nombre, pases, mesa) {
-        // Captura de forma automática la URL base donde tienes alojados tus boletos
         const urlBaseBoletos = window.location.href.split('?')[0];
         const urlBoletoInvitado = `${urlBaseBoletos}?invitado=${encodeURIComponent(nombre)}&pases=${pases}&mesa=${encodeURIComponent(mesa)}`;
         
-        // Redacción elegante, agradable y clara para el invitado
-        const mensaje = `✨ *¡Tenemos una invitación muy especial para ti!* ✨\n\nEstimada familia / amigo *${nombre}*,\n\nNos complace enormemente invitarte a compartir con nosotros un momento inolvidable. En el siguiente enlace podrás conocer todos los detalles de nuestro evento, itinerario y locación:\n\n👉 *Nuestra Invitación Digital:*\n${URL_INVITACION_WEB}\n\n🎫 De igual manera, te hacemos llegar tu *Pase Digital Inteligente* válido para *${pases}* ${pases == 1 ? 'persona' : 'personas'}.\n📍 *Mesa asignada:* ${mesa}\n\nPara ingresar de forma ágil el día del evento, solo haz clic aquí abajo y presenta el código QR desde tu pantalla:\n\n👉 *Tu Boleto de Acceso:*\n${urlBoletoInvitado}\n\n¡Tu presencia hará que este día sea aún más especial! Esperamos contar contigo. ✨🥂`;
+        const mensaje = `✨ *¡Tenemos una invitación muy especial para ti!* ✨\n\nEstimada familia / amigo *${nombre}*,\n\nNos complace enormemente invitarte a compartir con nosotros un momento inolvidable. En el siguiente enlace podrás conocer todos los detalles de nuestro evento, itinerario y locación:\n\n👉 *Nuestra Invitación Digital:*\n${URL_INVITACION_WEB}\n\n🎫 De igual manera, te hacemos llegar tu *Pase Digital Inteligente* válido para *${pases}* ${parseInt(pases) === 1 ? 'persona' : 'personas'}.\n📍 *Mesa asignada:* ${mesa}\n\nPara ingresar de forma ágil el día del evento, solo haz clic aquí abajo y presenta el código QR desde tu pantalla:\n\n👉 *Tu Boleto de Acceso:*\n${urlBoletoInvitado}\n\n¡Tu presencia hará que este día sea aún más especial! Esperamos contar contigo. ✨🥂`;
         
         document.getElementById('mensajeTexto').value = mensaje;
     }
@@ -386,11 +443,29 @@
     function enviarWhatsApp() {
         const telefono = document.getElementById('whatsappNum').value.replace(/[^0-9]/g, '');
         const mensaje = document.getElementById('mensajeTexto').value;
+        const pases = parseInt(document.getElementById('pasesNum').value) || 1;
         
         if (!telefono || telefono === "521" || telefono.length < 8) {
             alert("Por favor, pon el número de teléfono del invitado completo (código de país + 10 dígitos).");
             return;
         }
+
+        // DESCONTAR LUGARES: Al presionar el botón verde para despachar la invitación, se restan los cupos formalmente
+        let disponibles = parseInt(localStorage.getItem('lugaresDisponibles'));
+        
+        if (disponibles - pases < 0) {
+            if (!confirm(`⚠️ ¡Atención! Solo quedan ${disponibles} lugares disponibles y estás intentando registrar ${pases}. ¿Deseas proceder de todos modos?`)) {
+                return; 
+            }
+        }
+
+        // Guardar nuevo conteo
+        let nuevosDisponibles = disponibles - pases;
+        localStorage.setItem('lugaresDisponibles', nuevosDisponibles);
+        
+        // Actualizar interfaz antes de abrir WhatsApp
+        mostrarLugaresDisponibles();
+        actualizarBoleto();
         
         const whatsappUrl = `https://api.whatsapp.com/send?phone=${telefono}&text=${encodeURIComponent(mensaje)}`;
         window.open(whatsappUrl, '_blank');
