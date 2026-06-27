@@ -282,16 +282,10 @@
 
         <h2>🔒 Acceso al Panel</h2>
 
-        <input
-            type="text"
-            id="loginUser"
-            placeholder="Usuario">
+        <input type="text" id="loginUser" placeholder="Usuario">
 
-        <input
-            type="password"
-            id="loginPassword"
-            placeholder="Contraseña"
-            onkeydown="if(event.key==='Enter') iniciarSesion();">
+        <input type="password" id="loginPassword" placeholder="Contraseña">
+           
 
         <button onclick="iniciarSesion()">
             Iniciar sesión
@@ -391,32 +385,81 @@
 </div>
 
 <script>
-    const URL_INVITACION_WEB = "https://barrientosmtzluis-jpg.github.io/XV-ANAPAU/";
-    const TOTAL_ACCESOS = 200;
-    const CONTRASEÑA_SEGURIDAD = "1234";
-const PASSWORD_LOGIN='1234';
-function iniciarSesion(){const p=document.getElementById('loginPassword').value;if(p===PASSWORD_LOGIN){sessionStorage.setItem('autenticado','si');document.getElementById('loginScreen').style.display='none';document.getElementById('panelPrincipal').style.display='block';}else{document.getElementById('loginError').innerText='Contraseña incorrecta';}}
+const URL_INVITACION_WEB = "https://barrientosmtzluis-jpg.github.io/XV-ANAPAU/";
+const TOTAL_ACCESOS = 200;
+const CONTRASEÑA_SEGURIDAD = "1234";
+const USUARIO_LOGIN = "administrador";
+const PASSWORD_LOGIN = "XVPau";
+    
+function iniciarSesion(){
 
-    if (localStorage.getItem('lugaresDisponibles') === null) {
-        localStorage.setItem('lugaresDisponibles', TOTAL_ACCESOS);
+    const usuario =
+        document.getElementById("loginUser").value.trim();
+
+    const password =
+        document.getElementById("loginPassword").value.trim();
+
+    if(
+        usuario===USUARIO_LOGIN &&
+        password===PASSWORD_LOGIN
+    ){
+
+        sessionStorage.setItem("autenticado","si");
+
+        document.getElementById("loginScreen").style.display="none";
+        document.getElementById("panelPrincipal").style.display="block";
+
+        mostrarLugaresDisponibles();
+        actualizarBoleto();
+
+    }else{
+
+        document.getElementById("loginError").innerHTML=
+            "Usuario o contraseña incorrectos.";
+
     }
 
-    window.onload = function() {
-if(sessionStorage.getItem('autenticado')!=='si'){document.getElementById('loginScreen').style.display='flex';document.getElementById('panelPrincipal').style.display='none';return;}document.getElementById('loginScreen').style.display='none';document.getElementById('panelPrincipal').style.display='block';
-        const urlParams = new URLSearchParams(window.location.search);
-        const invitadoUrl = urlParams.get('invitado');
-        const pasesUrl = urlParams.get('pases');
-        const mesaUrl = urlParams.get('mesa');
+}
 
-        if (invitadoUrl && pasesUrl) {
-            document.getElementById('col-formulario').style.display = 'none';
-            document.getElementById('titulo-columna-derecha').style.display = 'none';
-            document.getElementById('main-header').style.display = 'none';
-            
-            document.getElementById('invitadoName').value = invitadoUrl;
-            document.getElementById('pasesNum').value = pasesUrl;
-            document.getElementById('mesaNum').value = mesaUrl || "General";
-        }
+    window.onload = function() {
+window.onload = function(){
+
+    if(sessionStorage.getItem("autenticado")=="si"){
+
+        document.getElementById("loginScreen").style.display="none";
+        document.getElementById("panelPrincipal").style.display="block";
+
+    }else{
+
+        document.getElementById("loginScreen").style.display="flex";
+        document.getElementById("panelPrincipal").style.display="none";
+
+        return;
+
+    }
+
+    const urlParams = new URLSearchParams(window.location.search);
+
+    const invitadoUrl = urlParams.get('invitado');
+    const pasesUrl = urlParams.get('pases');
+    const mesaUrl = urlParams.get('mesa');
+
+    if (invitadoUrl && pasesUrl) {
+
+        document.getElementById('col-formulario').style.display='none';
+        document.getElementById('titulo-columna-derecha').style.display='none';
+        document.getElementById('main-header').style.display='none';
+
+        document.getElementById('invitadoName').value=invitadoUrl;
+        document.getElementById('pasesNum').value=pasesUrl;
+        document.getElementById('mesaNum').value=mesaUrl || "General";
+
+    }
+
+    mostrarLugaresDisponibles();
+    actualizarBoleto();
+
+}
         
         mostrarLugaresDisponibles();
         actualizarBoleto();
