@@ -7,6 +7,7 @@
 
 <link href="https://googleapis.com" rel="stylesheet">
 <link rel="stylesheet" href="https://cloudflare.com">
+<!-- Librería QR corregida y asegurada -->
 <script src="https://cloudflare.com"></script>
 
 <style>
@@ -62,11 +63,24 @@ font-weight: bold;
 background:linear-gradient(135deg,#1e3a8a,#0f172a);
 color:#fff;
 padding:20px;
+border-radius:166px; /* Ajuste estético redondeado sugerido */
 border-radius:16px;
 text-align:center;
 }
 
-.qr{background:#fff;padding:10px;border-radius:10px;display:inline-block;margin-top:10px;}
+.qr{
+background:#fff;
+padding:15px;
+border-radius:10px;
+display:inline-block;
+margin-top:15px;
+}
+
+/* Forzar que el QR interno mantenga dimensiones correctas */
+#qrcode img, #qrcode canvas {
+display: block;
+margin: 0 auto;
+}
 </style>
 </head>
 
@@ -125,6 +139,9 @@ text-align:center;
 </div>
 
 <script>
+// Variable global para controlar la instancia del código QR
+let qrcodeInstance = null;
+
 /* INIT */
 function init(){
 if(!localStorage.getItem("totalOriginal")){
@@ -183,29 +200,32 @@ document.getElementById("tNombre").innerText=n;
 document.getElementById("tPases").innerText=p;
 document.getElementById("tMesa").innerText=m;
 
-// URL base corregida según tu estructura original
 let urlBoleto = `https://github.io{encodeURIComponent(n)}&pases=${p}&mesa=${encodeURIComponent(m)}`;
 
-try{
-document.getElementById("qrcode").innerHTML="";
-new QRCode(document.getElementById("qrcode"), {
-    text: urlBoleto,
-    width: 128,
-    height: 128
-});
-}catch(e){
-console.log(e);
+// SOLUCIÓN QR: Reinicializar correctamente el contenedor en cada tipeo
+const qrContainer = document.getElementById("qrcode");
+if(qrContainer) {
+    qrContainer.innerHTML = ""; // Vacía el contenedor anterior obligatoriamente
+    try {
+        new QRCode(qrContainer, {
+            text: urlBoleto,
+            width: 128,
+            height: 128,
+            correctLevel: QRCode.CorrectLevel.H // Añade mayor tolerancia a fallos de lectura
+        });
+    } catch(e) {
+        console.error("Error generando QR:", e);
+    }
 }
 
-// Mensaje corregido y adaptado dinámicamente con la nueva plantilla cálida
 let mensajeFormateado = "✨ ¡Tenemos una invitación muy especial para ti! ✨\n\n" +
 `Estimada familia / amigo *${n}*,\n\n` +
 "Nos emociona muchísimo hacerte parte de uno de los días más importantes y felices de nuestras vidas. Queremos compartir contigo cada risa, cada baile y cada momento inolvidable que estamos preparando con tanto amor.\n\n" +
 "Para que conozcas todos los detalles del evento, el itinerario completo y la locación, te invitamos a visitar nuestra página web oficial:\n\n" +
 "👉 Página Web del Evento:\n" +
-"https://barrientosmtzluis-jpg.github.io/XV-ANAPAU/\n\n" +
+"https://github.io\n\n" +
 "👉 Invitación Digital:\n" +
-"https://barrientosmtzluis-jpg.github.io/XV-ANAPAU/\n\n" +
+"https://github.io\n\n" +
 `🎫 De igual manera, te hacemos llegar con mucho cariño tu Pase Digital Inteligente válido para *${p}* personas.\n` +
 `📍 Mesa asignada: *${m}*\n\n` +
 "Para ingresar de forma ágil el día del evento, solo haz clic aquí abajo y presenta el código QR desde tu pantalla:\n\n" +
