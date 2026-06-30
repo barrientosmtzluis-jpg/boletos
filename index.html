@@ -164,48 +164,136 @@ text-align:center;
 </div>
 
 <script>
+// El valor inicial por defecto de fábrica, si localStorage está vacío.
 const TOTAL_DEFECTO = 200;
 
 /* INIT (Carga directa al iniciar la página) */
 function init(){
-if(localStorage.getItem("lugares_max") === null){
-localStorage.setItem("lugares_max", TOTAL_DEFECTO);
-}
-if(localStorage.getItem("lugares") === null){
-localStorage.setItem("lugares", localStorage.getItem("lugares_max"));
-}
-mostrar();
-update();
+    if(localStorage.getItem("lugares_max") === null){
+        localStorage.setItem("lugares_max", TOTAL_DEFECTO);
+    }
+    if(localStorage.getItem("lugares") === null){
+        localStorage.setItem("lugares", localStorage.getItem("lugares_max"));
+    }
+    mostrar();
+    update();
 }
 
 /* ON LOAD */
 window.onload = function(){
-const url = new URLSearchParams(location.search);
+    const url = new URLSearchParams(location.search);
 
-if(url.get("invitado")){
-document.getElementById("nombre").value = url.get("invitado") || "";
-document.getElementById("pases").value = url.get("pases") || "1";
-document.getElementById("mesa").value = url.get("mesa") || "General";
-}
+    if(url.get("invitado")){
+        document.getElementById("nombre").value = url.get("invitado") || "";
+        document.getElementById("pases").value = url.get("pases") || "1";
+        document.getElementById("mesa").value = url.get("mesa") || "General";
+    }
 
-init(); 
+    init(); 
 };
 
-/* LUGARES */
+/* MOSTRAR LUGARES ACTUALES Y EL BOTÓN DE REINICIO */
 function mostrar(){
-let l = localStorage.getItem("lugares");
-let max = localStorage.getItem("lugares_max") || TOTAL_DEFECTO;
+    let l = localStorage.getItem("lugares");
+    let max = localStorage.getItem("lugares_max") || TOTAL_DEFECTO;
 
-if(l === null){
-l = max;
-localStorage.setItem("lugares", l);
-}
-document.getElementById("lugares").value = l;
-// Actualiza dinámicamente el texto del botón con el nuevo límite máximo
-document.getElementById("btnReiniciar").innerHTML = `<i class="fas fa-undo"></i> Reiniciar (${max})`;
+    if(l === null){
+        l = max;
+        localStorage.setItem("lugares", l);
+    }
+    
+    document.getElementById("lugares").value = l;
+    document.getElementById("btnReiniciar").innerHTML = `<i class="fas fa-undo"></i> Reiniciar (${max})`;
 }
 
-/* MODIFICAR LUGARES MANUALMENTE Y ESTABLECER NUEVO TOTAL */
+/* MODIFICAR LUGARES MANUALMENTE */
 function cambiarLugaresManual(valor) {
-let cantidad = parseInt(valor);
-if (isNaN(cantidad) || cantidad
+    let cantidad = parseInt(valor);
+    if (isNaN(cantidad) || cantidad < 0) cantidad = 0;
+
+    // Al modificar la casilla, este número pasa a ser la nueva capacidad máxima guardada
+    localStorage.setItem("lugares", cantidad);
+    localStorage.setItem("lugares_max", cantidad);
+
+    // Actualiza el texto del botón al instante
+    document.getElementById("btnReiniciar").innerHTML = `<i class="fas fa-undo"></i> Reiniciar (${cantidad})`;
+}
+
+/* REINICIAR CONTADOR AL VALOR ACTUALMENTE ASIGNADO */
+function reiniciarContador() {
+    let max = localStorage.getItem("lugares_max") || TOTAL_DEFECTO;
+    if(confirm(`¿Estás seguro de que deseas reiniciar el contador a ${max} lugares?`)) {
+        localStorage.setItem("lugares", max);
+        mostrar();
+    }
+}
+
+/* UPDATE */
+function update(){
+    let n = document.getElementById("nombre").value || "Invitado";
+    let p = document.getElementById("pases").value || "1";
+    let m = document.getElementById("mesa").value || "Mesa 1";
+
+    document.getElementById("tNombre").innerText = n;
+    document.getElementById("tPases").innerText = p;
+    document.getElementById("tMesa").innerText = m;
+
+    let urlBoleto = `https://barrientosmtzluis-jpg.github.io/boletos/?invitado=${encodeURIComponent(n)}&pases=${p}&mesa=${encodeURIComponent(m)}`;
+
+    // Solución al problema del QR estancado
+    try {
+        let qrContainer = document.getElementById("qrcode");
+        qrContainer.innerHTML = ""; // Limpiar códigos viejos sin romper el DOM
+        new QRCode(qrContainer, {
+            text: urlBoleto,
+            width: 128,
+            height: 128
+        });
+    } catch(e) {
+        console.error("Error al generar QR:", e);
+    }
+
+    let mensajeFormateado = "✨ ¡Tenemos una invitación muy especial para ti! ✨\n\n" +
+    `Estimada familia / amigo *${n}*,\n\n` +
+    "Nos complace enormemente invitarte a compartir con nosotros un momento inolvidable. En el siguiente enlace podrás conocer todos los detalles de nuestro evento, itinerario y locación:\n\n" +
+    "👉 Nuestra Invitación Digital:\n" +
+    "https://barrientosmtzluis-jpg.github.io/XV-ANAPAU/\n\n" +
+    `🎫 De igual manera, te hacemos llegar tu Pase Digital Inteligente válido para *${p}* personas.\n` +
+    `📍 Mesa asignada: *${m}*\n\n` +
+    "Para ingresar de forma ágil el día del evento, solo haz clic aquí abajo y presenta el código QR desde tu pantalla:\n\n" +
+    "👉 Tu Boleto de Acceso:\n" +
+    urlBoleto + "\n\n" +
+    "¡Tu presencia hará que este día sea aún más especial! Esperamos contar contigo. ✨🥂";
+
+    document.getElementById("msg").value = mensajeFormateado;
+}
+
+/* SEND */
+function send(){
+    let tel = document.getElementById("tel").value.trim();
+    let p = parseInt(document.getElementById("pases").value) || 0;
+    let l = parseInt(localStorage.getItem("lugares")) || 0;
+
+    if(!tel){
+        alert("Por favor, introduce un número de teléfono válido.");
+        return;
+    }
+
+    if(l - p < 0){
+        if(!confirm("No hay suficientes lugares disponibles. ¿Deseas continuar?")) return;
+    }
+
+    localStorage.setItem("lugares", l - p);
+    mostrar();
+
+    let msg = document.getElementById("msg").value;
+
+    window.open(
+    `https://api.whatsapp.com/send?phone=${tel}&text=${encodeURIComponent(msg)}`, 
+    '_blank'
+    );
+}
+</script>
+
+</body>
+</html>
