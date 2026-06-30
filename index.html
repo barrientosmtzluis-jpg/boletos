@@ -102,7 +102,7 @@ text-align:center;
 <input id="tel" placeholder="521...">
 
 <label>Vista previa del mensaje:</label>
-<textarea id="msg" rows="10"></textarea>
+<textarea id="msg" rows="12"></textarea>
 
 <button onclick="send()"><i class="fab fa-whatsapp"></i> Enviar WhatsApp</button>
 </div>
@@ -163,7 +163,6 @@ let nuevoTotal = parseInt(document.getElementById("totalEvento").value) || 0;
 let viejoTotal = parseInt(localStorage.getItem("totalOriginal")) || 0;
 let lugaresActuales = parseInt(localStorage.getItem("lugares")) || 0;
 
-// Calcular la diferencia para no borrar los lugares que ya se restaron previamente
 let diferencia = nuevoTotal - viejoTotal;
 let nuevosLugaresDisponibles = lugaresActuales + diferencia;
 
@@ -184,6 +183,7 @@ document.getElementById("tNombre").innerText=n;
 document.getElementById("tPases").innerText=p;
 document.getElementById("tMesa").innerText=m;
 
+// URL base corregida según tu estructura original
 let urlBoleto = `https://github.io{encodeURIComponent(n)}&pases=${p}&mesa=${encodeURIComponent(m)}`;
 
 try{
@@ -197,17 +197,21 @@ new QRCode(document.getElementById("qrcode"), {
 console.log(e);
 }
 
+// Mensaje corregido y adaptado dinámicamente con la nueva plantilla cálida
 let mensajeFormateado = "✨ ¡Tenemos una invitación muy especial para ti! ✨\n\n" +
 `Estimada familia / amigo *${n}*,\n\n` +
-"Nos complace enormemente invitarte a compartir con nosotros un momento inolvidable. En el siguiente enlace podrás conocer todos los detalles de nuestro evento, itinerario y locación:\n\n" +
-"👉 Nuestra Invitación Digital:\n" +
-"https://github.io\n\n" +
-`🎫 De igual manera, te hacemos llegar tu Pase Digital Inteligente válido para *${p}* personas.\n` +
+"Nos emociona muchísimo hacerte parte de uno de los días más importantes y felices de nuestras vidas. Queremos compartir contigo cada risa, cada baile y cada momento inolvidable que estamos preparando con tanto amor.\n\n" +
+"Para que conozcas todos los detalles del evento, el itinerario completo y la locación, te invitamos a visitar nuestra página web oficial:\n\n" +
+"👉 Página Web del Evento:\n" +
+"https://barrientosmtzluis-jpg.github.io/XV-ANAPAU/\n\n" +
+"👉 Invitación Digital:\n" +
+"https://barrientosmtzluis-jpg.github.io/XV-ANAPAU/\n\n" +
+`🎫 De igual manera, te hacemos llegar con mucho cariño tu Pase Digital Inteligente válido para *${p}* personas.\n` +
 `📍 Mesa asignada: *${m}*\n\n` +
 "Para ingresar de forma ágil el día del evento, solo haz clic aquí abajo y presenta el código QR desde tu pantalla:\n\n" +
 "👉 Tu Boleto de Acceso:\n" +
 urlBoleto + "\n\n" +
-"¡Tu presencia hará que este día sea aún más especial! Esperamos contar contigo. ✨🥂";
+"¡Tu presencia y tu cariño harán que este día sea perfecto! Esperamos de corazón poder contar contigo para celebrar juntos. ✨🥂";
 
 document.getElementById("msg").value = mensajeFormateado;
 }
