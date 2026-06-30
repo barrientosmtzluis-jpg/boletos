@@ -5,10 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Panel de Invitaciones</title>
 
-<link href="https://googleapis.com" rel="stylesheet">
-<link rel="stylesheet" href="https://cloudflare.com">
-<!-- Librería QR corregida y asegurada -->
-<script src="https://cloudflare.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:Montserrat,sans-serif;}
@@ -63,30 +62,43 @@ font-weight: bold;
 background:linear-gradient(135deg,#1e3a8a,#0f172a);
 color:#fff;
 padding:20px;
-border-radius:166px; /* Ajuste estético redondeado sugerido */
 border-radius:16px;
 text-align:center;
 }
 
-.qr{
-background:#fff;
-padding:15px;
-border-radius:10px;
-display:inline-block;
-margin-top:15px;
+.qr{background:#fff;padding:10px;border-radius:10px;display:inline-block;margin-top:10px;}
+
+.login{
+position:fixed;
+inset:0;
+display:flex;
+align-items:center;
+justify-content:center;
+background:#f3f4f6;
 }
 
-/* Forzar que el QR interno mantenga dimensiones correctas */
-#qrcode img, #qrcode canvas {
-display: block;
-margin: 0 auto;
+.login-box{
+background:#fff;
+padding:25px;
+border-radius:12px;
+width:300px;
 }
 </style>
 </head>
 
 <body>
 
-<div id="panel" class="container">
+<div id="login" class="login">
+<div class="login-box">
+<h3>Acceso</h3>
+<input id="user" placeholder="Usuario">
+<input id="pass" type="password" placeholder="Contraseña">
+<button onclick="login()">Entrar</button>
+<p id="error" style="color:red"></p>
+</div>
+</div>
+
+<div id="panel" class="container" style="display:none">
 
 <header>
 <h2>Panel de Invitaciones</h2>
@@ -97,11 +109,7 @@ margin: 0 auto;
 <div class="card">
 <h3>Datos</h3>
 
-<div style="background: #eff6ff; padding: 12px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #2563eb;">
-    <label style="margin-top:0;">Capacidad Total del Evento:</label>
-    <input id="totalEvento" type="number" oninput="cambiarCapacidad()" value="200" min="1" style="margin-bottom:5px;">
-    <p style="font-weight: bold; color: #2563eb; margin-top: 5px;">Lugares Disponibles: <span id="lugares">200</span></p>
-</div>
+<p style="font-weight: bold; color: #2563eb;">Lugares Disponibles: <span id="lugares">200</span></p>
 
 <label>Nombre del Invitado:</label>
 <input id="nombre" oninput="update()" placeholder="Ej. Familia Pérez">
@@ -116,7 +124,7 @@ margin: 0 auto;
 <input id="tel" placeholder="521...">
 
 <label>Vista previa del mensaje:</label>
-<textarea id="msg" rows="12"></textarea>
+<textarea id="msg" rows="10"></textarea>
 
 <button onclick="send()"><i class="fab fa-whatsapp"></i> Enviar WhatsApp</button>
 </div>
@@ -139,19 +147,31 @@ margin: 0 auto;
 </div>
 
 <script>
-// Variable global para controlar la instancia del código QR
-let qrcodeInstance = null;
+
+const USER="administrador";
+const PASS="XVPau";
+const TOTAL=200;
+
+/* LOGIN */
+function login(){
+const u=document.getElementById("user").value.trim();
+const p=document.getElementById("pass").value.trim();
+
+if(u===USER && p===PASS){
+sessionStorage.setItem("ok","1");
+document.getElementById("login").style.display="none";
+document.getElementById("panel").style.display="block";
+init();
+}else{
+document.getElementById("error").innerText="Error de acceso";
+}
+}
 
 /* INIT */
 function init(){
-if(!localStorage.getItem("totalOriginal")){
-localStorage.setItem("totalOriginal", "200");
-}
 if(!localStorage.getItem("lugares")){
-localStorage.setItem("lugares", "200");
+localStorage.setItem("lugares",TOTAL);
 }
-
-document.getElementById("totalEvento").value = localStorage.getItem("totalOriginal");
 mostrar();
 update();
 }
@@ -160,34 +180,31 @@ update();
 window.onload=function(){
 const url=new URLSearchParams(location.search);
 
+// CORRECCIÓN: Si viene de la URL, primero insertamos los datos y luego inicializamos
 if(url.get("invitado")){
+document.getElementById("login").style.display="none";
+document.getElementById("panel").style.display="block";
+
 document.getElementById("nombre").value=url.get("invitado") || "";
 document.getElementById("pases").value=url.get("pases") || "1";
 document.getElementById("mesa").value=url.get("mesa")||"General";
+
+init(); 
+return;
 }
 
+if(sessionStorage.getItem("ok")===="1"){
+document.getElementById("login").style.display="none";
+document.getElementById("panel").style.display="block";
 init();
+}
 };
 
 /* LUGARES */
 function mostrar(){
-document.getElementById("lugares").innerText = localStorage.getItem("lugares");
-}
-
-/* CAMBIAR CAPACIDAD TOTAL */
-function cambiarCapacidad(){
-let nuevoTotal = parseInt(document.getElementById("totalEvento").value) || 0;
-let viejoTotal = parseInt(localStorage.getItem("totalOriginal")) || 0;
-let lugaresActuales = parseInt(localStorage.getItem("lugares")) || 0;
-
-let diferencia = nuevoTotal - viejoTotal;
-let nuevosLugaresDisponibles = lugaresActuales + diferencia;
-
-if(nuevosLugaresDisponibles < 0) nuevosLugaresDisponibles = 0;
-
-localStorage.setItem("totalOriginal", nuevoTotal);
-localStorage.setItem("lugares", nuevosLugaresDisponibles);
-mostrar();
+let l=localStorage.getItem("lugares");
+if(!l){l=TOTAL;localStorage.setItem("lugares",TOTAL);}
+document.getElementById("lugares").innerText=l;
 }
 
 /* UPDATE */
@@ -200,38 +217,32 @@ document.getElementById("tNombre").innerText=n;
 document.getElementById("tPases").innerText=p;
 document.getElementById("tMesa").innerText=m;
 
-let urlBoleto = `https://github.io{encodeURIComponent(n)}&pases=${p}&mesa=${encodeURIComponent(m)}`;
+// URL real del boleto para el código QR
+let urlBoleto = `https://barrientosmtzluis-jpg.github.io/boletos/?invitado=${encodeURIComponent(n)}&pases=${p}&mesa=${encodeURIComponent(m)}`;
 
-// SOLUCIÓN QR: Reinicializar correctamente el contenedor en cada tipeo
-const qrContainer = document.getElementById("qrcode");
-if(qrContainer) {
-    qrContainer.innerHTML = ""; // Vacía el contenedor anterior obligatoriamente
-    try {
-        new QRCode(qrContainer, {
-            text: urlBoleto,
-            width: 128,
-            height: 128,
-            correctLevel: QRCode.CorrectLevel.H // Añade mayor tolerancia a fallos de lectura
-        });
-    } catch(e) {
-        console.error("Error generando QR:", e);
-    }
+try{
+document.getElementById("qrcode").innerHTML="";
+new QRCode(document.getElementById("qrcode"), {
+    text: urlBoleto,
+    width: 128,
+    height: 128
+});
+}catch(e){
+console.log(e);
 }
 
+/* CONSTRUCCIÓN DEL TEXTO (CORREGIDO CIERRE DE STRING EN TU PLANTILLA) */
 let mensajeFormateado = "✨ ¡Tenemos una invitación muy especial para ti! ✨\n\n" +
 `Estimada familia / amigo *${n}*,\n\n` +
-"Nos emociona muchísimo hacerte parte de uno de los días más importantes y felices de nuestras vidas. Queremos compartir contigo cada risa, cada baile y cada momento inolvidable que estamos preparando con tanto amor.\n\n" +
-"Para que conozcas todos los detalles del evento, el itinerario completo y la locación, te invitamos a visitar nuestra página web oficial:\n\n" +
-"👉 Página Web del Evento:\n" +
-"https://github.io\n\n" +
-"👉 Invitación Digital:\n" +
-"https://github.io\n\n" +
-`🎫 De igual manera, te hacemos llegar con mucho cariño tu Pase Digital Inteligente válido para *${p}* personas.\n` +
+"Nos complace enormemente invitarte a compartir con nosotros un momento inolvidable. En el siguiente enlace podrás conocer todos los detalles de nuestro evento, itinerario y locación:\n\n" +
+"👉 Nuestra Invitación Digital:\n" +
+"https://barrientosmtzluis-jpg.github.io/XV-ANAPAU/\n\n" +
+`🎫 De igual manera, te hacemos llegar tu Pase Digital Inteligente válido para *${p}* personas.\n` +
 `📍 Mesa asignada: *${m}*\n\n` +
 "Para ingresar de forma ágil el día del evento, solo haz clic aquí abajo y presenta el código QR desde tu pantalla:\n\n" +
 "👉 Tu Boleto de Acceso:\n" +
 urlBoleto + "\n\n" +
-"¡Tu presencia y tu cariño harán que este día sea perfecto! Esperamos de corazón poder contar contigo para celebrar juntos. ✨🥂";
+"¡Tu presencia hará que este día sea aún más especial! Esperamos contar contigo. ✨🥂";
 
 document.getElementById("msg").value = mensajeFormateado;
 }
@@ -257,7 +268,7 @@ mostrar();
 let msg = document.getElementById("msg").value;
 
 window.open(
-`https://whatsapp.com{tel}&text=${encodeURIComponent(msg)}`, 
+`https://api.whatsapp.com/send?phone=${tel}&text=${encodeURIComponent(msg)}`, 
 '_blank'
 );
 }
