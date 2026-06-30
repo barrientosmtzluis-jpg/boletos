@@ -47,6 +47,36 @@ border-radius:8px;
 border:1px solid #ccc;
 }
 
+.counter-section {
+background: #eff6ff;
+padding: 12px;
+border-radius: 8px;
+border: 1px solid #bfdbfe;
+margin-bottom: 15px;
+}
+
+.counter-inputs {
+display: flex;
+gap: 10px;
+align-items: center;
+margin-top: 5px;
+}
+
+.counter-inputs input {
+margin: 0;
+font-weight: bold;
+color: #2563eb;
+text-align: center;
+}
+
+.btn-reset {
+background: #6b7280;
+padding: 10px;
+font-size: 12px;
+width: auto;
+white-space: nowrap;
+}
+
 button{
 width:100%;
 padding:12px;
@@ -56,6 +86,11 @@ border:none;
 border-radius:8px;
 cursor:pointer;
 font-weight: bold;
+transition: background 0.2s;
+}
+
+button:hover {
+opacity: 0.9;
 }
 
 .ticket{
@@ -67,38 +102,12 @@ text-align:center;
 }
 
 .qr{background:#fff;padding:10px;border-radius:10px;display:inline-block;margin-top:10px;}
-
-.login{
-position:fixed;
-inset:0;
-display:flex;
-align-items:center;
-justify-content:center;
-background:#f3f4f6;
-}
-
-.login-box{
-background:#fff;
-padding:25px;
-border-radius:12px;
-width:300px;
-}
 </style>
 </head>
 
 <body>
 
-<div id="login" class="login">
-<div class="login-box">
-<h3>Acceso</h3>
-<input id="user" placeholder="Usuario">
-<input id="pass" type="password" placeholder="Contraseña">
-<button onclick="login()">Entrar</button>
-<p id="error" style="color:red"></p>
-</div>
-</div>
-
-<div id="panel" class="container" style="display:none">
+<div id="panel" class="container">
 
 <header>
 <h2>Panel de Invitaciones</h2>
@@ -109,7 +118,13 @@ width:300px;
 <div class="card">
 <h3>Datos</h3>
 
-<p style="font-weight: bold; color: #2563eb;">Lugares Disponibles: <span id="lugares">200</span></p>
+<div class="counter-section">
+<label style="margin-top:0; color:#1e40af;">Lugares Disponibles:</label>
+<div class="counter-inputs">
+<input id="lugares" type="number" onchange="cambiarLugaresManual(this.value)" min="0" value="200">
+<button type="button" class="btn-reset" onclick="reiniciarContador()"><i class="fas fa-undo"></i> Reiniciar (200)</button>
+</div>
+</div>
 
 <label>Nombre del Invitado:</label>
 <input id="nombre" oninput="update()" placeholder="Ej. Familia Pérez">
@@ -147,81 +162,70 @@ width:300px;
 </div>
 
 <script>
+const TOTAL_DEFECTO = 200;
 
-const USER="administrador";
-const PASS="XVPau";
-const TOTAL=200;
-
-/* LOGIN */
-function login(){
-const u=document.getElementById("user").value.trim();
-const p=document.getElementById("pass").value.trim();
-
-if(u===USER && p===PASS){
-sessionStorage.setItem("ok","1");
-document.getElementById("login").style.display="none";
-document.getElementById("panel").style.display="block";
-init();
-}else{
-document.getElementById("error").innerText="Error de acceso";
-}
-}
-
-/* INIT */
+/* INIT (Carga directa al iniciar la página) */
 function init(){
-if(!localStorage.getItem("lugares")){
-localStorage.setItem("lugares",TOTAL);
+if(localStorage.getItem("lugares") === null){
+localStorage.setItem("lugares", TOTAL_DEFECTO);
 }
 mostrar();
 update();
 }
 
 /* ON LOAD */
-window.onload=function(){
-const url=new URLSearchParams(location.search);
+window.onload = function(){
+const url = new URLSearchParams(location.search);
 
-// CORRECCIÓN: Si viene de la URL, primero insertamos los datos y luego inicializamos
 if(url.get("invitado")){
-document.getElementById("login").style.display="none";
-document.getElementById("panel").style.display="block";
-
-document.getElementById("nombre").value=url.get("invitado") || "";
-document.getElementById("pases").value=url.get("pases") || "1";
-document.getElementById("mesa").value=url.get("mesa")||"General";
+document.getElementById("nombre").value = url.get("invitado") || "";
+document.getElementById("pases").value = url.get("pases") || "1";
+document.getElementById("mesa").value = url.get("mesa") || "General";
+}
 
 init(); 
-return;
-}
-
-if(sessionStorage.getItem("ok")===="1"){
-document.getElementById("login").style.display="none";
-document.getElementById("panel").style.display="block";
-init();
-}
 };
 
 /* LUGARES */
 function mostrar(){
-let l=localStorage.getItem("lugares");
-if(!l){l=TOTAL;localStorage.setItem("lugares",TOTAL);}
-document.getElementById("lugares").innerText=l;
+let l = localStorage.getItem("lugares");
+if(l === null){
+l = TOTAL_DEFECTO;
+localStorage.setItem("lugares", TOTAL_DEFECTO);
+}
+document.getElementById("lugares").value = l;
+}
+
+/* MODIFICAR LUGARES MANUALMENTE */
+function cambiarLugaresManual(valor) {
+let cantidad = parseInt(valor);
+if (isNaN(cantidad) || cantidad < 0) cantidad = 0;
+localStorage.setItem("lugares", cantidad);
+mostrar();
+}
+
+/* REINICIAR CONTADOR */
+function reiniciarContador() {
+if(confirm("¿Estás seguro de que deseas reiniciar el contador a 200 lugares?")) {
+localStorage.setItem("lugares", TOTAL_DEFECTO);
+mostrar();
+}
 }
 
 /* UPDATE */
 function update(){
-let n=document.getElementById("nombre").value || "Invitado";
-let p=document.getElementById("pases").value || "1";
-let m=document.getElementById("mesa").value || "Mesa 1";
+let n = document.getElementById("nombre").value || "Invitado";
+let p = document.getElementById("pases").value || "1";
+let m = document.getElementById("mesa").value || "Mesa 1";
 
-document.getElementById("tNombre").innerText=n;
-document.getElementById("tPases").innerText=p;
-document.getElementById("tMesa").innerText=m;
+document.getElementById("tNombre").innerText = n;
+document.getElementById("tPases").innerText = p;
+document.getElementById("tMesa").innerText = m;
 
-// URL real del boleto para el código QR
 let urlBoleto = `https://barrientosmtzluis-jpg.github.io/boletos/?invitado=${encodeURIComponent(n)}&pases=${p}&mesa=${encodeURIComponent(m)}`;
 
 try{
-document.getElementById("qrcode").innerHTML="";
+document.getElementById("qrcode").innerHTML = "";
 new QRCode(document.getElementById("qrcode"), {
     text: urlBoleto,
     width: 128,
@@ -231,7 +235,6 @@ new QRCode(document.getElementById("qrcode"), {
 console.log(e);
 }
 
-/* CONSTRUCCIÓN DEL TEXTO (CORREGIDO CIERRE DE STRING EN TU PLANTILLA) */
 let mensajeFormateado = "✨ ¡Tenemos una invitación muy especial para ti! ✨\n\n" +
 `Estimada familia / amigo *${n}*,\n\n` +
 "Nos complace enormemente invitarte a compartir con nosotros un momento inolvidable. En el siguiente enlace podrás conocer todos los detalles de nuestro evento, itinerario y locación:\n\n" +
@@ -249,20 +252,20 @@ document.getElementById("msg").value = mensajeFormateado;
 
 /* SEND */
 function send(){
-let tel=document.getElementById("tel").value.trim();
-let p=parseInt(document.getElementById("pases").value) || 0;
-let l=parseInt(localStorage.getItem("lugares"));
+let tel = document.getElementById("tel").value.trim();
+let p = parseInt(document.getElementById("pases").value) || 0;
+let l = parseInt(localStorage.getItem("lugares")) || 0;
 
 if(!tel){
     alert("Por favor, introduce un número de teléfono válido.");
     return;
 }
 
-if(l-p<0){
+if(l - p < 0){
     if(!confirm("No hay suficientes lugares disponibles. ¿Deseas continuar?")) return;
 }
 
-localStorage.setItem("lugares", l-p);
+localStorage.setItem("lugares", l - p);
 mostrar();
 
 let msg = document.getElementById("msg").value;
