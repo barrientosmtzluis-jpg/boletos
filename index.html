@@ -5,9 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Panel de Invitaciones</title>
 
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<link href="https://googleapis.com" rel="stylesheet">
+<link rel="stylesheet" href="https://cloudflare.com">
+<script src="https://cloudflare.com"></script>
 
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:Montserrat,sans-serif;}
@@ -83,7 +83,11 @@ text-align:center;
 <div class="card">
 <h3>Datos</h3>
 
-<p style="font-weight: bold; color: #2563eb;">Lugares Disponibles: <span id="lugares">200</span></p>
+<div style="background: #eff6ff; padding: 12px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #2563eb;">
+    <label style="margin-top:0;">Capacidad Total del Evento:</label>
+    <input id="totalEvento" type="number" oninput="cambiarCapacidad()" value="200" min="1" style="margin-bottom:5px;">
+    <p style="font-weight: bold; color: #2563eb; margin-top: 5px;">Lugares Disponibles: <span id="lugares">200</span></p>
+</div>
 
 <label>Nombre del Invitado:</label>
 <input id="nombre" oninput="update()" placeholder="Ej. Familia Pérez">
@@ -121,13 +125,16 @@ text-align:center;
 </div>
 
 <script>
-const TOTAL=200;
-
 /* INIT */
 function init(){
-if(!localStorage.getItem("lugares")){
-localStorage.setItem("lugares",TOTAL);
+if(!localStorage.getItem("totalOriginal")){
+localStorage.setItem("totalOriginal", "200");
 }
+if(!localStorage.getItem("lugares")){
+localStorage.setItem("lugares", "200");
+}
+
+document.getElementById("totalEvento").value = localStorage.getItem("totalOriginal");
 mostrar();
 update();
 }
@@ -147,9 +154,24 @@ init();
 
 /* LUGARES */
 function mostrar(){
-let l=localStorage.getItem("lugares");
-if(!l){l=TOTAL;localStorage.setItem("lugares",TOTAL);}
-document.getElementById("lugares").innerText=l;
+document.getElementById("lugares").innerText = localStorage.getItem("lugares");
+}
+
+/* CAMBIAR CAPACIDAD TOTAL */
+function cambiarCapacidad(){
+let nuevoTotal = parseInt(document.getElementById("totalEvento").value) || 0;
+let viejoTotal = parseInt(localStorage.getItem("totalOriginal")) || 0;
+let lugaresActuales = parseInt(localStorage.getItem("lugares")) || 0;
+
+// Calcular la diferencia para no borrar los lugares que ya se restaron previamente
+let diferencia = nuevoTotal - viejoTotal;
+let nuevosLugaresDisponibles = lugaresActuales + diferencia;
+
+if(nuevosLugaresDisponibles < 0) nuevosLugaresDisponibles = 0;
+
+localStorage.setItem("totalOriginal", nuevoTotal);
+localStorage.setItem("lugares", nuevosLugaresDisponibles);
+mostrar();
 }
 
 /* UPDATE */
@@ -162,7 +184,7 @@ document.getElementById("tNombre").innerText=n;
 document.getElementById("tPases").innerText=p;
 document.getElementById("tMesa").innerText=m;
 
-let urlBoleto = `https://barrientosmtzluis-jpg.github.io/boletos/?invitado=${encodeURIComponent(n)}&pases=${p}&mesa=${encodeURIComponent(m)}`;
+let urlBoleto = `https://github.io{encodeURIComponent(n)}&pases=${p}&mesa=${encodeURIComponent(m)}`;
 
 try{
 document.getElementById("qrcode").innerHTML="";
@@ -179,7 +201,7 @@ let mensajeFormateado = "✨ ¡Tenemos una invitación muy especial para ti! ✨
 `Estimada familia / amigo *${n}*,\n\n` +
 "Nos complace enormemente invitarte a compartir con nosotros un momento inolvidable. En el siguiente enlace podrás conocer todos los detalles de nuestro evento, itinerario y locación:\n\n" +
 "👉 Nuestra Invitación Digital:\n" +
-"https://barrientosmtzluis-jpg.github.io/XV-ANAPAU/\n\n" +
+"https://github.io\n\n" +
 `🎫 De igual manera, te hacemos llegar tu Pase Digital Inteligente válido para *${p}* personas.\n` +
 `📍 Mesa asignada: *${m}*\n\n` +
 "Para ingresar de forma ágil el día del evento, solo haz clic aquí abajo y presenta el código QR desde tu pantalla:\n\n" +
@@ -211,7 +233,7 @@ mostrar();
 let msg = document.getElementById("msg").value;
 
 window.open(
-`https://api.whatsapp.com/send?phone=${tel}&text=${encodeURIComponent(msg)}`, 
+`https://whatsapp.com{tel}&text=${encodeURIComponent(msg)}`, 
 '_blank'
 );
 }
