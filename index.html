@@ -164,10 +164,10 @@ text-align:center;
 </div>
 
 <script>
-// El valor inicial por defecto de fábrica, si localStorage está vacío.
 const TOTAL_DEFECTO = 200;
+const NUMERO_CONTROL = "529841174935"; // Número de destino formateado para la API de WhatsApp
 
-/* INIT (Carga directa al iniciar la página) */
+/* INIT */
 function init(){
     if(localStorage.getItem("lugares_max") === null){
         localStorage.setItem("lugares_max", TOTAL_DEFECTO);
@@ -192,7 +192,7 @@ window.onload = function(){
     init(); 
 };
 
-/* MOSTRAR LUGARES ACTUALES Y EL BOTÓN DE REINICIO */
+/* MOSTRAR LUGARES ACTUALES */
 function mostrar(){
     let l = localStorage.getItem("lugares");
     let max = localStorage.getItem("lugares_max") || TOTAL_DEFECTO;
@@ -211,28 +211,33 @@ function cambiarLugaresManual(valor) {
     let cantidad = parseInt(valor);
     if (isNaN(cantidad) || cantidad < 0) cantidad = 0;
 
-    // Al modificar la casilla, este número pasa a ser la nueva capacidad máxima guardada
     localStorage.setItem("lugares", cantidad);
     localStorage.setItem("lugares_max", cantidad);
 
-    // Actualiza el texto del botón al instante
     document.getElementById("btnReiniciar").innerHTML = `<i class="fas fa-undo"></i> Reiniciar (${cantidad})`;
+    update(); // Actualiza el mensaje y el código QR con el nuevo conteo de lugares
 }
 
-/* REINICIAR CONTADOR AL VALOR ACTUALMENTE ASIGNADO */
+/* REINICIAR CONTADOR */
 function reiniciarContador() {
     let max = localStorage.getItem("lugares_max") || TOTAL_DEFECTO;
     if(confirm(`¿Estás seguro de que deseas reiniciar el contador a ${max} lugares?`)) {
         localStorage.setItem("lugares", max);
         mostrar();
+        update();
     }
 }
 
 /* UPDATE */
 function update(){
     let n = document.getElementById("nombre").value || "Invitado";
-    let p = document.getElementById("pases").value || "1";
+    let p = parseInt(document.getElementById("pases").value) || 1;
     let m = document.getElementById("mesa").value || "Mesa 1";
+    let lugaresActuales = parseInt(localStorage.getItem("lugares")) || 0;
+
+    // Calcular cuántos lugares quedarían DESPUÉS de que esta familia acceda
+    let lugaresRestantesFuturos = lugaresActuales - p;
+    if(lugaresRestantesFuturos < 0) lugaresRestantesFuturos = 0;
 
     document.getElementById("tNombre").innerText = n;
     document.getElementById("tPases").innerText = p;
@@ -240,12 +245,16 @@ function update(){
 
     let urlBoleto = `https://barrientosmtzluis-jpg.github.io/boletos/?invitado=${encodeURIComponent(n)}&pases=${p}&mesa=${encodeURIComponent(m)}`;
 
-    // Solución al problema del QR estancado
+    // NUEVA LÓGICA: Redactar el mensaje de confirmación que enviará el QR al escanearse
+    let textoQR = `Luis ha llegado la familia ${n} y quedarían ${lugaresRestantesFuturos} lugares`;
+    let urlWhatsAppQR = `https://api.whatsapp.com/send?phone=${NUMERO_CONTROL}&text=${encodeURIComponent(textoQR)}`;
+
+    // Generación del código QR apuntando a la acción de WhatsApp
     try {
         let qrContainer = document.getElementById("qrcode");
-        qrContainer.innerHTML = ""; // Limpiar códigos viejos sin romper el DOM
+        qrContainer.innerHTML = ""; 
         new QRCode(qrContainer, {
-            text: urlBoleto,
+            text: urlWhatsAppQR, // Ahora el QR contiene el gatillo de WhatsApp
             width: 128,
             height: 128
         });
@@ -253,6 +262,7 @@ function update(){
         console.error("Error al generar QR:", e);
     }
 
+    // Mensaje de invitación para enviar al cliente
     let mensajeFormateado = "✨ ¡Tenemos una invitación muy especial para ti! ✨\n\n" +
     `Estimada familia / amigo *${n}*,\n\n` +
     "Nos complace enormemente invitarte a compartir con nosotros un momento inolvidable. En el siguiente enlace podrás conocer todos los detalles de nuestro evento, itinerario y locación:\n\n" +
@@ -285,8 +295,10 @@ function send(){
         if(!confirm("No hay suficientes lugares disponibles. ¿Deseas continuar?")) return;
     }
 
+    // Se descuentan los lugares del almacenamiento local inmediatamente al presionar Enviar
     localStorage.setItem("lugares", l - p);
     mostrar();
+    update(); // Forzar actualización para el siguiente invitado
 
     let msg = document.getElementById("msg").value;
 
