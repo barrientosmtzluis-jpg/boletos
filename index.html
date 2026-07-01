@@ -119,7 +119,7 @@ text-align:center;
 <h3>Datos</h3>
 
 <div class="counter-section">
-<label style="margin-top:0; color:#1e40af;">Lugares Disponibles:</label>
+<label style="margin-top:0; color:#1e40af;">Lugares Disponibles en Sistema:</label>
 <div class="counter-inputs">
 <input id="lugares" type="number" oninput="cambiarLugaresManual(this.value)" min="0" value="200">
 <button type="button" class="btn-reset" id="btnReiniciar" onclick="reiniciarContador()">
@@ -165,7 +165,6 @@ text-align:center;
 
 <script>
 const TOTAL_DEFECTO = 200;
-const NUMERO_CONTROL = "529841174935"; // Número de destino formateado para la API de WhatsApp
 
 /* INIT */
 function init(){
@@ -215,7 +214,7 @@ function cambiarLugaresManual(valor) {
     localStorage.setItem("lugares_max", cantidad);
 
     document.getElementById("btnReiniciar").innerHTML = `<i class="fas fa-undo"></i> Reiniciar (${cantidad})`;
-    update(); // Actualiza el mensaje y el código QR con el nuevo conteo de lugares
+    update();
 }
 
 /* REINICIAR CONTADOR */
@@ -231,30 +230,25 @@ function reiniciarContador() {
 /* UPDATE */
 function update(){
     let n = document.getElementById("nombre").value || "Invitado";
-    let p = parseInt(document.getElementById("pases").value) || 1;
+    let p = document.getElementById("pases").value || "1";
     let m = document.getElementById("mesa").value || "Mesa 1";
-    let lugaresActuales = parseInt(localStorage.getItem("lugares")) || 0;
-
-    // Calcular cuántos lugares quedarían DESPUÉS de que esta familia acceda
-    let lugaresRestantesFuturos = lugaresActuales - p;
-    if(lugaresRestantesFuturos < 0) lugaresRestantesFuturos = 0;
+    
+    // Obtenemos cuántos lugares hay en el sistema en este preciso instante
+    let lugaresActuales = localStorage.getItem("lugares") || TOTAL_DEFECTO;
 
     document.getElementById("tNombre").innerText = n;
     document.getElementById("tPases").innerText = p;
     document.getElementById("tMesa").innerText = m;
 
-    let urlBoleto = `https://barrientosmtzluis-jpg.github.io/boletos/?invitado=${encodeURIComponent(n)}&pases=${p}&mesa=${encodeURIComponent(m)}`;
+    // 🌟 CAMBIO CLAVE: Ahora se envía la variable '&restantes' con el valor actual del sistema a boleto.html
+    let urlBoleto = `https://barrientosmtzluis-jpg.github.io/boletos/boleto.html?invitado=${encodeURIComponent(n)}&pases=${p}&mesa=${encodeURIComponent(m)}&restantes=${lugaresActuales}`;
 
-    // NUEVA LÓGICA: Redactar el mensaje de confirmación que enviará el QR al escanearse
-    let textoQR = `Luis ha llegado la familia ${n} y quedarían ${lugaresRestantesFuturos} lugares`;
-    let urlWhatsAppQR = `https://api.whatsapp.com/send?phone=${NUMERO_CONTROL}&text=${encodeURIComponent(textoQR)}`;
-
-    // Generación del código QR apuntando a la acción de WhatsApp
+    // La vista previa del panel genera el QR directo a la página web del boleto real
     try {
         let qrContainer = document.getElementById("qrcode");
         qrContainer.innerHTML = ""; 
         new QRCode(qrContainer, {
-            text: urlWhatsAppQR, // Ahora el QR contiene el gatillo de WhatsApp
+            text: urlBoleto,
             width: 128,
             height: 128
         });
@@ -262,7 +256,6 @@ function update(){
         console.error("Error al generar QR:", e);
     }
 
-    // Mensaje de invitación para enviar al cliente
     let mensajeFormateado = "✨ ¡Tenemos una invitación muy especial para ti! ✨\n\n" +
     `Estimada familia / amigo *${n}*,\n\n` +
     "Nos complace enormemente invitarte a compartir con nosotros un momento inolvidable. En el siguiente enlace podrás conocer todos los detalles de nuestro evento, itinerario y locación:\n\n" +
@@ -295,10 +288,10 @@ function send(){
         if(!confirm("No hay suficientes lugares disponibles. ¿Deseas continuar?")) return;
     }
 
-    // Se descuentan los lugares del almacenamiento local inmediatamente al presionar Enviar
+    // Descontar inmediatamente del panel local para llevar el control de pases emitidos
     localStorage.setItem("lugares", l - p);
     mostrar();
-    update(); // Forzar actualización para el siguiente invitado
+    update(); 
 
     let msg = document.getElementById("msg").value;
 
