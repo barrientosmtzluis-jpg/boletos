@@ -43,31 +43,24 @@ body{background:#f3f4f6;padding:20px;display:flex;justify-content:center;align-i
 </div>
 
 <script>
-// Número de control al que llegará la notificación de asistencia
 const NUMERO_CONTROL = "529841174935"; 
 
 window.onload = function() {
-    // 1. Obtener parámetros desde la URL
     const urlParams = new URLSearchParams(window.location.search);
     let nombre = urlParams.get("invitado") || "Invitado Extraordinario";
     let pases = urlParams.get("pases") || "1";
     let mesa = urlParams.get("mesa") || "Mesa General";
     let restantes = urlParams.get("restantes") || "0";
 
-    // 2. Pintar los datos en el Boleto HTML
     document.getElementById("tNombre").innerText = nombre;
     document.getElementById("tPases").innerText = pases + (pases == 1 ? " Persona" : " Personas");
     document.getElementById("tMesa").innerText = mesa;
 
-    // 3. Crear el texto de notificación que enviará el QR al ser escaneado
-    // El link de este mismo boleto se auto-incluye al final
     let enlaceActual = window.location.href;
     let textoQR = `Luis, ha llegado la familia *${nombre}* (${pases} pases, ${mesa}). Quedan ${restantes} lugares disponibles.\n\nVer Boleto: ${enlaceActual}`;
     
-    // URL final para gatillar WhatsApp API
     let urlWhatsAppQR = `https://api.whatsapp.com/send?phone=${NUMERO_CONTROL}&text=${encodeURIComponent(textoQR)}`;
 
-    // 4. Generar el código QR apuntando al WhatsApp definitivo
     try {
         let qrContainer = document.getElementById("qrcode");
         qrContainer.innerHTML = ""; 
@@ -75,13 +68,12 @@ window.onload = function() {
             text: urlWhatsAppQR,
             width: 160,
             height: 160,
-            correctLevel: QRCode.CorrectLevel.H // Alta tolerancia para que se escanee fácil desde pantallas
+            correctLevel: QRCode.CorrectLevel.H
         });
     } catch(e) {
-        console.error("Error al generar el QR en el boleto:", e);
+        console.error("Error al generar el QR:", e);
     }
 };
 </script>
-
 </body>
 </html>
