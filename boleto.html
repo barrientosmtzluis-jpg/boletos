@@ -48,16 +48,24 @@ const NUMERO_CONTROL = "529841174935";
 window.onload = function() {
     const urlParams = new URLSearchParams(window.location.search);
     let nombre = urlParams.get("invitado") || "Invitado Extraordinario";
-    let pases = urlParams.get("pases") || "1";
+    let pases = parseInt(urlParams.get("pases")) || 1;
     let mesa = urlParams.get("mesa") || "Mesa General";
-    let restantes = urlParams.get("restantes") || "0";
+    
+    // Asumimos que 'restantes' en la URL es el total disponible en el sistema ANTES de entrar
+    let totalDisponibles = parseInt(urlParams.get("restantes")) || 0;
+
+    // CORRECCIÓN: Calculamos cuántos quedan realmente tras restar estos pases
+    let realesRestantes = totalDisponibles - pases;
+    if (realesRestantes < 0) realesRestantes = 0; // Evita números negativos
 
     document.getElementById("tNombre").innerText = nombre;
     document.getElementById("tPases").innerText = pases + (pases == 1 ? " Persona" : " Personas");
     document.getElementById("tMesa").innerText = mesa;
 
     let enlaceActual = window.location.href;
-    let textoQR = `Luis, ha llegado la familia *${nombre}* (${pases} pases, ${mesa}). Quedan ${restantes} lugares disponibles.\n\nVer Boleto: ${enlaceActual}`;
+    
+    // El texto ahora es explícito: "Quedarán X lugares" tras validar este pase
+    let textoQR = `Luis, ha llegado la familia *${nombre}* (${pases} pases, ${mesa}). Al registrar su entrada, quedarán ${realesRestantes} lugares disponibles.\n\nVer Boleto: ${enlaceActual}`;
     
     let urlWhatsAppQR = `https://api.whatsapp.com/send?phone=${NUMERO_CONTROL}&text=${encodeURIComponent(textoQR)}`;
 
