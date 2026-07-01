@@ -5,9 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Tu Pase Digital Inteligente</title>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
-<!-- Librería para QR -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<!-- Librería de Firebase para control de duplicados -->
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
@@ -30,7 +28,6 @@ body{background:#f3f4f6;padding:20px;display:flex;justify-content:center;align-i
         <h3>Pase Digital Inteligente</h3>
         <div class="line"></div>
         
-        <!-- Mensaje de Alerta Visual en Pantalla -->
         <div id="alertaPantalla" class="alerta-duplicado">
             ⚠️ ¡ESTE ACCESO YA FUE UTILIZADO!
         </div>
@@ -56,7 +53,7 @@ body{background:#f3f4f6;padding:20px;display:flex;justify-content:center;align-i
 <script>
 const NUMERO_CONTROL = "529841174935"; 
 
-// 🚨 CONFIGURACIÓN DE FIREBASE: Reemplaza con la URL de tu base de datos de Firebase
+// 🚨 CONFIGURACIÓN DE FIREBASE
 const firebaseConfig = {
     databaseURL: "https://xvpau-36eff-default-rtdb.firebaseio.com/" 
 };
@@ -68,9 +65,8 @@ window.onload = function() {
     let nombre = urlParams.get("invitado") || "Invitado Extraordinario";
     let pases = parseInt(urlParams.get("pases")) || 1;
     let mesa = urlParams.get("mesa") || "Mesa General";
-    let totalDisponibles = parseInt(urlParams.get("restantes")) || 0;
 
-    // Crear un ID único para este boleto basado en el nombre (removiendo espacios y caracteres raros)
+    // Generar ID único para el boleto
     let boletoId = btoa(encodeURIComponent(nombre)).replace(/=/g, ""); 
 
     document.getElementById("tNombre").innerText = nombre;
@@ -78,46 +74,69 @@ window.onload = function() {
     document.getElementById("tMesa").innerText = mesa;
 
     let enlaceActual = window.location.href;
-    let realesRestantes = Math.max(0, totalDisponibles - pases);
 
-    // CONSULTAR SI EL BOLETO YA FUE ESCANEADO ANTES
+    // 1. REVISAR SI EL BOLETO YA FUE ESCANEADO ANTES
     database.ref('boletos/' + boletoId).once('value').then((snapshot) => {
-        let textoQR = "";
         
         if (snapshot.exists()) {
-            // ❌ EL BOLETO YA EXISTE EN LA BD (DUPLICADO)
-            document.getElementById("alertaPantalla").style.display = "block";
-            
-            textoQR = `🚨 ¡ALERTA DE DUPLICADO! El QR de la familia *${nombre}* ha sido escaneado NUEVAMENTE. Este acceso YA había sido validado anteriormente.\n\nVerificar Boleto: ${enlaceActual}`;
+            // ❌ CASO DUPLICADO: Leer el conteo actual de la BD sin restar nada para informar en el mensaje
+            database.ref('inventario_lugares').once('value').then((invSnapshot) => {
+                let lugaresEnBD = invSnapshot.val() !== null ? parseInt(invSnapshot.val()) : 200;
+                
+                document.getElementById("alertaPantalla").style.display = "block";
+                let textoQR = `🚨 ¡ALERTA DE DUPLICADO! El QR de la familia *${nombre}* ha sido escaneado NUEVAMENTE. Este acceso YA había sido validado anteriormente.\n\nQuedan en total: ${lugaresEnBD} lugares.\n\nVerificar Boleto: ${enlaceActual}`;
+                
+                generarCodigoQR(textoQR);
+            });
+
         } else {
             //  PRIMER ESCANEO (ACCESO VÁLIDO)
-            // Guardamos el registro en Firebase para que el próximo escaneo sea detectado como duplicado
-            database.ref('boletos/' + boletoId).set({
-                invitado: nombre,
-                pases: pases,
-                fechaEscaneo: new Date().toISOString()
-            });
+            // 2. Transacción en Firebase para restar los lugares de forma segura y evitar errores si entran dos al mismo tiempo
+            database.ref('inventario_lugares').transaction((currentValue) => {
+                // Si no existe el nodo en Firebase, lo inicializa por defecto en 200
+                if (currentValue === null) {
+                    return 200 - pases;
+                }
+                return Math.max(0, currentValue - pases);
+            }, (error, committed, finalSnapshot) => {
+                
+                let lugaresRestantes = finalSnapshot.val();
 
-            textoQR = `Luis, ha llegado la familia *${nombre}* (${pases} pases, ${mesa}). Al registrar su entrada, quedarán ${realesRestantes} lugares disponibles.\n\nVer Boleto: ${enlaceActual}`;
-        }
+                // 3. Registrar el boleto como "utilizado" en la base de datos
+                database.ref('boletos/' + boletoId).set({
+                    invitado: nombre,
+                    pases: pases,
+                    mesa: mesa,
+                    fechaEscaneo: new Date().toISOString(),
+                    quedaban: lugaresRestantes
+                });
 
-        // Generar el QR final con el texto correspondiente (Normal o Alerta)
-        let urlWhatsAppQR = `https://api.whatsapp.com/send?phone=${NUMERO_CONTROL}&text=${encodeURIComponent(textoQR)}`;
-        
-        try {
-            let qrContainer = document.getElementById("qrcode");
-            qrContainer.innerHTML = ""; 
-            new QRCode(qrContainer, {
-                text: urlWhatsAppQR,
-                width: 160,
-                height: 160,
-                correctLevel: QRCode.CorrectLevel.H
+                // 4. Redactar texto final con el descuento real de la Base de Datos
+                let textoQR = `Luis, ha llegado la familia *${nombre}* (${pases} pases, ${mesa}). Al registrar su entrada, quedarán ${lugaresRestantes} lugares disponibles.\n\nVer Boleto: ${enlaceActual}`;
+                
+                generarCodigoQR(textoQR);
             });
-        } catch(e) {
-            console.error("Error al generar el QR:", e);
         }
     });
 };
+
+/* FUNCIÓN PARA RENDERIZAR EL QR */
+function generarCodigoQR(texto) {
+    let urlWhatsAppQR = `https://api.whatsapp.com/send?phone=${NUMERO_CONTROL}&text=${encodeURIComponent(texto)}`;
+    
+    try {
+        let qrContainer = document.getElementById("qrcode");
+        qrContainer.innerHTML = ""; 
+        new QRCode(qrContainer, {
+            text: urlWhatsAppQR,
+            width: 160,
+            height: 160,
+            correctLevel: QRCode.CorrectLevel.H
+        });
+    } catch(e) {
+        console.error("Error al generar el QR:", e);
+    }
+}
 </script>
 </body>
 </html>
