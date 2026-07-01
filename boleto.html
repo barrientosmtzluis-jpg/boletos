@@ -3,159 +3,85 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Panel de Invitaciones</title>
+<title>Tu Pase Digital Inteligente</title>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:Montserrat,sans-serif;}
-body{background:#f3f4f6;padding:20px;}
-.container{max-width:600px;margin:auto;}
-header{text-align:center;margin-bottom:20px;}
-.card{background:#fff;padding:20px;border-radius:12px;box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);}
-label{font-size: 13px;font-weight: 600;color: #4b5563;display: block;margin-top: 10px;}
-input,textarea{width:100%;padding:10px;margin:5px 0 10px 0;border-radius:8px;border:1px solid #ccc;}
-.counter-section {background: #eff6ff;padding: 12px;border-radius: 8px;border: 1px solid #bfdbfe;margin-bottom: 15px;}
-.counter-inputs {display: flex;gap: 10px;align-items: center;margin-top: 5px;}
-.counter-inputs input {margin: 0;font-weight: bold;color: #2563eb;text-align: center;}
-.btn-reset {background: #6b7280;padding: 10px;font-size: 12px;width: auto;white-space: nowrap;}
-button{width:100%;padding:12px;background:#25d366;color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight: bold;transition: background 0.2s;}
-button:hover {opacity: 0.9;}
+body{background:#f3f4f6;padding:20px;display:flex;justify-content:center;align-items:center;min-height:100vh;}
+.container{width:100%;max-width:400px;}
+.ticket{background:linear-gradient(135deg,#1e3a8a,#0f172a);color:#fff;padding:30px 20px;border-radius:16px;text-align:center;box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3);}
+.ticket h3 {text-transform: uppercase; letter-spacing: 2px; font-size: 16px; color: #93c5fd; margin-bottom: 10px;}
+.line {border-top: 2px dashed rgba(255,255,255,0.2); margin: 20px 0;}
+.qr{background:#fff;padding:15px;border-radius:12px;display:inline-block;margin-top:15px;}
+.info-p{font-size: 14px; color: #cbd5e1; margin-bottom: 5px;}
 </style>
 </head>
 <body>
 
-<div id="panel" class="container">
-    <header>
-        <h2>Panel de Invitaciones</h2>
-    </header>
+<div class="container">
+    <div class="card ticket">
+        <h3>Pase Digital Inteligente</h3>
+        <div class="line"></div>
+        <p class="info-p">Invitación para la familia:</p>
+        <h2 id="tNombre" style="color: #f59e0b; margin: 5px 0 15px 0;">Cargando...</h2>
+        
+        <p class="info-p">Lugares asignados:</p>
+        <h2 id="tPases" style="margin-bottom: 15px;">-</h2>
+        
+        <p class="info-p">Ubicación:</p>
+        <strong id="tMesa" style="font-size: 18px; color: #10b981;">-</strong>
 
-    <div class="card">
-        <h3>Datos de Envío</h3>
-
-        <div class="counter-section">
-            <label style="margin-top:0; color:#1e40af;">Lugares Disponibles en Total:</label>
-            <div class="counter-inputs">
-                <input id="lugares" type="number" oninput="cambiarLugaresManual(this.value)" min="0" value="200">
-                <button type="button" class="btn-reset" id="btnReiniciar" onclick="reiniciarContador()">
-                    <i class="fas fa-undo"></i> Reiniciar
-                </button>
-            </div>
+        <div class="line"></div>
+        <p style="font-size: 12px; color: #94a3b8; margin-bottom: 10px;">Presenta este código QR en la entrada</p>
+        
+        <div class="qr">
+            <div id="qrcode"></div>
         </div>
-
-        <label>Nombre del Invitado:</label>
-        <input id="nombre" oninput="update()" placeholder="Ej. Familia Pérez">
-
-        <label>Número de pases / lugares:</label>
-        <input id="pases" type="number" oninput="update()" value="1" min="1">
-
-        <label>Mesa asignada:</label>
-        <input id="mesa" oninput="update()" value="Mesa 1">
-
-        <label>WhatsApp del Invitado (Sin signos ni espacios):</label>
-        <input id="tel" placeholder="521...">
-
-        <label>Vista previa del mensaje a enviar:</label>
-        <textarea id="msg" rows="10"></textarea>
-
-        <button onclick="send()"><i class="fab fa-whatsapp"></i> Enviar Invitación por WhatsApp</button>
     </div>
 </div>
 
 <script>
-const TOTAL_DEFECTO = 200;
+// Número de control al que llegará la notificación de asistencia
+const NUMERO_CONTROL = "529841174935"; 
 
-function init(){
-    if(localStorage.getItem("lugares_max") === null){
-        localStorage.setItem("lugares_max", TOTAL_DEFECTO);
-    }
-    if(localStorage.getItem("lugares") === null){
-        localStorage.setItem("lugares", localStorage.getItem("lugares_max"));
-    }
-    mostrar();
-    update();
-}
+window.onload = function() {
+    // 1. Obtener parámetros desde la URL
+    const urlParams = new URLSearchParams(window.location.search);
+    let nombre = urlParams.get("invitado") || "Invitado Extraordinario";
+    let pases = urlParams.get("pases") || "1";
+    let mesa = urlParams.get("mesa") || "Mesa General";
+    let restantes = urlParams.get("restantes") || "0";
 
-window.onload = function(){
-    init(); 
+    // 2. Pintar los datos en el Boleto HTML
+    document.getElementById("tNombre").innerText = nombre;
+    document.getElementById("tPases").innerText = pases + (pases == 1 ? " Persona" : " Personas");
+    document.getElementById("tMesa").innerText = mesa;
+
+    // 3. Crear el texto de notificación que enviará el QR al ser escaneado
+    // El link de este mismo boleto se auto-incluye al final
+    let enlaceActual = window.location.href;
+    let textoQR = `Luis, ha llegado la familia *${nombre}* (${pases} pases, ${mesa}). Quedan ${restantes} lugares disponibles.\n\nVer Boleto: ${enlaceActual}`;
+    
+    // URL final para gatillar WhatsApp API
+    let urlWhatsAppQR = `https://api.whatsapp.com/send?phone=${NUMERO_CONTROL}&text=${encodeURIComponent(textoQR)}`;
+
+    // 4. Generar el código QR apuntando al WhatsApp definitivo
+    try {
+        let qrContainer = document.getElementById("qrcode");
+        qrContainer.innerHTML = ""; 
+        new QRCode(qrContainer, {
+            text: urlWhatsAppQR,
+            width: 160,
+            height: 160,
+            correctLevel: QRCode.CorrectLevel.H // Alta tolerancia para que se escanee fácil desde pantallas
+        });
+    } catch(e) {
+        console.error("Error al generar el QR en el boleto:", e);
+    }
 };
-
-function mostrar(){
-    let l = localStorage.getItem("lugares");
-    let max = localStorage.getItem("lugares_max") || TOTAL_DEFECTO;
-    document.getElementById("lugares").value = l;
-    document.getElementById("btnReiniciar").innerHTML = `<i class="fas fa-undo"></i> Reiniciar (${max})`;
-}
-
-function cambiarLugaresManual(valor) {
-    let cantidad = parseInt(valor);
-    if (isNaN(cantidad) || cantidad < 0) cantidad = 0;
-    localStorage.setItem("lugares", cantidad);
-    update();
-}
-
-function reiniciarContador() {
-    let max = localStorage.getItem("lugares_max") || TOTAL_DEFECTO;
-    if(confirm(`¿Estás seguro de que deseas reiniciar el contador a ${max} lugares?`)) {
-        localStorage.setItem("lugares", max);
-        mostrar();
-        update();
-    }
-}
-
-function update(){
-    let n = document.getElementById("nombre").value || "Invitado";
-    let p = parseInt(document.getElementById("pases").value) || 1;
-    let m = document.getElementById("mesa").value || "Mesa 1";
-    let lugaresActuales = parseInt(localStorage.getItem("lugares")) || 0;
-
-    // Calculamos los lugares que quedarán después de que se reste este pase
-    let lugaresRestantesFuturos = lugaresActuales - p;
-    if(lugaresRestantesFuturos < 0) lugaresRestantesFuturos = 0;
-
-    // URL de tu repositorio de GitHub donde subirás el archivo boleto.html
-    // IMPORTANTE: Asegúrate de que apunte a "boleto.html" al final de la ruta si los separas
-    let urlBoleto = `https://barrientosmtzluis-jpg.github.io/boletos/boleto.html?invitado=${encodeURIComponent(n)}&pases=${p}&mesa=${encodeURIComponent(m)}&restantes=${lugaresRestantesFuturos}`;
-
-    let mensajeFormateado = "✨ ¡Tenemos una invitación muy especial para ti! ✨\n\n" +
-    `Estimada familia / amigo *${n}*,\n\n` +
-    "Nos complace enormemente invitarte a compartir con nosotros un momento inolvidable. En el siguiente enlace podrás conocer todos los detalles de nuestro evento, itinerario y locación:\n\n" +
-    "👉 Invitación Digital:\n" +
-    "https://www.qrcreator.dev/es-ES/p/9824EADF\n\n" +
-     "👉 WEB del Evento:\n" +
-    "https://barrientosmtzluis-jpg.github.io/XV-ANAPAU/\n\n" +
-    `🎫 De igual manera, te hacemos llegar tu Pase Digital Inteligente válido para *${p}* personas.\n` +
-    `📍 Mesa asignada: *${m}*\n\n` +
-    "Para ingresar de forma ágil el día del evento, solo haz clic aquí abajo y presenta el código QR desde tu pantalla:\n\n" +
-    "👉 Tu Boleto de Acceso:\n" +
-    urlBoleto + "\n\n" +
-    "¡Tu presencia hará que este día sea aún más especial! Esperamos contar contigo. ✨🥂";
-
-    document.getElementById("msg").value = mensajeFormateado;
-}
-
-function send(){
-    let tel = document.getElementById("tel").value.trim();
-    let p = parseInt(document.getElementById("pases").value) || 0;
-    let l = parseInt(localStorage.getItem("lugares")) || 0;
-
-    if(!tel){
-        alert("Por favor, introduce un número de teléfono válido.");
-        return;
-    }
-
-    if(l - p < 0){
-        if(!confirm("No hay suficientes lugares disponibles. ¿Deseas continuar?")) return;
-    }
-
-    // Se descuentan los lugares en este panel de administración local
-    localStorage.setItem("lugares", l - p);
-    mostrar();
-    update();
-
-    let msg = document.getElementById("msg").value;
-    window.open(`https://api.whatsapp.com/send?phone=${tel}&text=${encodeURIComponent(msg)}`, '_blank');
-}
 </script>
+
 </body>
 </html>
