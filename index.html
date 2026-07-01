@@ -109,12 +109,9 @@ function update(){
     let m = document.getElementById("mesa").value || "Mesa 1";
     let lugaresActuales = parseInt(localStorage.getItem("lugares")) || 0;
 
-    // Calculamos los lugares que quedarán después de que se reste este pase
     let lugaresRestantesFuturos = lugaresActuales - p;
     if(lugaresRestantesFuturos < 0) lugaresRestantesFuturos = 0;
 
-    // URL de tu repositorio de GitHub donde subirás el archivo boleto.html
-    // IMPORTANTE: Asegúrate de que apunte a "boleto.html" al final de la ruta si los separas
     let urlBoleto = `https://barrientosmtzluis-jpg.github.io/boletos/boleto.html?invitado=${encodeURIComponent(n)}&pases=${p}&mesa=${encodeURIComponent(m)}&restantes=${lugaresRestantesFuturos}`;
 
     let mensajeFormateado = "✨ ¡Tenemos una invitación muy especial para ti! ✨\n\n" +
@@ -122,7 +119,7 @@ function update(){
     "Nos complace enormemente invitarte a compartir con nosotros un momento inolvidable. En el siguiente enlace podrás conocer todos los detalles de nuestro evento, itinerario y locación:\n\n" +
     "👉 Invitación Digital:\n" +
     "https://www.qrcreator.dev/es-ES/p/9824EADF\n\n" +
-     "👉 WEB del Evento:\n" +
+    "👉 WEB del Evento:\n" +
     "https://barrientosmtzluis-jpg.github.io/XV-ANAPAU/\n\n" +
     `🎫 De igual manera, te hacemos llegar tu Pase Digital Inteligente válido para *${p}* personas.\n` +
     `📍 Mesa asignada: *${m}*\n\n` +
@@ -148,7 +145,6 @@ function send(){
         if(!confirm("No hay suficientes lugares disponibles. ¿Deseas continuar?")) return;
     }
 
-    // Se descuentan los lugares en este panel de administración local
     localStorage.setItem("lugares", l - p);
     mostrar();
     update();
