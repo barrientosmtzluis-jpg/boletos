@@ -19,73 +19,90 @@
     <div class='grid'>
         <div>
             <label>Invitado</label>
-            <input id=n oninput=u()>
+            <input id="n" oninput="u()">
             <label>Pases</label>
-            <input id=p type=number value=1 oninput=u()>
+            <input id="p" type="number" value="1" oninput="u()">
             <label>Mesa</label>
-            <input id=m value='Mesa A' oninput=u()>
+            <input id="m" value='Mesa A' oninput="u()">
             <label>WhatsApp</label>
-            <input id=t placeholder="Ej. 5215512345678">
-            <textarea id=msg rows=8></textarea>
-            <button onclick=s()>Enviar por WhatsApp</button>
+            <input id="t" placeholder="Ej. 5215512345678">
+            <textarea id="msg" rows="8"></textarea>
+            <button onclick="s()">Enviar por WhatsApp</button>
         </div>
         <div class='card'>
             <h3>Vista previa</h3>
-            <h2 id=tn></h2>
-            <p id=tp></p>
-            <p id=tm></p>
-            <div id=q></div>
+            <h2 id="tn"></h2>
+            <p id="tp"></p>
+            <p id="tm"></p>
+            <div id="q"></div>
         </div>
     </div>
 </div>
 
 <script>
 const FIREBASE_URL = "https://xvpau-36eff-default-rtdb.firebaseio.com/configuracion.json";
-let nombreEventoGlobal = "Invitación Especial"; // Valor por defecto por si falla
+let nombreEventoGlobal = "Invitación Especial"; 
 
-// Al cargar la página, traemos las variables desde Firebase
+// Al cargar la página, traemos las variables desde Firebase y caché local
 window.addEventListener('DOMContentLoaded', async () => {
+    // Intentar cargar rápido del caché local para evitar parpadeos
+    let cacheNombre = localStorage.getItem('eventoNombre_cache');
+    if (cacheNombre) {
+        nombreEventoGlobal = cacheNombre;
+        document.getElementById('nombreEventoHeader').textContent = nombreEventoGlobal;
+        u();
+    }
+
     try {
         let res = await fetch(FIREBASE_URL);
         if (res.ok) {
             let data = await res.json();
             if (data && data.evento) {
                 nombreEventoGlobal = data.evento;
+                localStorage.setItem('eventoNombre_cache', data.evento);
                 document.getElementById('nombreEventoHeader').textContent = nombreEventoGlobal;
-                u(); // Refrescar la vista con el nombre real del evento
+                u(); 
             } else {
-                document.getElementById('nombreEventoHeader').textContent = "Panel de Control";
+                if(!cacheNombre) document.getElementById('nombreEventoHeader').textContent = "Panel de Control";
             }
         }
     } catch (e) {
         console.error("Error cargando variables de Firebase:", e);
-        document.getElementById('nombreEventoHeader').textContent = "Panel de Control";
+        if(!cacheNombre) document.getElementById('nombreEventoHeader').textContent = "Panel de Control";
     }
 });
 
 function u(){
-    let nombreInvitado = n.value || 'Invitado';
-    let pasesVal = p.value || 1;
-    let mesaVal = m.value || 'Mesa';
+    // Corrección de selectores explícitos para evitar conflictos de variables globales obsoletas
+    const inputInvitado = document.getElementById('n');
+    const inputPases = document.getElementById('p');
+    const inputMesa = document.getElementById('m');
+    const txtMsg = document.getElementById('msg');
+    const divQ = document.getElementById('q');
+
+    let nombreInvitado = inputInvitado.value || 'Invitado';
+    let pasesVal = inputPases.value || 1;
+    let mesaVal = inputMesa.value || 'Mesa';
     
-    tn.textContent = nombreInvitado;
-    tp.textContent = 'Pases: ' + pasesVal;
-    tm.textContent = 'Mesa: ' + mesaVal;
+    document.getElementById('tn').textContent = nombreInvitado;
+    document.getElementById('tp').textContent = 'Pases: ' + pasesVal;
+    document.getElementById('tm').textContent = 'Mesa: ' + mesaVal;
     
-    // Obtenemos la ruta base para que apunte correctamente a boleto.html en el mismo servidor
     let baseDir = window.location.href.substring(0, window.location.href.lastIndexOf('/'));
     let url = baseDir + '/boleto.html?invitado=' + encodeURIComponent(nombreInvitado) + '&pases=' + pasesVal + '&mesa=' + encodeURIComponent(mesaVal);
     
-    q.innerHTML = '';
-    new QRCode(q, {text: url, width: 160, height: 160});
+    divQ.innerHTML = '';
+    new QRCode(divQ, {text: url, width: 160, height: 160});
     
-    // Integramos la variable global del nombre del evento en el mensaje de WhatsApp
-    msg.value = '🎫 ' + nombreEventoGlobal + '\n\nHola ' + nombreInvitado + ',\nTe presentamos tu boleto digital.\n\n📌 Pases: ' + pasesVal + '\n📌 Mesa: ' + mesaVal + '\n\nAccede a tu boleto aquí:\n' + url;
+    txtMsg.value = '🎫 ' + nombreEventoGlobal + '\n\nHola ' + nombreInvitado + ',\nTe presentamos tu boleto digital.\n\n📌 Pases: ' + pasesVal + '\n📌 Mesa: ' + mesaVal + '\n\nAccede a tu boleto aquí:\n' + url;
 }
 
 function s(){
-    if(!t.value) return alert('Capture WhatsApp');
-    window.open('https://api.whatsapp.com/send?phone=' + t.value + '&text=' + encodeURIComponent(msg.value), '_blank');
+    const inputTel = document.getElementById('t');
+    const txtMsg = document.getElementById('msg');
+    
+    if(!inputTel.value) return alert('Capture WhatsApp');
+    window.open('https://api.whatsapp.com/send?phone=' + inputTel.value + '&text=' + encodeURIComponent(txtMsg.value), '_blank');
 }
 </script>
 </body>
