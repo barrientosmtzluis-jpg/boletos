@@ -29,7 +29,7 @@
 </div>
 
 <script>
-// ⚠️ DEFINE AQUÍ TU CONTRASEÑA DE ACCESO LOCAL AL PANEL
+// ⚠️ CONTRASEÑA DE ACCESO LOCAL AL PANEL
 const CLAVE_CORRECTA = "Anapau2026*Secret"; 
 
 function validarAcceso(event) {
@@ -39,10 +39,10 @@ function validarAcceso(event) {
 
     if (inputPass === CLAVE_CORRECTA) {
         errorDiv.style.display = 'none';
-        // Guarda la sesión válida (se borra automáticamente al cerrar la pestaña)
+        // Guarda la sesión válida (se destruye automáticamente al cerrar la pestaña o ventana)
         sessionStorage.setItem('panel_session_active', 'true');
-        // Redirecciona al archivo del panel
-        window.location.href = 'panel.html';
+        // Redirecciona limpiando el historial inmediato para evitar bucles al ir atrás
+        window.location.replace('panel.html');
     } else {
         errorDiv.style.display = 'block';
         document.getElementById('password').value = '';
