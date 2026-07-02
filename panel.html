@@ -63,7 +63,7 @@
 <script>
 const FIREBASE_BASE_URL = "https://xvpau-36eff-default-rtdb.firebaseio.com/";
 
-// Verifica configuración inicial al cargar la página
+// Verifica si ya existe configuración al iniciar la app
 window.onload = async function() {
     try {
         let res = await fetch(`${FIREBASE_BASE_URL}config.json`);
@@ -116,6 +116,8 @@ async function registrarInvitadoFirebase() {
     const ticketId = "TKT-" + Date.now();
     const pases = document.getElementById('p').value;
     const mesa = document.getElementById('m').value;
+    
+    // Guardamos la estructura en Firebase con estado 'Pendiente' para el control de accesos
     const data = { id: ticketId, familia: name, pases: pases, mesa: mesa, estado: "Pendiente" };
     
     let res = await fetch(`${FIREBASE_BASE_URL}invitados/${ticketId}.json`, { method: 'PUT', body: JSON.stringify(data) });
@@ -125,24 +127,23 @@ async function registrarInvitadoFirebase() {
     }
 }
 
-// Conecta los datos con el área de texto y renderiza el QR apuntando a la llegada
+// Genera el código QR y la plantilla del mensaje vinculando la página de recepción externa
 function actualizarVistaYMensaje(data) {
-    // Determina la ruta base actual donde se encuentra el archivo ejecutándose
+    // Detecta la URL base actual donde está alojado este archivo index.html
     let path = window.location.href.split('/').slice(0, -1).join('/');
     
-    // MODIFICADO: Apunta dinámicamente a tu archivo llegada.html enviando sólo el ID de Firebase
+    // Vincula con la página 'llegada.html' pasándole solo el ID único del boleto generado
     let urlBoleto = path + '/llegada.html?id=' + data.id;
 
-    // Actualiza el componente QR con el link de validación
+    // Crea el código QR dinámico apuntando a la verificación de la llegada
     const divQ = document.getElementById('q');
     divQ.innerHTML = '';
     new QRCode(divQ, {text: urlBoleto, width: 160, height: 160});
     
-    // Inserta el texto formateado en el textarea
+    // Coloca el mensaje armado dentro del bloque de texto listo para enviar
     document.getElementById('msg').value = generarTextoMensaje(data.familia, data.pases, data.mesa, urlBoleto);
 }
 
-// Devuelve la plantilla de mensaje limpia para WhatsApp
 function generarTextoMensaje(name, pases, mesa, urlBoleto) {
     return '✨ ¡Tenemos una invitación muy especial para ti! ✨\n\n' +
         'Estimada familia / amigo *' + name + '*,\n\n' +
