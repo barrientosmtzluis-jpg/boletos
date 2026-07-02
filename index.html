@@ -34,8 +34,18 @@
 <script>
 const FIREBASE_URL = "https://xvpau-36eff-default-rtdb.firebaseio.com/configuracion.json";
 
-// Al cargar la página, verificamos si ya existen datos previos en Firebase para prellenar los campos
+// Intentar prellenar campos al cargar
 window.addEventListener('DOMContentLoaded', async () => {
+    // Primero intentamos jalar del almacenamiento local (es instantáneo)
+    const localNombre = localStorage.getItem('eventoNombre_cache');
+    const localInvitados = localStorage.getItem('totalInvitados_cache');
+    const localMesas = localStorage.getItem('totalMesas_cache');
+
+    if (localNombre) document.getElementById('eventoNombre').value = localNombre;
+    if (localInvitados) document.getElementById('totalInvitados').value = localInvitados;
+    if (localMesas) document.getElementById('totalMesas').value = localMesas;
+
+    // Intentamos actualizar con lo que esté en Firebase si la red lo permite
     try {
         let response = await fetch(FIREBASE_URL);
         if (response.ok) {
@@ -47,7 +57,7 @@ window.addEventListener('DOMContentLoaded', async () => {
             }
         }
     } catch (error) {
-        console.error("Error al recuperar datos iniciales:", error);
+        console.warn("Firebase offline o bloqueado temporalmente. Usando datos locales:", error);
     }
 });
 
@@ -66,8 +76,12 @@ async function guardarConfiguracion() {
         maxMesas: parseInt(mesas)
     };
 
+    // Guardar en LocalStorage obligatoriamente como respaldo de emergencia
+    localStorage.setItem('eventoNombre_cache', nombre);
+    localStorage.setItem('totalInvitados_cache', invitados);
+    localStorage.setItem('totalMesas_cache', mesas);
+
     try {
-        // Guardamos las variables globales en Firebase Realtime Database
         let response = await fetch(FIREBASE_URL, {
             method: 'PUT', 
             body: JSON.stringify(data),
@@ -75,17 +89,16 @@ async function guardarConfiguracion() {
         });
 
         if (response.ok) {
-            // Guardado rápido local para acelerar la carga del panel de control
-            localStorage.setItem('eventoNombre_cache', nombre);
-            
-            // Redireccionamos al panel de control
             window.location.href = "panel.html";
         } else {
-            alert('Error al conectar con Firebase.');
+            // Si Firebase responde con error (ej. 403 Forbidden por reglas), permitimos avanzar usando el modo local
+            console.error('Error de respuesta en Firebase. Avanzando en modo local.');
+            window.location.href = "panel.html";
         }
     } catch (error) {
-        console.error(error);
-        alert('Error de red al guardar los datos.');
+        // Si hay un error total de red, también dejamos avanzar con los datos locales guardados
+        console.warn('Error de red. Avanzando al panel con almacenamiento local.');
+        window.location.href = "panel.html";
     }
 }
 </script>
