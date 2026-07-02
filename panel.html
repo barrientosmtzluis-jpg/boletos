@@ -26,7 +26,7 @@
             <input id="m" value='Mesa A' oninput="u()">
             <label>WhatsApp</label>
             <input id="t" placeholder="Ej. 5215512345678">
-            <textarea id="msg" rows="8"></textarea>
+            <textarea id="msg" rows="12"></textarea>
             <button onclick="s()">Enviar por WhatsApp</button>
         </div>
         <div class='card'>
@@ -73,7 +73,6 @@ window.addEventListener('DOMContentLoaded', async () => {
 });
 
 function u(){
-    // Corrección de selectores explícitos para evitar conflictos de variables globales obsoletas
     const inputInvitado = document.getElementById('n');
     const inputPases = document.getElementById('p');
     const inputMesa = document.getElementById('m');
@@ -94,7 +93,20 @@ function u(){
     divQ.innerHTML = '';
     new QRCode(divQ, {text: url, width: 160, height: 160});
     
-    txtMsg.value = '🎫 ' + nombreEventoGlobal + '\n\nHola ' + nombreInvitado + ',\nTe presentamos tu boleto digital.\n\n📌 Pases: ' + pasesVal + '\n📌 Mesa: ' + mesaVal + '\n\nAccede a tu boleto aquí:\n' + url;
+    // REDACCIÓN FORMAL DEL MENSAJE DE WHATSAPP
+    txtMsg.value = '✨ *' + nombreEventoGlobal.toUpperCase() + '* ✨\n\n' +
+                   'Estimado/a *' + nombreInvitado + '*,\n\n' +
+                   'Nos complace enormemente invitarle a compartir con nosotros este momento tan especial e inolvidable.\n\n' +
+                   'A continuación, le compartimos los detalles de nuestro evento:\n\n' +
+                   '📖 *Invitación Digital:* https://www.qrcreator.dev/es-ES/p/9824EADF\n' +
+                   '🌐 *Página Web del Evento:* https://barrientosmtzluis-jpg.github.io/XV-ANAPAU/\n\n' +
+                   '━━━━━━━━━━━━━━━━━━━━━━\n' +
+                   '🎟️ *SU PASE DIGITAL DE ACCESO*\n' +
+                   '• *Pases asignados:* ' + pasesVal + '\n' +
+                   '• *Mesa reservada:* ' + mesaVal + '\n\n' +
+                   '👉 Descargue su boleto QR indispensable para el acceso aquí:\n' + url + '\n' +
+                   '━━━━━━━━━━━━━━━━━━━━━━\n\n' +
+                   'Agradecemos de corazón confirmar su asistencia. ¡Le esperamos!';
 }
 
 function s(){
