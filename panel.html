@@ -3,87 +3,47 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>Panel Profesional - Registro</title>
+    <title>Panel Profesional - Registro XV</title>
     <style>
-        body { font-family: Arial, sans-serif; background: #eef2f7; margin: 0; }
-        
-        /* Barra de Navegación */
-        .navbar { background: #0a7cff; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; color: #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        .navbar h1 { margin: 0; font-size: 32px; font-weight: 800; letter-spacing: -0.5px; }
-        
-        /* Botón de cierre de sesión extra pequeño */
-        .btn-logout { 
-            background: rgba(255, 255, 255, 0.15); 
-            color: #fff; 
-            border: 1px solid rgba(255, 255, 255, 0.3); 
-            padding: 3px 8px; 
-            font-size: 10px; 
-            border-radius: 3px; 
-            cursor: pointer; 
-            text-transform: uppercase;
-            transition: background 0.2s; 
-        }
-        .btn-logout:hover { background: rgba(255, 255, 255, 0.3); }
-        
-        /* Contenedor Principal */
-        .wrap { max-width: 950px; margin: 30px auto; background: #fff; padding: 24px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-        h2 { color: #333; margin-top: 0; margin-bottom: 20px; font-size: 22px; border-bottom: 2px solid #eef2f7; padding-bottom: 10px; }
-        
-        /* Grid */
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
-        @media (max-width: 768px) { .grid { grid-template-columns: 1fr; } }
-        
-        label { display: block; font-weight: bold; color: #4b5563; margin-top: 12px; margin-bottom: 4px; }
-        input, textarea, button { width: 100%; padding: 11px; margin: 4px 0 12px 0; box-sizing: border-box; border-radius: 8px; border: 1px solid #ccc; font-size: 15px; }
-        button { background: #0a7cff; color: #fff; border: 0; font-weight: bold; cursor: pointer; transition: background 0.2s; font-size: 16px; }
-        button:hover { background: #0062cc; }
-        button.btn-success { background: #10b981; margin-top: 10px; }
-        button.btn-success:hover { background: #059669; }
-        
-        /* Tarjeta */
-        .card { border: 1px solid #e5e7eb; padding: 20px; border-radius: 12px; background: #f9fafb; text-align: center; }
-        #tn { font-size: 24px; color: #111827; margin: 15px 0 5px 0; }
-        #q { display: inline-block; margin-top: 10px; background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        body{font-family:Segoe UI,Tahoma,sans-serif;background:#f0f2f5;margin:0}
+        .wrap{max-width:900px;margin:30px auto;background:#fff;padding:25px;border-radius:15px;box-shadow:0 4px 15px rgba(0,0,0,0.1)}
+        .grid{display:grid;grid-template-columns:1fr 1fr;gap:25px}
+        @media(max-width:768px){.grid{grid-template-columns:1fr}}
+        input,textarea,button{width:100%;padding:12px;margin:8px 0;box-sizing:border-box;border:1px solid #ddd;border-radius:8px}
+        button{background:#6366f1;color:#fff;border:0;font-weight:bold;cursor:pointer;transition:0.3s}
+        button:hover{background:#4f46e5}
+        button.btn-success{background:#10b981}
+        button.btn-success:hover{background:#059669}
+        .card{border:1px solid #e5e7eb;padding:20px;border-radius:15px;background:#f9fafb;text-align:center}
+        h1{color:#4f46e5;margin-top:0;border-bottom:2px solid #eef2f7;padding-bottom:10px}
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
 <body>
 
-<script>
-    if (sessionStorage.getItem('panel_session_active') !== 'true') {
-        window.location.replace('index.html');
-    }
-</script>
-
-<div class="navbar">
-    <h1>PANEL DE ADMINISTRACION</h1>
-    <button class="btn-logout" onclick="cerrarSesion()">Cerrar Sesión</button>
-</div>
-
 <div class='wrap'>
-    <h2>Registro de Boletos Electrónicos</h2>
+    <h1>XV Años de Ana Paula</h1>
     <div class='grid'>
         <div>
-            <label for="n">Invitado / Familia</label>
-            <input id="n" placeholder="Ej. Familia Barrientos Hernandez" oninput="u()">
-            <label for="p">Pases Totales</label>
-            <input id="p" type="number" value="1" min="1" oninput="u()">
-            <label for="m">Mesa Asignada</label>
+            <label>Invitado / Familia</label>
+            <input id="n" placeholder="Ej. Familia Pérez Mendoza" oninput="u()">
+            <label>Pases Totales</label>
+            <input id="p" type="number" value="1" oninput="u()">
+            <label>Mesa</label>
             <input id="m" value='Mesa A' oninput="u()">
-            <button class="btn-success" onclick="registrarInvitadoFirebase()">1. Generar y Registrar Boleto</button>
+            <button class="btn-success" onclick="registrarInvitadoFirebase()">1. Generar Boleto</button>
             <hr>
-            <label for="t">Número de WhatsApp</label>
-            <input id="t" placeholder="Ej. 5215512345678">
-            <label for="msg">Mensaje para Enviar</label>
-            <textarea id="msg" rows="8" placeholder="El mensaje se generará automáticamente..."></textarea>
+            <label>WhatsApp (Ej: 5215512345678)</label>
+            <input id="t" placeholder="521...">
+            <textarea id="msg" rows="10" placeholder="El mensaje aparecerá aquí..."></textarea>
             <button onclick="s()">2. Enviar por WhatsApp</button>
         </div>
         <div class='card'>
-            <h3>Vista previa del QR (Control Puerta)</h3>
+            <h3>Código QR de Acceso</h3>
             <h2 id="tn">-</h2>
             <p id="tp">Pases: -</p>
             <p id="tm">Mesa: -</p>
-            <div id="q"></div>
+            <div id="q" style="display:flex; justify-content:center; margin-top:10px;"></div>
         </div>
     </div>
 </div>
@@ -101,29 +61,40 @@ async function registrarInvitadoFirebase() {
     const name = document.getElementById('n').value.trim();
     if (!name) return alert('Ingrese nombre del invitado.');
     const ticketId = "TKT-" + Date.now();
-    const data = { id: ticketId, familia: name, pasesTotales: document.getElementById('p').value, mesa: document.getElementById('m').value };
-    
+    const data = { id: ticketId, familia: name, pases: document.getElementById('p').value, mesa: document.getElementById('m').value };
+
     let res = await fetch(`${FIREBASE_BASE_URL}invitados/${ticketId}.json`, { method: 'PUT', body: JSON.stringify(data) });
-    if (res.ok) { alert('Boleto guardado.'); actualizarVistaYMensajeFinal(data); }
+    if (res.ok) {
+        alert('Boleto guardado con éxito.');
+        actualizarVistaYMensaje(data);
+    }
 }
 
-function actualizarVistaYMensajeFinal(data) {
-    let urlLlegada = 'https://barrientosmtzluis-jpg.github.io/boletos/llegada.html?id=' + data.id;
-    const divQ = document.getElementById('q'); divQ.innerHTML = '';
-    new QRCode(divQ, {text: urlLlegada, width: 160, height: 160});
+function actualizarVistaYMensaje(data) {
+    let path = window.location.href.split('/').slice(0, -1).join('/');
+    let urlQR = path + '/llegada.html?id=' + data.id;
+
+    const divQ = document.getElementById('q');
+    divQ.innerHTML = '';
+    new QRCode(divQ, {text: urlQR, width: 160, height: 160});
     
-    let urlBoletoInvitado = 'https://barrientosmtzluis-jpg.github.io/boletos/boleto.html?id=' + data.id;
-    document.getElementById('msg').value = '✨ *PANEL DE ADMINISTRACION* ✨\n\n' +
+    document.getElementById('msg').value = '✨ ¡Tenemos una invitación muy especial para ti! ✨\n\n' +
         'Estimado/a *' + data.familia + '*,\n\n' +
-        '🎟️ *SU PASE DIGITAL*\n• Pases: ' + data.pasesTotales + '\n• Mesa: ' + data.mesa + '\n\n' +
-        'Acceso aquí: ' + urlBoletoInvitado;
+        'Nos complace enormemente invitarte a compartir con nosotros un momento inolvidable en los XV años de Ana Paula Barrientos. En el siguiente enlace podrás conocer todos los detalles de nuestro evento, itinerario y locación:\n\n' +
+        '👉 Nuestra Invitación Digital:\nhttps://barrientosmtzluis-jpg.github.io/XV-ANAPAU/\n\n' +
+        '🎫 De igual manera, te hacemos llegar tu Pase Digital Inteligente válido para ' + data.pases + ' personas.\n' +
+        '📍 Mesa asignada: *' + data.mesa + '*\n\n' +
+        'Para ingresar de forma ágil el día del evento, solo haz clic aquí abajo y presenta el código QR desde tu pantalla:\n\n' +
+        '👉 Tu Boleto de Acceso:\n' + urlQR + '\n\n' +
+        '¡Tu presencia hará que este día sea aún más especial! Esperamos contar contigo. ✨🥂';
 }
 
 function s(){
-    window.open('https://api.whatsapp.com/send?phone=' + document.getElementById('t').value + '&text=' + encodeURIComponent(document.getElementById('msg').value), '_blank');
+    let tel = document.getElementById('t').value;
+    let msg = document.getElementById('msg').value;
+    if(!tel || !msg) return alert('Por favor genera el boleto y escribe el teléfono.');
+    window.open('https://api.whatsapp.com/send?phone=' + tel + '&text=' + encodeURIComponent(msg), '_blank');
 }
-
-function cerrarSesion() { sessionStorage.removeItem('panel_session_active'); window.location.replace('index.html'); }
 </script>
 </body>
 </html>
