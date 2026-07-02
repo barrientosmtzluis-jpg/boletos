@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>Gestor de Eventos XV</title>
+    <title>Gestor de Eventos XV - Panel</title>
     <style>
         body{font-family:Segoe UI,Tahoma,sans-serif;background:#f0f2f5;margin:0}
         .wrap{max-width:900px;margin:30px auto;background:#fff;padding:25px;border-radius:15px;box-shadow:0 4px 15px rgba(0,0,0,0.1)}
@@ -26,10 +26,11 @@
 <div class='wrap' id="app">
     <div id="configPanel">
         <h2>Configuración del Evento</h2>
+        <p style="color:#6b7280; font-size:14px; margin-bottom:20px;">Por favor, ingresa los datos base del evento para habilitar el gestor.</p>
         <input id="cfg_nombre" placeholder="Nombre del Evento (Ej. XV Años de Ana Paula)">
         <input id="cfg_invitados" type="number" placeholder="Cantidad total de invitados esperados">
         <input id="cfg_mesas" type="number" placeholder="Cantidad de mesas">
-        <button onclick="configurarEvento()">Guardar y Abrir Panel</button>
+        <button onclick="configurarEvento()">Guardar y Habilitar Panel</button>
     </div>
 
     <div id="mainPanel" style="display:none;">
@@ -63,30 +64,43 @@
 <script>
 const FIREBASE_BASE_URL = "https://xvpau-36eff-default-rtdb.firebaseio.com/";
 
-// Verifica si ya existe configuración al iniciar la app
+// Bloqueo de Seguridad + Validación de Configuración previa en Firebase
 window.onload = async function() {
+    // Validar si el usuario pasó por la pantalla de Login primero
+    if (sessionStorage.getItem('panel_session_active') !== 'true') {
+        alert('Acceso denegado. Por favor inicia sesión.');
+        window.location.replace('index.html');
+        return;
+    }
+
     try {
         let res = await fetch(`${FIREBASE_BASE_URL}config.json`);
         if (res.ok) {
             const config = await res.json();
+            // Si ya hay un evento registrado en Firebase, abre el panel directo
             if (config && config.nombre) {
                 iniciarPanel(config);
             } else {
+                // Si la BD está en blanco, obliga a configurar la información
                 document.getElementById('configPanel').style.display = 'block';
             }
         }
     } catch (error) {
-        console.error("Error cargando configuración:", error);
+        console.error("Error cargando base de datos:", error);
         document.getElementById('configPanel').style.display = 'block';
     }
 };
 
 async function configurarEvento() {
-    const nombre = document.getElementById('cfg_nombre').value;
+    const nombre = document.getElementById('cfg_nombre').value.trim();
     const inv = document.getElementById('cfg_invitados').value;
     const mesas = document.getElementById('cfg_mesas').value;
-    if(!nombre) return alert('Por favor ingresa el nombre del evento');
+    
+    if(!nombre || !inv || !mesas) return alert('Por favor completa todos los campos de configuración.');
+
     const config = { nombre, totalInvitados: inv, totalMesas: mesas };
+    
+    // Almacena la estructura del evento en Firebase
     await fetch(`${FIREBASE_BASE_URL}config.json`, { method: 'PUT', body: JSON.stringify(config) });
     iniciarPanel(config);
 }
@@ -102,7 +116,6 @@ function forzarConfiguracion() {
     document.getElementById('configPanel').style.display = 'block';
 }
 
-// Actualiza la tarjeta de vista previa lateral en tiempo real
 function u() {
     document.getElementById('tn').textContent = document.getElementById('n').value.trim() || '-';
     document.getElementById('tp').textContent = 'Pases: ' + document.getElementById('p').value;
@@ -117,7 +130,6 @@ async function registrarInvitadoFirebase() {
     const pases = document.getElementById('p').value;
     const mesa = document.getElementById('m').value;
     
-    // Guardamos la estructura en Firebase con estado 'Pendiente' para el control de accesos
     const data = { id: ticketId, familia: name, pases: pases, mesa: mesa, estado: "Pendiente" };
     
     let res = await fetch(`${FIREBASE_BASE_URL}invitados/${ticketId}.json`, { method: 'PUT', body: JSON.stringify(data) });
@@ -127,20 +139,15 @@ async function registrarInvitadoFirebase() {
     }
 }
 
-// Genera el código QR y la plantilla del mensaje vinculando la página de recepción externa
 function actualizarVistaYMensaje(data) {
-    // Detecta la URL base actual donde está alojado este archivo index.html
     let path = window.location.href.split('/').slice(0, -1).join('/');
-    
-    // Vincula con la página 'llegada.html' pasándole solo el ID único del boleto generado
+    // Envía únicamente el ID correspondiente para que 'llegada.html' lo lea desde Firebase
     let urlBoleto = path + '/llegada.html?id=' + data.id;
 
-    // Crea el código QR dinámico apuntando a la verificación de la llegada
     const divQ = document.getElementById('q');
     divQ.innerHTML = '';
     new QRCode(divQ, {text: urlBoleto, width: 160, height: 160});
     
-    // Coloca el mensaje armado dentro del bloque de texto listo para enviar
     document.getElementById('msg').value = generarTextoMensaje(data.familia, data.pases, data.mesa, urlBoleto);
 }
 
