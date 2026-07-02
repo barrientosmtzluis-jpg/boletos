@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <title>Panel Profesional - Registro</title>
     <style>
-        body{font-family:Arial;background:#eef2f7;margin:0}.wrap{max-width:900px;margin:30px auto;background:#fff;padding:24px;border-radius:12px;box-shadow:0 2px 10px #0002}
+        body{font-family:Arial, sans-serif;background:#eef2f7;margin:0}.wrap{max-width:900px;margin:30px auto;background:#fff;padding:24px;border-radius:12px;box-shadow:0 2px 10px #0002}
         .grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}input,textarea,button{width:100%;padding:10px;margin:6px 0;box-sizing:border-box}
         button{background:#0a7cff;color:#fff;border:0;border-radius:8px;font-weight:bold;cursor:pointer}
         button.btn-success{background:#28a745} button.btn-success:hover{background:#218838}
@@ -24,7 +24,7 @@
             <label>Invitado / Familia</label>
             <input id="n" placeholder="Ej. Familia Barrientos" oninput="u()">
             <label>Pases Totales</label>
-            <input id="p" type="number" value="1" oninput="u()">
+            <input id="p" type="number" value="1" min="1" oninput="u()">
             <label>Mesa</label>
             <input id="m" value='Mesa A' oninput="u()">
             
@@ -48,6 +48,8 @@
 
 <script>
 const FIREBASE_BASE_URL = "https://xvpau-36eff-default-rtdb.firebaseio.com/";
+// ⚠️ COLOCA AQUÍ EL MISMO TOKEN QUE PUSISTE EN LAS REGLAS DE FIREBASE
+const TOKEN_SEGURIDAD = "Anapau2026*Secret"; 
 let nombreEventoGlobal = "Invitación Especial"; 
 
 window.addEventListener('DOMContentLoaded', async () => {
@@ -59,7 +61,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     u();
 
     try {
-        let res = await fetch(FIREBASE_BASE_URL + "configuracion.json");
+        let res = await fetch(`${FIREBASE_BASE_URL}configuracion.json`);
         if (res.ok) {
             let data = await res.json();
             if (data && data.evento) {
@@ -101,7 +103,8 @@ async function registrarInvitadoFirebase() {
     };
 
     try {
-        let res = await fetch(`${FIREBASE_BASE_URL}invitados/${ticketId}.json`, {
+        // Enviamos el token embebido en la URL de la consulta para pasar las reglas
+        let res = await fetch(`${FIREBASE_BASE_URL}invitados/${ticketId}.json?auth=${TOKEN_SEGURIDAD}`, {
             method: 'PUT',
             body: JSON.stringify(invitadoData),
             headers: { 'Content-Type': 'application/json' }
@@ -111,7 +114,7 @@ async function registrarInvitadoFirebase() {
             alert('¡Boleto guardado en Firebase con éxito!');
             actualizarVistaYMensajeFinal(invitadoData);
         } else {
-            alert('Error al guardar en la base de datos de Firebase.');
+            alert('Error de autenticación o escritura en Firebase.');
         }
     } catch (error) {
         console.error("Error de red:", error);
@@ -124,16 +127,14 @@ function actualizarVistaYMensajeFinal(data) {
     document.getElementById('tp').textContent = 'Pases: ' + data.pasesTotales;
     document.getElementById('tm').textContent = 'Mesa: ' + data.mesa;
     
-    // 1. QR del Panel -> Abre directamente la validación del Staff en puerta
+    // El QR de control de accesos del panel requerirá autenticación para validar
     let urlLlegada = 'https://barrientosmtzluis-jpg.github.io/XV-ANAPAU/llegada.html?id=' + data.id;
     const divQ = document.getElementById('q');
     divQ.innerHTML = '';
     new QRCode(divQ, {text: urlLlegada, width: 160, height: 160});
     
-    // 2. URL del Boleto Digital -> Es el link personal y estético para el Invitado
     let urlBoletoInvitado = 'https://barrientosmtzluis-jpg.github.io/XV-ANAPAU/boleto.html?id=' + data.id;
 
-    // Construcción del mensaje para WhatsApp
     document.getElementById('msg').value = '✨ *' + nombreEventoGlobal.toUpperCase() + '* ✨\n\n' +
                    'Estimado/a *' + data.familia + '*,\n\n' +
                    'Nos complace enormemente invitarle a compartir con nosotros este momento tan especial.\n\n' +
