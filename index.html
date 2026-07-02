@@ -8,7 +8,6 @@
     <style>
         body { 
             font-family: 'Segoe UI', Arial, sans-serif; 
-            /* Fondo con sutil degradado que emula la transición del logotipo */
             background: linear-gradient(135deg, #f0f4f8 0%, #e1e9f3 100%); 
             margin: 0; 
             display: flex; 
@@ -19,12 +18,10 @@
             padding: 20px; 
             box-sizing: border-box; 
         }
-
         .login-card { 
             background: #fff; 
             padding: 40px 30px 30px 30px; 
             border-radius: 16px; 
-            /* Sombra profunda y suave con el tono azul marino corporativo del logo */
             box-shadow: 0 10px 30px rgba(11, 30, 63, 0.08); 
             width: 100%; 
             max-width: 380px; 
@@ -33,24 +30,20 @@
             margin-bottom: 25px; 
             border: 1px solid rgba(11, 30, 63, 0.03);
         }
-
-        /* Contenedor optimizado para el logotipo de Pixelink */
         .brand-logo {
             width: 100%;
             max-width: 220px;
             height: auto;
             margin-bottom: 25px;
         }
-
         h2 { 
-            color: #0b1e3f; /* Azul Marino Corporativo del logotipo */
+            color: #0b1e3f; 
             margin-top: 0; 
             margin-bottom: 25px; 
             font-size: 20px;
             font-weight: 700;
             letter-spacing: 0.5px;
         }
-
         label { 
             display: block; 
             text-align: left; 
@@ -59,7 +52,6 @@
             margin-bottom: 8px; 
             font-size: 14px;
         }
-
         input { 
             width: 100%; 
             padding: 14px; 
@@ -71,18 +63,14 @@
             text-align: center; 
             color: #0b1e3f;
             transition: all 0.2s ease;
-            background-content: #fcfdfe;
         }
-
         input:focus {
-            border-color: #00a4ba; /* Color Cian extraído del logotipo */
+            border-color: #00a4ba; 
             outline: none;
             box-shadow: 0 0 0 3px rgba(0, 164, 186, 0.15);
             background: #fff;
         }
-
         button { 
-            /* Degradado premium dinámico basado en los colores del isotipo */
             background: linear-gradient(135deg, #0054a6 0%, #00a4ba 100%); 
             color: #fff; 
             border: 0; 
@@ -95,19 +83,16 @@
             transition: transform 0.2s, opacity 0.2s, box-shadow 0.2s; 
             box-shadow: 0 4px 12px rgba(0, 84, 166, 0.25);
         }
-
         button:hover { 
             transform: translateY(-1px);
             box-shadow: 0 6px 15px rgba(0, 84, 166, 0.35);
             opacity: 0.95;
         }
-
         button:active {
             transform: translateY(1px);
         }
-
         .error-msg { 
-            color: #e11d48; /* Color Rosa/Rojo de advertencia balanceado con el logo */
+            color: #e11d48; 
             font-size: 14px; 
             font-weight: 600; 
             margin-bottom: 20px; 
@@ -117,8 +102,6 @@
             border-radius: 6px;
             border: 1px solid #ffe4e6;
         }
-        
-        /* Enlace de Olvidé Contraseña alineado al acento Rosa/Naranja del logo */
         .forgot-password { 
             display: inline-block; 
             margin-top: 20px; 
@@ -128,13 +111,10 @@
             font-weight: 600; 
             transition: color 0.2s; 
         }
-
         .forgot-password:hover { 
-            color: #e04868; /* Tono magenta/rosa de la transición del logotipo */
+            color: #e04868; 
             text-decoration: underline; 
         }
-
-        /* Estilos del Footer Corporativo - PIXELINK Invitaciones */
         .brand-footer { 
             text-align: center; 
             max-width: 360px; 
@@ -143,7 +123,6 @@
             font-size: 12.5px; 
             line-height: 1.6; 
         }
-
         .brand-footer .created-by { 
             font-size: 14px; 
             font-weight: bold; 
@@ -151,46 +130,39 @@
             margin-bottom: 6px; 
             letter-spacing: 0.5px; 
         }
-
         .brand-footer .created-by span { 
             background: linear-gradient(135deg, #0054a6, #00a4ba);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
-
-        .brand-footer .social-links { 
+        .social-links { 
             display: flex; 
             justify-content: center; 
             gap: 18px; 
             margin: 12px 0; 
         }
-
-        .brand-footer .social-links a { 
+        .social-links a { 
             color: #0b1e3f; 
             font-size: 18px; 
             transition: color 0.2s, transform 0.2s; 
             text-decoration: none; 
         }
-
-        .brand-footer .social-links a:hover { 
+        .social-links a:hover { 
             color: #00a4ba; 
             transform: scale(1.1);
         }
-
-        .brand-footer .contact-info { 
+        .contact-info { 
             display: flex; 
             flex-direction: column; 
             gap: 5px; 
             font-size: 12px; 
         }
-
-        .brand-footer .contact-info a { 
+        .contact-info a { 
             color: #4b5563; 
             text-decoration: none; 
             font-weight: 500;
         }
-
-        .brand-footer .contact-info a:hover { 
+        .contact-info a:hover { 
             color: #0054a6;
             text-decoration: underline; 
         }
@@ -234,7 +206,6 @@
 </footer>
 
 <script>
-// CONTRASEÑA DE ACCESO LOCAL AL PANEL
 const CLAVE_CORRECTA = "Anapau2026*Secret"; 
 
 function validarAcceso(event) {
@@ -245,7 +216,7 @@ function validarAcceso(event) {
     if (inputPass === CLAVE_CORRECTA) {
         errorDiv.style.display = 'none';
         sessionStorage.setItem('panel_session_active', 'true');
-        // Redirecciona de forma limpia eliminando el historial de login inmediato
+        // Redirecciona al panel de administración del evento
         window.location.replace('panel.html');
     } else {
         errorDiv.style.display = 'block';
@@ -256,13 +227,10 @@ function validarAcceso(event) {
 
 function recuperarPassword(event) {
     event.preventDefault();
-    
     const numeroSoporte = "529841174935";
     const mensajeSoporte = "Hola PIXELINK, requiero asistencia técnica. Olvidé la contraseña de administrador para ingresar al Panel Profesional de Boletos Electrónicos. ¿Podrían asistirme con la verificación?";
-    
     window.open('https://api.whatsapp.com/send?phone=' + numeroSoporte + '&text=' + encodeURIComponent(mensajeSoporte), '_blank');
 }
 </script>
-
 </body>
 </html>
