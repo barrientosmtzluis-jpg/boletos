@@ -128,18 +128,23 @@ async function registrarInvitadoFirebase() {
 }
 
 function actualizarVistaYMensaje(data) {
-    let path = window.location.href.split('/').slice(0, -1).join('/');
-    let urlQR = path + '/llegada.html?id=' + data.id;
+    // Generar la URL del boleto con el formato requerido
+    let urlBoleto = `https://barrientosmtzluis-jpg.github.io/boletos/?invitado=${encodeURIComponent(data.familia)}&pases=${data.pases}&mesa=${encodeURIComponent(data.mesa)}`;
 
     const divQ = document.getElementById('q');
     divQ.innerHTML = '';
-    new QRCode(divQ, {text: urlQR, width: 160, height: 160});
+    new QRCode(divQ, {text: urlBoleto, width: 160, height: 160});
     
-    document.getElementById('msg').value = '✨ ¡Tenemos una invitación muy especial! ✨\n\n' +
-        'Estimado/a *' + data.familia + '*,\n\n' +
-        'Te hacemos llegar tu Pase Digital Inteligente válido para ' + data.pases + ' personas.\n' +
-        '📍 Mesa asignada: *' + data.mesa + '*\n\n' +
-        '👉 Tu Boleto de Acceso:\n' + urlQR;
+    document.getElementById('msg').value = '✨ ¡Tenemos una invitación muy especial para ti! ✨\n\n' +
+        'Estimada familia / amigo ' + data.familia + ',\n\n' +
+        'Nos complace enormemente invitarte a compartir con nosotros un momento inolvidable. En el siguiente enlace podrás conocer todos los detalles de nuestro evento, itinerario y locación:\n\n' +
+        '👉 Nuestra Invitación Digital:\nhttps://www.qrcreator.dev/es-ES/p/9824EADF\n\n' +
+        '👉 Sitio WEB del evento:\nhttps://barrientosmtzluis-jpg.github.io/XV-ANAPAU/\n\n' +
+        '🎫 De igual manera, te hacemos llegar tu Pase Digital Inteligente válido para ' + data.pases + ' personas.\n' +
+        '📍 Mesa asignada: ' + data.mesa + '\n\n' +
+        'Para ingresar de forma ágil el día del evento, solo haz clic aquí abajo y presenta el código QR desde tu pantalla:\n\n' +
+        '👉 Tu Boleto de Acceso:\n' + urlBoleto + '\n\n' +
+        '¡Tu presencia hará que este día sea aún más especial! Esperamos contar contigo. ✨🥂';
 }
 
 function s(){
