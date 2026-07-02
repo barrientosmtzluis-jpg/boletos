@@ -174,7 +174,7 @@ function actualizarVistaYMensajeFinal(data) {
     document.getElementById('tm').textContent = 'Mesa: ' + data.mesa;
     
     // 1. QR del Panel Administrativo -> Abre la pantalla del portero de forma directa
-    let urlLlegada = 'https://barrientosmtzluis-jpg.github.io/XV-ANAPAU/llegada.html?id=' + data.id;
+    let urlLlegada = 'https://barrientosmtzluis-jpg.github.io/boletos/llegada.html?id=' + data.id;
     const divQ = document.getElementById('q');
     divQ.innerHTML = '';
     new QRCode(divQ, {text: urlLlegada, width: 160, height: 160});
