@@ -1,72 +1,3 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mi Pase Digital - XV Años</title>
-    <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; box-sizing: border-box; }
-        .ticket-card { max-width: 450px; width: 100%; background: #ffffff; border-radius: 20px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.15); border: 1px solid #e5e7eb; position: relative; }
-        .ticket-header { background: linear-gradient(135deg, #6366f1, #4f46e5); color: white; padding: 30px 20px; text-align: center; }
-        .ticket-header h1 { margin: 0; font-size: 24px; letter-spacing: 1px; }
-        .ticket-header p { margin: 5px 0 0 0; opacity: 0.8; font-size: 14px; }
-        .ticket-body { padding: 30px 25px; text-align: center; }
-        .guest-name { font-size: 22px; color: #1f2937; font-weight: bold; margin-bottom: 20px; }
-        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px; }
-        .info-box { background: #f9fafb; border: 1px solid #eef2f6; padding: 12px; border-radius: 12px; }
-        .info-label { font-size: 11px; color: #6b7280; text-transform: uppercase; font-weight: 600; margin-bottom: 4px; display: block; }
-        .info-value { font-size: 16px; color: #1f2937; font-weight: bold; }
-        .status-banner { padding: 10px; border-radius: 10px; font-weight: bold; font-size: 14px; margin-top: 15px; }
-        .status-pendiente { background: #fef3c7; color: #d97706; }
-        .status-parcial { background: #e0f2fe; color: #0369a1; }
-        .status-completo { background: #d1fae5; color: #065f46; }
-        .qr-container { display: flex; justify-content: center; margin: 25px 0 10px 0; }
-        .footer-msg { font-size: 12px; color: #9ca3af; margin-top: 15px; }
-        #loading { text-align: center; font-size: 18px; color: #4f46e5; font-weight: 500; }
-    </style>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-</head>
-<body>
-
-<div id="loading">Cargando tu pase digital...</div>
-
-<div class="ticket-card" id="ticket" style="display: none;">
-    <div class="ticket-header">
-        <p>INVITACIÓN EXCLUSIVA</p>
-        <h1 id="evtName">XV AÑOS</h1>
-    </div>
-    
-    <div class="ticket-body">
-        <div class="guest-name" id="lblFamilia">-</div>
-        
-        <div class="info-grid">
-            <div class="info-box">
-                <span class="info-label">Mesa Asignada</span>
-                <span class="info-value" id="lblMesa" style="color: #4f46e5; font-size: 18px;">-</span>
-            </div>
-            <div class="info-box">
-                <span class="info-label">Pases Totales</span>
-                <span class="info-value" id="lblTotales">0</span>
-            </div>
-            <div class="info-box">
-                <span class="info-label">Pases Usados</span>
-                <span class="info-value" id="lblUsados" style="color: #dc2626;">0</span>
-            </div>
-            <div class="info-box">
-                <span class="info-label">Disponibles</span>
-                <span class="info-value" id="lblRestantes" style="color: #16a34a;">0</span>
-            </div>
-        </div>
-
-        <div id="badgeEstado" class="status-banner">Cargando Estado...</div>
-
-        <div class="qr-container">
-            <div id="qrcode"></div>
-        </div>
-        <p class="footer-msg">Presenta este código QR en la entrada del evento.</p>
-    </div>
-</div>
-
 <script>
 const FIREBASE_BASE_URL = "https://xvpau-36eff-default-rtdb.firebaseio.com/";
 
@@ -80,55 +11,79 @@ window.onload = async function() {
     }
 
     try {
-        // 1. Cargar el nombre general del evento configurado en Firebase
-        let resCfg = await fetch(`${FIREBASE_BASE_URL}config.json`);
-        if(resCfg.ok) {
-            let config = await resCfg.json();
-            if(config && config.nombre) document.getElementById('evtName').textContent = config.nombre.toUpperCase();
+        // 1. Cargar la configuración general del evento
+        try {
+            let resCfg = await fetch(`${FIREBASE_BASE_URL}config.json`);
+            if(resCfg.ok) {
+                let config = await resCfg.json();
+                if(config && config.nombre) {
+                    document.getElementById('evtName').textContent = config.nombre.toUpperCase();
+                }
+            }
+        } catch (cfgError) {
+            console.warn("No se pudo cargar la configuración del evento, usando nombre por defecto.", cfgError);
         }
 
         // 2. Cargar datos específicos del boleto
         let resTkt = await fetch(`${FIREBASE_BASE_URL}invitados/${ticketId}.json`);
-        if(resTkt.ok) {
-            let data = await resTkt.json();
-            if(!data) {
-                document.getElementById('loading').innerHTML = "<p style='color:red;'>El pase digital no existe o fue cancelado.</p>";
-                return;
-            }
-
-            // Ocultar cargando y mostrar pase
-            document.getElementById('loading').style.display = 'none';
-            document.getElementById('ticket').style.display = 'block';
-
-            // Inyectar datos en la interfaz
-            document.getElementById('lblFamilia').textContent = data.familia;
-            document.getElementById('lblMesa').textContent = data.mesa;
-            document.getElementById('lblTotales').textContent = data.pases_totales;
-            document.getElementById('lblUsados').textContent = data.pases_usados || 0;
-            document.getElementById('lblRestantes').textContent = data.pases_restantes;
-
-            // Manejar banners de estado visuales para el invitado
-            let badge = document.getElementById('badgeEstado');
-            if(data.pases_restantes === 0) {
-                badge.textContent = "TODOS LOS PASES UTILIZADOS";
-                badge.className = "status-banner status-completo";
-            } else if((data.pases_usados || 0) > 0) {
-                badge.textContent = "ACCESO PARCIAL REGISTRADO";
-                badge.className = "status-banner status-parcial";
-            } else {
-                badge.textContent = "PASE VÁLIDO PARA INGRESAR";
-                badge.className = "status-banner status-pendiente";
-            }
-
-            // Generar el código QR dinámico con la URL de llegada para el staff de recepción
-            let path = window.location.href.split('/').slice(0, -1).join('/');
-            let urlLlegada = path + '/llegada.html?id=' + data.id;
-            new QRCode(document.getElementById("qrcode"), { text: urlLlegada, width: 150, height: 150 });
+        
+        // Si Firebase responde con un error de permisos o ruta inválida
+        if(!resTkt.ok) {
+            document.getElementById('loading').innerHTML = `<p style='color:red;'>Error del servidor (${resTkt.status}). Verifica las reglas de tu base de datos.</p>`;
+            return;
         }
+
+        let data = await resTkt.json();
+        if(!data) {
+            document.getElementById('loading').innerHTML = "<p style='color:red;'>El pase digital no existe o fue cancelado.</p>";
+            return;
+        }
+
+        // Ocultar "cargando" y mostrar pase
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('ticket').style.display = 'block';
+
+        // Inyectar datos en la interfaz de forma segura
+        document.getElementById('lblFamilia').textContent = data.familia || "Invitado Especial";
+        document.getElementById('lblMesa').textContent = data.mesa || "Por asignar";
+        document.getElementById('lblTotales').textContent = data.pases_totales || 0;
+        document.getElementById('lblUsados').textContent = data.pases_usados || 0;
+        
+        // Calcular restantes en JS por si no viene en la base de datos
+        let pasesTotales = parseInt(data.pases_totales) || 0;
+        let pasesUsados = parseInt(data.pases_usados) || 0;
+        let pasesRestantes = data.pases_restantes !== undefined ? data.pases_restantes : (pasesTotales - pasesUsados);
+        
+        document.getElementById('lblRestantes').textContent = pasesRestantes;
+
+        // Manejar banners de estado visuales para el invitado
+        let badge = document.getElementById('badgeEstado');
+        if(pasesRestantes <= 0) {
+            badge.textContent = "TODOS LOS PASES UTILIZADOS";
+            badge.className = "status-banner status-completo";
+        } else if(pasesUsados > 0) {
+            badge.textContent = "ACCESO PARCIAL REGISTRADO";
+            badge.className = "status-banner status-parcial";
+        } else {
+            badge.textContent = "PASE VÁLIDO PARA INGRESAR";
+            badge.className = "status-banner status-pendiente";
+        }
+
+        // Generar el código QR dinámico usando ticketId de la URL (CORREGIDO)
+        let path = window.location.href.split('/').slice(0, -1).join('/');
+        let urlLlegada = path + '/llegada.html?id=' + ticketId; // <- CAMBIADO: data.id por ticketId
+        
+        // Limpiar contenedor por si acaso y generar QR
+        document.getElementById("qrcode").innerHTML = "";
+        new QRCode(document.getElementById("qrcode"), { 
+            text: urlLlegada, 
+            width: 150, 
+            height: 150 
+        });
+
     } catch(e) {
-        document.getElementById('loading').innerHTML = "<p style='color:red;'>Error de conexión al cargar el boleto.</p>";
+        console.error(e);
+        document.getElementById('loading').innerHTML = "<p style='color:red;'>Error de conexión o de lectura al cargar el boleto.</p>";
     }
 };
 </script>
-</body>
-</html>
