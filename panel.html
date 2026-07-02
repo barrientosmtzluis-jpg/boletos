@@ -130,9 +130,9 @@ function actualizarVistaYMensajeFinal(data) {
     document.getElementById('tp').textContent = 'Pases: ' + data.pasesTotales;
     document.getElementById('tm').textContent = 'Mesa: ' + data.mesa;
     
-    // Ruta absoluta automática para llegada.html
-    let baseDir = window.location.href.substring(0, window.location.href.lastIndexOf('/'));
-    let urlLlegada = baseDir + '/llegada.html?id=' + data.id;
+    // DEFINICIÓN DE LA RUTA ABSOLUTA FIJA EN GITHUB PAGES
+    // Esto garantiza que el QR funcione en cualquier celular al ser escaneado.
+    let urlLlegada = 'https://barrientosmtzluis-jpg.github.io/XV-ANAPAU/llegada.html?id=' + data.id;
 
     // Renderizado del código QR seguro
     const divQ = document.getElementById('q');
@@ -154,7 +154,6 @@ function actualizarVistaYMensajeFinal(data) {
                    '━━━━━━━━━━━━━━━━━━━━━━\n\n' +
                    '¡Le esperamos!';
 }
-
 function s(){
     const inputTel = document.getElementById('t');
     const txtMsg = document.getElementById('msg');
