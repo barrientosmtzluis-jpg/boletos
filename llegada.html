@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Control de Accesos - Llegada de Invitados</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #1f2937; color: #fff; margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 15px; box-sizing: border-box; }
+        .card { background: #111827; padding: 25px; border-radius: 16px; box-shadow: 0 4px 25px rgba(0,0,0,0.5); width: 100%; max-width: 450px; text-align: center; border: 1px solid #374151; }
+        h1 { color: #3b82f6; font-size: 22px; margin-top: 0; }
+        .info-box { background: #1f2937; padding: 15px; border-radius: 8px; margin: 15px 0; text-align: left; border: 1px solid #4b5563; }
+        .info-box p { margin: 8px 0; font-size: 16px; color: #d1d5db; }
+        .info-box strong { color: #fff; }
+        .badge { display: inline-block; padding: 5px 10px; border-radius: 20px; font-weight: bold; font-size: 14px; }
+        .badge-green { background: #059669; color: #fff; }
+        .badge-red { background: #dc2626; color: #fff; }
+        label { display: block; font-weight: bold; margin-top: 20px; text-align: left; color: #9ca3af; }
+        input { width: 100%; padding: 12px; margin: 8px 0 15px 0; border: 1px solid #4b5563; background: #374151; color: #fff; border-radius: 8px; font-size: 18px; text-align: center; box-sizing: border-box; }
+        button { background: #2563eb; color: #fff; border: 0; padding: 14px; border-radius: 8px; width: 100%; font-size: 16px; cursor: pointer; font-weight: bold; transition: background 0.2s; }
+        button:hover { background: #1d4ed8; }
+        button:disabled { background: #4b5563; cursor: not-allowed; }
+        .status-msg { margin-top: 15px; font-weight: bold; font-size: 15px; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h1>📍 Llegada de Invitados</h1>
+    <div id="loading">Cargando información del boleto...</div>
+    
+    <div id="content" style="display: none;">
+        <div class="info-box">
+            <p>👪 *Familia / Invitado:* <strong id="lblFamilia">-</strong></p>
+            <p>🪑 *Mesa Asignada:* <strong id="lblMesa">-</strong></p>
+            <p>🎟️ *Pases Originales:* <strong id="lblPasesTotales">-</strong></p>
+            <p>🔄 *Pases Disponibles:* <span id="badgePases" class="badge badge-green">-</span></p>
+        </div>
+
+        <div id="actionForm">
+            <label>¿Cuántas personas ingresan ahora?</label>
+            <input type="number" id="inputIngreso" value="1" min="1">
+            
+            <button id="btnRegistrar" onclick="registrarIngreso()">Registrar Entrada</button>
+        </div>
+        
+        <div id="statusMessage" class="status-msg"></div>
+    </div>
+</div>
+
+<script>
+const FIREBASE_BASE_URL = "https://xvpau-36eff-default-rtdb.firebaseio.com/";
+let ticketId = null;
+let ticketData = null;
+
+window.addEventListener('DOMContentLoaded', () => {
+    const params = new URLSearchParams(window.location.search);
+    ticketId = params.get('id');
+
+    if (!ticketId) {
+        document.getElementById('loading').textContent = "❌ Código de acceso no válido o ID ausente.";
+        return;
+    }
+    obtenerDatosBoleto();
+});
+
+async function obtenerDatosBoleto() {
+    try {
+        let res = await fetch(`${FIREBASE_BASE_URL}invitados/${ticketId}.json`);
+        if (!res.ok) throw new Error("Error de conexión");
+        
+        ticketData = await res.json();
+        
+        if (!ticketData) {
+            document.getElementById('loading').textContent = "❌ El boleto no existe en el sistema.";
+            return;
+        }
+
+        // Mostrar los datos en la interfaz
+        document.getElementById('lblFamilia').textContent = ticketData.familia;
+        document.getElementById('lblMesa').textContent = ticketData.mesa || 'Sin asignar';
+        document.getElementById('lblPasesTotales').textContent = ticketData.pasesTotales;
+        
+        actualizarBadgePases(ticketData.pasesRestantes);
+
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('content').style.display = 'block';
+
+    } catch (error) {
+        console.error(error);
+        document.getElementById('loading').textContent = "❌ Error al conectar con la base de datos.";
+    }
+}
+
+function actualizarBadgePases(restantes) {
+    const badge = document.getElementById('badgePases');
+    badge.textContent = restantes + " restantes";
+    
+    const inputIngreso = document.getElementById('inputIngreso');
+    const btnRegistrar = document.getElementById('btnRegistrar');
+    const statusMessage = document.getElementById('statusMessage');
+
+    if (restantes <= 0) {
+        badge.className = "badge badge-red";
+        inputIngreso.disabled = true;
+        btnRegistrar.disabled = true;
+        statusMessage.textContent = "🚫 ACCESO DENEGADO: Todos los pases de este boleto ya fueron utilizados.";
+        statusMessage.style.color = "#ef4444";
+    } else {
+        badge.className = "badge badge-green";
+        inputIngreso.max = restantes;
+        inputIngreso.value = restantes; // Por defecto sugiere pasar todos los que le quedan
+        statusMessage.textContent = "✅ Boleto Activo";
+        statusMessage.style.color = "#10b981";
+    }
+}
+
+async function registrarIngreso() {
+    const cantidadIngreso = parseInt(document.getElementById('inputIngreso').value) || 0;
+
+    if (cantidadIngreso <= 0) {
+        return alert("Ingrese una cantidad válida de personas.");
+    }
+    if (cantidadIngreso > ticketData.pasesRestantes) {
+        return alert(`No puedes ingresar más personas de las permitidas. Solo quedan ${ticketData.pasesRestantes} pases.`);
+    }
+
+    // Calcular el nuevo saldo de boletos
+    const nuevosRestantes = ticketData.pasesRestantes - cantidadIngreso;
+
+    try {
+        document.getElementById('btnRegistrar').disabled = true;
+        
+        // Guardar la actualización directamente en Firebase (PATCH)
+        let res = await fetch(`${FIREBASE_BASE_URL}invitados/${ticketId}.json`, {
+            method: 'PATCH',
+            body: JSON.stringify({ pasesRestantes: nuevosRestantes }),
+            headers: { 'Content-Type': 'application/json' }
+        });
+
+        if (res.ok) {
+            ticketData.pasesRestantes = nuevosRestantes;
+            actualizarBadgePases(nuevosRestantes);
+            alert(`¡Ingreso registrado correctamente! Entraron ${cantidadIngreso} personas.`);
+        } else {
+            alert("Error al actualizar los datos en el servidor.");
+            document.getElementById('btnRegistrar').disabled = false;
+        }
+    } catch (error) {
+        console.error(error);
+        alert("Error de red al procesar el ingreso.");
+        document.getElementById('btnRegistrar').disabled = false;
+    }
+}
+</script>
+</body>
+</html>
