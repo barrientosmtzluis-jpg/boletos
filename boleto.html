@@ -1,253 +1,134 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mi Pase Digital - XV Anapau</title>
-
-https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap
-.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-
-<style>
-*{
-    box-sizing:border-box;
-    margin:0;
-    padding:0;
-    font-family:'Montserrat',sans-serif;
-}
-
-body{
-    background:#f3f4f6;
-    padding:20px;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    min-height:100vh;
-}
-
-.container{
-    width:100%;
-    max-width:400px;
-}
-
-.ticket{
-    background:linear-gradient(135deg,#1e3a8a,#0f172a);
-    color:#fff;
-    padding:30px 20px;
-    border-radius:16px;
-    text-align:center;
-    box-shadow:0 10px 25px -5px rgba(0,0,0,.4);
-    border:1px solid #1e40af;
-}
-
-.ticket h3{
-    text-transform:uppercase;
-    letter-spacing:2px;
-    font-size:14px;
-    color:#93c5fd;
-    margin-bottom:5px;
-}
-
-.event-title{
-    font-size:22px;
-    font-weight:700;
-    color:#f43f5e;
-    margin-bottom:15px;
-    letter-spacing:1px;
-}
-
-.line{
-    border-top:2px dashed rgba(255,255,255,.2);
-    margin:20px 0;
-}
-
-.qr{
-    background:#fff;
-    padding:15px;
-    border-radius:12px;
-    display:inline-block;
-    margin-top:15px;
-}
-
-.info-p{
-    font-size:13px;
-    color:#cbd5e1;
-    margin-bottom:3px;
-    text-transform:uppercase;
-    letter-spacing:1px;
-}
-
-.info-value{
-    font-size:24px;
-    font-weight:700;
-    color:#f59e0b;
-    margin-bottom:15px;
-}
-
-.mesa-value{
-    font-size:20px;
-    font-weight:700;
-    color:#10b981;
-    margin-bottom:15px;
-}
-
-.alerta-duplicado{
-    background:#ef4444;
-    color:white;
-    font-weight:bold;
-    padding:12px;
-    border-radius:8px;
-    margin-bottom:15px;
-    display:none;
-}
-
-#msgStatus{
-    font-weight:600;
-    color:#1e3a8a;
-    font-size:16px;
-    text-align:center;
-}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Pase Digital - XV Años</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; box-sizing: border-box; }
+        .ticket-card { max-width: 450px; width: 100%; background: #ffffff; border-radius: 20px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.15); border: 1px solid #e5e7eb; position: relative; }
+        .ticket-header { background: linear-gradient(135deg, #6366f1, #4f46e5); color: white; padding: 30px 20px; text-align: center; }
+        .ticket-header h1 { margin: 0; font-size: 24px; letter-spacing: 1px; }
+        .ticket-header p { margin: 5px 0 0 0; opacity: 0.8; font-size: 14px; }
+        .ticket-body { padding: 30px 25px; text-align: center; }
+        .guest-name { font-size: 22px; color: #1f2937; font-weight: bold; margin-bottom: 20px; }
+        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px; }
+        .info-box { background: #f9fafb; border: 1px solid #eef2f6; padding: 12px; border-radius: 12px; }
+        .info-label { font-size: 11px; color: #6b7280; text-transform: uppercase; font-weight: 600; margin-bottom: 4px; display: block; }
+        .info-value { font-size: 16px; color: #1f2937; font-weight: bold; }
+        .status-banner { padding: 10px; border-radius: 10px; font-weight: bold; font-size: 14px; margin-top: 15px; }
+        .status-pendiente { background: #fef3c7; color: #d97706; }
+        .status-parcial { background: #e0f2fe; color: #0369a1; }
+        .status-completo { background: #d1fae5; color: #065f46; }
+        .qr-container { display: flex; justify-content: center; margin: 25px 0 10px 0; }
+        .footer-msg { font-size: 12px; color: #9ca3af; margin-top: 15px; }
+        #loading { text-align: center; font-size: 18px; color: #4f46e5; font-weight: 500; }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
-
 <body>
 
-<div id="msgStatus">Cargando tu pase digital...</div>
+<div id="loading">Cargando tu pase digital...</div>
 
-<div class="container" id="ticketBlock" style="display:none;">
-    <div class="ticket">
-
-        <div class="event-title">XV AÑOS ANAPAU</div>
-
-        <h3>Pase Digital Inteligente</h3>
-
-        <div class="line"></div>
-
-        <div id="alertaPantalla" class="alerta-duplicado">
-            ⚠️ ¡ESTE ACCESO YA FUE UTILIZADO!
+<div class="ticket-card" id="ticket" style="display: none;">
+    <div class="ticket-header">
+        <p>INVITACIÓN EXCLUSIVA</p>
+        <h1 id="evtName">XV AÑOS</h1>
+    </div>
+    
+    <div class="ticket-body">
+        <div class="guest-name" id="lblFamilia">-</div>
+        
+        <div class="info-grid">
+            <div class="info-box">
+                <span class="info-label">Mesa Asignada</span>
+                <span class="info-value" id="lblMesa" style="color: #4f46e5; font-size: 18px;">-</span>
+            </div>
+            <div class="info-box">
+                <span class="info-label">Pases Totales</span>
+                <span class="info-value" id="lblTotales">0</span>
+            </div>
+            <div class="info-box">
+                <span class="info-label">Pases Usados</span>
+                <span class="info-value" id="lblUsados" style="color: #dc2626;">0</span>
+            </div>
+            <div class="info-box">
+                <span class="info-label">Disponibles</span>
+                <span class="info-value" id="lblRestantes" style="color: #16a34a;">0</span>
+            </div>
         </div>
 
-        <p class="info-p">Invitación para la familia:</p>
-        <div class="info-value" id="tNombre">Cargando...</div>
+        <div id="badgeEstado" class="status-banner">Cargando Estado...</div>
 
-        <p class="info-p">Pases Asignados:</p>
-        <h2 id="tPases" style="font-size:22px;color:white;margin-bottom:15px;">-</h2>
-
-        <p class="info-p">Ubicación de Mesa:</p>
-        <div class="mesa-value" id="tMesa">-</div>
-
-        <div class="line"></div>
-
-        <div class="qr">
+        <div class="qr-container">
             <div id="qrcode"></div>
         </div>
-
-        <p id="lblDisponibles" style="font-size:13px;color:#a1a1aa;margin-top:15px;"></p>
-
+        <p class="footer-msg">Presenta este código QR en la entrada del evento.</p>
     </div>
 </div>
 
 <script>
-
 const FIREBASE_BASE_URL = "https://xvpau-36eff-default-rtdb.firebaseio.com/";
 
-window.addEventListener("DOMContentLoaded", async () => {
-
-    const params = new URLSearchParams(window.location.search);
-    const ticketId = params.get("id");
-
-    if (!ticketId) {
-        document.getElementById("msgStatus").textContent = "❌ ID ausente.";
+window.onload = async function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const ticketId = urlParams.get('id');
+    
+    if(!ticketId) {
+        document.getElementById('loading').innerHTML = "<p style='color:red;'>Error: Enlace de pase inválido.</p>";
         return;
     }
 
     try {
-
-        const response = await fetch(
-            `${FIREBASE_BASE_URL}invitados/${ticketId}.json`
-        );
-
-        const data = await response.json();
-
-        if (!data) {
-            document.getElementById("msgStatus").textContent =
-                "❌ Boleto no encontrado.";
-            return;
+        // 1. Cargar el nombre general del evento configurado en Firebase
+        let resCfg = await fetch(`${FIREBASE_BASE_URL}config.json`);
+        if(resCfg.ok) {
+            let config = await resCfg.json();
+            if(config && config.nombre) document.getElementById('evtName').textContent = config.nombre.toUpperCase();
         }
 
-        const total = Number(
-            data.pasesTotales ??
-            data.total ??
-            data.pases ??
-            0
-        );
+        // 2. Cargar datos específicos del boleto
+        let resTkt = await fetch(`${FIREBASE_BASE_URL}invitados/${ticketId}.json`);
+        if(resTkt.ok) {
+            let data = await resTkt.json();
+            if(!data) {
+                document.getElementById('loading').innerHTML = "<p style='color:red;'>El pase digital no existe o fue cancelado.</p>";
+                return;
+            }
 
-        /* CORRECCIÓN PRINCIPAL */
-        const restantes = Number(
-            data.pasesRestantes ??
-            data.restantes ??
-            total
-        );
+            // Ocultar cargando y mostrar pase
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('ticket').style.display = 'block';
 
-        document.getElementById("tNombre").innerText =
-            data.familia || "Invitado";
+            // Inyectar datos en la interfaz
+            document.getElementById('lblFamilia').textContent = data.familia;
+            document.getElementById('lblMesa').textContent = data.mesa;
+            document.getElementById('lblTotales').textContent = data.pases_totales;
+            document.getElementById('lblUsados').textContent = data.pases_usados || 0;
+            document.getElementById('lblRestantes').textContent = data.pases_restantes;
 
-        document.getElementById("tPases").innerText =
-            total + (total === 1 ? " Persona" : " Personas");
+            // Manejar banners de estado visuales para el invitado
+            let badge = document.getElementById('badgeEstado');
+            if(data.pases_restantes === 0) {
+                badge.textContent = "TODOS LOS PASES UTILIZADOS";
+                badge.className = "status-banner status-completo";
+            } else if((data.pases_usados || 0) > 0) {
+                badge.textContent = "ACCESO PARCIAL REGISTRADO";
+                badge.className = "status-banner status-parcial";
+            } else {
+                badge.textContent = "PASE VÁLIDO PARA INGRESAR";
+                badge.className = "status-banner status-pendiente";
+            }
 
-        document.getElementById("tMesa").innerText =
-            data.mesa || "Mesa A";
-
-        const lblDisponibles =
-            document.getElementById("lblDisponibles");
-
-        if (restantes === 0) {
-
-            document.getElementById("alertaPantalla").style.display = "block";
-
-            lblDisponibles.innerHTML =
-                "🚫 Pases disponibles: <strong style='color:#ef4444;'>0</strong>";
-
-        } else {
-
-            lblDisponibles.innerHTML =
-                "✅ Pases activos: <strong style='color:#4ade80;'>"
-                + restantes +
-                "</strong>";
-
+            // Generar el código QR dinámico con la URL de llegada para el staff de recepción
+            let path = window.location.href.split('/').slice(0, -1).join('/');
+            let urlLlegada = path + '/llegada.html?id=' + data.id;
+            new QRCode(document.getElementById("qrcode"), { text: urlLlegada, width: 150, height: 150 });
         }
-
-        document.getElementById("qrcode").innerHTML = "";
-
-        new QRCode(document.getElementById("qrcode"), {
-            text:
-                "https://barrientosmtzluis-jpg.github.io/llegada.html?id=" +
-                ticketId,
-            width: 160,
-            height: 160,
-            correctLevel: QRCode.CorrectLevel.M
-        });
-
-        document.getElementById("msgStatus").style.display = "none";
-        document.getElementById("ticketBlock").style.display = "block";
-
-        console.log("Datos Firebase:", data);
-        console.log("Pases Totales:", total);
-        console.log("Pases Restantes:", restantes);
-
-    } catch (error) {
-
-        console.error(error);
-
-        document.getElementById("msgStatus").textContent =
-            "❌ Error de conexión.";
-
+    } catch(e) {
+        document.getElementById('loading').innerHTML = "<p style='color:red;'>Error de conexión al cargar el boleto.</p>";
     }
-
-});
-
+};
 </script>
-
 </body>
 </html>
