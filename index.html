@@ -34,6 +34,23 @@
 <script>
 const FIREBASE_URL = "https://xvpau-36eff-default-rtdb.firebaseio.com/configuracion.json";
 
+// Al cargar la página, verificamos si ya existen datos previos en Firebase para prellenar los campos
+window.addEventListener('DOMContentLoaded', async () => {
+    try {
+        let response = await fetch(FIREBASE_URL);
+        if (response.ok) {
+            let data = await response.json();
+            if (data) {
+                if (data.evento) document.getElementById('eventoNombre').value = data.evento;
+                if (data.maxInvitados) document.getElementById('totalInvitados').value = data.maxInvitados;
+                if (data.maxMesas) document.getElementById('totalMesas').value = data.maxMesas;
+            }
+        }
+    } catch (error) {
+        console.error("Error al recuperar datos iniciales:", error);
+    }
+});
+
 async function guardarConfiguracion() {
     const nombre = document.getElementById('eventoNombre').value.trim();
     const invitados = document.getElementById('totalInvitados').value;
@@ -52,12 +69,15 @@ async function guardarConfiguracion() {
     try {
         // Guardamos las variables globales en Firebase Realtime Database
         let response = await fetch(FIREBASE_URL, {
-            method: 'PUT', // PUT reemplaza o crea los datos de configuración global
+            method: 'PUT', 
             body: JSON.stringify(data),
             headers: { 'Content-Type': 'application/json' }
         });
 
         if (response.ok) {
+            // Guardado rápido local para acelerar la carga del panel de control
+            localStorage.setItem('eventoNombre_cache', nombre);
+            
             // Redireccionamos al panel de control
             window.location.href = "panel.html";
         } else {
