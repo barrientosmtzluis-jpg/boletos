@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Panel Profesional</title>
+    <style>
+        body{font-family:Arial;background:#eef2f7;margin:0}.wrap{max-width:900px;margin:30px auto;background:#fff;padding:24px;border-radius:12px;box-shadow:0 2px 10px #0002}
+        .grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}input,textarea,button{width:100%;padding:10px;margin:6px 0;box-sizing:border-box}button{background:#0a7cff;color:#fff;border:0;border-radius:8px;font-weight:bold;cursor:pointer}.card{border:1px solid #ddd;padding:15px;border-radius:10px}
+        h1#nombreEventoHeader { margin-top: 0; color: #0a7cff; border-bottom: 2px solid #eef2f7; padding-bottom: 10px; }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+<div class='wrap'>
+    <h1 id="nombreEventoHeader">Cargando evento...</h1>
+    <h2>Panel Profesional de Boletos Electrónicos</h2>
+    
+    <div class='grid'>
+        <div>
+            <label>Invitado</label>
+            <input id=n oninput=u()>
+            <label>Pases</label>
+            <input id=p type=number value=1 oninput=u()>
+            <label>Mesa</label>
+            <input id=m value='Mesa A' oninput=u()>
+            <label>WhatsApp</label>
+            <input id=t placeholder="Ej. 5215512345678">
+            <textarea id=msg rows=8></textarea>
+            <button onclick=s()>Enviar por WhatsApp</button>
+        </div>
+        <div class='card'>
+            <h3>Vista previa</h3>
+            <h2 id=tn></h2>
+            <p id=tp></p>
+            <p id=tm></p>
+            <div id=q></div>
+        </div>
+    </div>
+</div>
+
+<script>
+const FIREBASE_URL = "https://xvpau-36eff-default-rtdb.firebaseio.com/configuracion.json";
+let nombreEventoGlobal = "Invitación Especial"; // Valor por defecto por si falla
+
+// Al cargar la página, traemos las variables desde Firebase
+window.addEventListener('DOMContentLoaded', async () => {
+    try {
+        let res = await fetch(FIREBASE_URL);
+        if (res.ok) {
+            let data = await res.json();
+            if (data && data.evento) {
+                nombreEventoGlobal = data.evento;
+                document.getElementById('nombreEventoHeader').textContent = nombreEventoGlobal;
+                u(); // Refrescar la vista con el nombre real del evento
+            } else {
+                document.getElementById('nombreEventoHeader').textContent = "Panel de Control";
+            }
+        }
+    } catch (e) {
+        console.error("Error cargando variables de Firebase:", e);
+        document.getElementById('nombreEventoHeader').textContent = "Panel de Control";
+    }
+});
+
+function u(){
+    let nombreInvitado = n.value || 'Invitado';
+    let pasesVal = p.value || 1;
+    let mesaVal = m.value || 'Mesa';
+    
+    tn.textContent = nombreInvitado;
+    tp.textContent = 'Pases: ' + pasesVal;
+    tm.textContent = 'Mesa: ' + mesaVal;
+    
+    // Obtenemos la ruta base para que apunte correctamente a boleto.html en el mismo servidor
+    let baseDir = window.location.href.substring(0, window.location.href.lastIndexOf('/'));
+    let url = baseDir + '/boleto.html?invitado=' + encodeURIComponent(nombreInvitado) + '&pases=' + pasesVal + '&mesa=' + encodeURIComponent(mesaVal);
+    
+    q.innerHTML = '';
+    new QRCode(q, {text: url, width: 160, height: 160});
+    
+    // Integramos la variable global del nombre del evento en el mensaje de WhatsApp
+    msg.value = '🎫 ' + nombreEventoGlobal + '\n\nHola ' + nombreInvitado + ',\nTe presentamos tu boleto digital.\n\n📌 Pases: ' + pasesVal + '\n📌 Mesa: ' + mesaVal + '\n\nAccede a tu boleto aquí:\n' + url;
+}
+
+function s(){
+    if(!t.value) return alert('Capture WhatsApp');
+    window.open('https://api.whatsapp.com/send?phone=' + t.value + '&text=' + encodeURIComponent(msg.value), '_blank');
+}
+</script>
+</body>
+</html>
