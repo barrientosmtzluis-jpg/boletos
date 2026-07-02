@@ -1,1 +1,56 @@
-<!DOCTYPE html><html lang='es'><head><meta charset='UTF-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>Boleto</title><script src='https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js'></script><style>body{font-family:Arial;background:#111;color:#fff;display:flex;justify-content:center;align-items:center;height:100vh}.c{background:#1f2937;padding:20px;border-radius:12px;text-align:center}</style></head><body><div class=c><h2 id=n></h2><p id=p></p><p id=m></p><div id=q></div></div><script>let u=new URLSearchParams(location.search);n.textContent=u.get('invitado');p.textContent='Pases: '+u.get('pases');m.textContent=u.get('mesa');new QRCode(q,{text:location.href,width:160,height:160});</script></body></html>
+<!DOCTYPE html><html lang='es'>
+<head>
+    <meta charset='UTF-8'>
+    <meta name='viewport' content='width=device-width,initial-scale=1'>
+    <title>Boleto Digital</title>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js'></script>
+    <style>
+        body{font-family:Arial,sans-serif;background:#111;color:#fff;display:flex;justify-content:center;align-items:center;height:100vh;margin:0}
+        .c{background:#1f2937;padding:30px;border-radius:16px;text-align:center;box-shadow:0 4px 20px rgba(0,0,0,0.5);width:90%;max-width:320px}
+        h1{color:#0a7cff;font-size:24px;margin-bottom:5px;margin-top:0}
+        h2{font-size:20px;margin:15px 0 5px 0;font-weight:normal}
+        p{margin:5px 0;color:#9ca3af;font-size:16px}
+        #q{display:flex;justify-content:center;margin-top:20px;background:#fff;padding:10px;border-radius:8px}
+    </style>
+</head>
+<body>
+
+<div class="c">
+    <h1 id="evt">Cargando...</h1>
+    <hr style="border-color:#374151;">
+    <h2 id="n"></h2>
+    <p id="p"></p>
+    <p id="m"></p>
+    <div id="q"></div>
+</div>
+
+<script>
+const FIREBASE_URL = "https://xvpau-36eff-default-rtdb.firebaseio.com/configuracion.json";
+
+// Cargar variables de Firebase
+let uParams = new URLSearchParams(location.search);
+n.textContent = uParams.get('invitado') || 'Invitado';
+p.textContent = 'Pases: ' + (uParams.get('pases') || '1');
+m.textContent = 'Mesa: ' + (uParams.get('mesa') || 'Mesa');
+
+// Renderizar QR apuntando a sí mismo
+new QRCode(q, {text: location.href, width: 160, height: 160});
+
+// Traer dinámicamente el nombre del evento guardado
+fetch(FIREBASE_URL)
+    .then(res => res.json())
+    .then(data => {
+        if(data && data.evento){
+            document.getElementById('evt').textContent = data.evento;
+            document.title = "Boleto - " + data.evento;
+        } else {
+            document.getElementById('evt').textContent = "Mi Evento";
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        document.getElementById('evt').textContent = "Pau XV Años"; // Respaldo estático
+    });
+</script>
+</body>
+</html>
