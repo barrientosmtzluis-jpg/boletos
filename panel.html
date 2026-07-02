@@ -116,7 +116,7 @@ async function registrarInvitadoFirebase() {
     const ticketId = "TKT-" + Date.now();
     const pases = document.getElementById('p').value;
     const mesa = document.getElementById('m').value;
-    const data = { id: ticketId, familia: name, pases: pases, mesa: mesa };
+    const data = { id: ticketId, familia: name, pases: pases, mesa: mesa, estado: "Pendiente" };
     
     let res = await fetch(`${FIREBASE_BASE_URL}invitados/${ticketId}.json`, { method: 'PUT', body: JSON.stringify(data) });
     if (res.ok) {
@@ -125,12 +125,15 @@ async function registrarInvitadoFirebase() {
     }
 }
 
-// Conecta los datos con el área de texto y renderiza el QR real
+// Conecta los datos con el área de texto y renderiza el QR apuntando a la llegada
 function actualizarVistaYMensaje(data) {
-    // URL final para el repositorio del pase interactivo
-    let urlBoleto = `https://barrientosmtzluis-jpg.github.io/boletos/?invitado=${encodeURIComponent(data.familia)}&pases=${data.pases}&mesa=${encodeURIComponent(data.mesa)}&id=${data.id}`;
+    // Determina la ruta base actual donde se encuentra el archivo ejecutándose
+    let path = window.location.href.split('/').slice(0, -1).join('/');
+    
+    // MODIFICADO: Apunta dinámicamente a tu archivo llegada.html enviando sólo el ID de Firebase
+    let urlBoleto = path + '/llegada.html?id=' + data.id;
 
-    // Actualiza el componente QR
+    // Actualiza el componente QR con el link de validación
     const divQ = document.getElementById('q');
     divQ.innerHTML = '';
     new QRCode(divQ, {text: urlBoleto, width: 160, height: 160});
