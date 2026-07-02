@@ -37,7 +37,7 @@
             <button onclick="s()">2. Enviar por WhatsApp</button>
         </div>
         <div class='card'>
-            <h3>Vista previa del QR de Acceso</h3>
+            <h3>Vista previa del QR (Control de Acceso Puerta)</h3>
             <h2 id="tn">-</h2>
             <p id="tp">Pases: -</p>
             <p id="tm">Mesa: -</p>
@@ -50,14 +50,12 @@
 const FIREBASE_BASE_URL = "https://xvpau-36eff-default-rtdb.firebaseio.com/";
 let nombreEventoGlobal = "Invitación Especial"; 
 
-// Al cargar la página, traemos el nombre del evento
 window.addEventListener('DOMContentLoaded', async () => {
     let cacheNombre = localStorage.getItem('eventoNombre_cache');
     if (cacheNombre) {
         nombreEventoGlobal = cacheNombre;
         document.getElementById('nombreEventoHeader').textContent = nombreEventoGlobal;
     }
-    // Ejecutar actualización en tiempo real de la vista previa vacía al inicio
     u();
 
     try {
@@ -68,13 +66,12 @@ window.addEventListener('DOMContentLoaded', async () => {
                 nombreEventoGlobal = data.evento;
                 localStorage.setItem('eventoNombre_cache', data.evento);
                 document.getElementById('nombreEventoHeader').textContent = nombreEventoGlobal;
-                u(); // Refrescar texto de WhatsApp si ya había algo escrito
+                u(); 
             }
         }
     } catch (e) { console.error("Error cargando configuración:", e); }
 });
 
-// FUNCIÓN PARA ACTUALIZAR LA VISTA PREVIA EN TIEMPO REAL
 function u() {
     const nameInput = document.getElementById('n').value.trim();
     const pasesInput = document.getElementById('p').value || 1;
@@ -85,7 +82,6 @@ function u() {
     document.getElementById('tm').textContent = 'Mesa: ' + mesaInput;
 }
 
-// FUNCIÓN PARA REGISTRAR EN FIREBASE
 async function registrarInvitadoFirebase() {
     const name = document.getElementById('n').value.trim();
     const pases = parseInt(document.getElementById('p').value) || 1;
@@ -93,7 +89,6 @@ async function registrarInvitadoFirebase() {
 
     if (!name) return alert('Por favor, ingrese el nombre del invitado.');
 
-    // Generamos un ID único basado en la marca de tiempo actual
     const ticketId = "TKT-" + Date.now();
 
     const invitadoData = {
@@ -124,22 +119,21 @@ async function registrarInvitadoFirebase() {
     }
 }
 
-// CONSTRUYE EL QR REAL CON EL ID Y EL MENSAJE FORMAL DE WHATSAPP
 function actualizarVistaYMensajeFinal(data) {
     document.getElementById('tn').textContent = data.familia;
     document.getElementById('tp').textContent = 'Pases: ' + data.pasesTotales;
     document.getElementById('tm').textContent = 'Mesa: ' + data.mesa;
     
-    // DEFINICIÓN DE LA RUTA ABSOLUTA FIJA EN GITHUB PAGES
-    // Esto garantiza que el QR funcione en cualquier celular al ser escaneado.
+    // 1. QR del Panel -> Abre directamente la validación del Staff en puerta
     let urlLlegada = 'https://barrientosmtzluis-jpg.github.io/XV-ANAPAU/llegada.html?id=' + data.id;
-
-    // Renderizado del código QR seguro
     const divQ = document.getElementById('q');
     divQ.innerHTML = '';
     new QRCode(divQ, {text: urlLlegada, width: 160, height: 160});
     
-    // Construcción del mensaje formal final
+    // 2. URL del Boleto Digital -> Es el link personal y estético para el Invitado
+    let urlBoletoInvitado = 'https://barrientosmtzluis-jpg.github.io/XV-ANAPAU/boleto.html?id=' + data.id;
+
+    // Construcción del mensaje para WhatsApp
     document.getElementById('msg').value = '✨ *' + nombreEventoGlobal.toUpperCase() + '* ✨\n\n' +
                    'Estimado/a *' + data.familia + '*,\n\n' +
                    'Nos complace enormemente invitarle a compartir con nosotros este momento tan especial.\n\n' +
@@ -150,10 +144,11 @@ function actualizarVistaYMensajeFinal(data) {
                    '🎟️ *SU PASE DIGITAL DE ACCESO*\n' +
                    '• *Pases asignados:* ' + data.pasesTotales + '\n' +
                    '• *Mesa reservada:* ' + data.mesa + '\n\n' +
-                   '👉 Presente el siguiente enlace QR en la entrada para registrar su acceso:\n' + urlLlegada + '\n' +
+                   '👉 Descarga y consulta tu pase digital con código QR para el acceso aquí:\n' + urlBoletoInvitado + '\n' +
                    '━━━━━━━━━━━━━━━━━━━━━━\n\n' +
                    '¡Le esperamos!';
 }
+
 function s(){
     const inputTel = document.getElementById('t');
     const txtMsg = document.getElementById('msg');
