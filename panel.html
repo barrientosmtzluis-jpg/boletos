@@ -22,11 +22,11 @@
     <div class='grid'>
         <div>
             <label>Invitado / Familia</label>
-            <input id="n" placeholder="Ej. Familia Barrientos">
+            <input id="n" placeholder="Ej. Familia Barrientos" oninput="u()">
             <label>Pases Totales</label>
-            <input id="p" type="number" value="1">
+            <input id="p" type="number" value="1" oninput="u()">
             <label>Mesa</label>
-            <input id="m" value='Mesa A'>
+            <input id="m" value='Mesa A' oninput="u()">
             
             <button class="btn-success" onclick="registrarInvitadoFirebase()">1. Generar y Registrar Boleto</button>
             
@@ -50,12 +50,16 @@
 const FIREBASE_BASE_URL = "https://xvpau-36eff-default-rtdb.firebaseio.com/";
 let nombreEventoGlobal = "Invitación Especial"; 
 
+// Al cargar la página, traemos el nombre del evento
 window.addEventListener('DOMContentLoaded', async () => {
     let cacheNombre = localStorage.getItem('eventoNombre_cache');
     if (cacheNombre) {
         nombreEventoGlobal = cacheNombre;
         document.getElementById('nombreEventoHeader').textContent = nombreEventoGlobal;
     }
+    // Ejecutar actualización en tiempo real de la vista previa vacía al inicio
+    u();
+
     try {
         let res = await fetch(FIREBASE_BASE_URL + "configuracion.json");
         if (res.ok) {
@@ -64,11 +68,24 @@ window.addEventListener('DOMContentLoaded', async () => {
                 nombreEventoGlobal = data.evento;
                 localStorage.setItem('eventoNombre_cache', data.evento);
                 document.getElementById('nombreEventoHeader').textContent = nombreEventoGlobal;
+                u(); // Refrescar texto de WhatsApp si ya había algo escrito
             }
         }
-    } catch (e) { console.error(e); }
+    } catch (e) { console.error("Error cargando configuración:", e); }
 });
 
+// FUNCIÓN PARA ACTUALIZAR LA VISTA PREVIA EN TIEMPO REAL
+function u() {
+    const nameInput = document.getElementById('n').value.trim();
+    const pasesInput = document.getElementById('p').value || 1;
+    const mesaInput = document.getElementById('m').value || 'Mesa';
+
+    document.getElementById('tn').textContent = nameInput || '-';
+    document.getElementById('tp').textContent = 'Pases: ' + pasesInput;
+    document.getElementById('tm').textContent = 'Mesa: ' + mesaInput;
+}
+
+// FUNCIÓN PARA REGISTRAR EN FIREBASE
 async function registrarInvitadoFirebase() {
     const name = document.getElementById('n').value.trim();
     const pases = parseInt(document.getElementById('p').value) || 1;
@@ -76,20 +93,19 @@ async function registrarInvitadoFirebase() {
 
     if (!name) return alert('Por favor, ingrese el nombre del invitado.');
 
-    // Generamos un ID único basado en el tiempo para cada boleto
+    // Generamos un ID único basado en la marca de tiempo actual
     const ticketId = "TKT-" + Date.now();
 
     const invitadoData = {
         id: ticketId,
         familia: name,
         pasesTotales: pases,
-        pasesRestantes: pases, // Al inicio, le quedan todos los pases
-        mesa: mesa,
+        pasesRestantes: pases, 
+        mesa: mesa || "Mesa A",
         fechaRegistro: new Date().toISOString()
     };
 
     try {
-        // Guardamos en el nodo /invitados/ID_DEL_BOLETO
         let res = await fetch(`${FIREBASE_BASE_URL}invitados/${ticketId}.json`, {
             method: 'PUT',
             body: JSON.stringify(invitadoData),
@@ -98,33 +114,32 @@ async function registrarInvitadoFirebase() {
 
         if (res.ok) {
             alert('¡Boleto guardado en Firebase con éxito!');
-            actualizarVistaYMensaje(invitadoData);
+            actualizarVistaYMensajeFinal(invitadoData);
         } else {
-            alert('Error al guardar en la base de datos.');
+            alert('Error al guardar en la base de datos de Firebase.');
         }
     } catch (error) {
-        console.error(error);
-        alert('Error de red al registrar.');
+        console.error("Error de red:", error);
+        alert('Error de red al intentar registrar el boleto.');
     }
 }
 
-function actualizarVistaYMensaje(data) {
+// CONSTRUYE EL QR REAL CON EL ID Y EL MENSAJE FORMAL DE WHATSAPP
+function actualizarVistaYMensajeFinal(data) {
     document.getElementById('tn').textContent = data.familia;
     document.getElementById('tp').textContent = 'Pases: ' + data.pasesTotales;
     document.getElementById('tm').textContent = 'Mesa: ' + data.mesa;
     
-    // El QR ahora redirige a la página "llegada.html" llevando únicamente el ID del boleto
+    // Ruta absoluta automática para llegada.html
     let baseDir = window.location.href.substring(0, window.location.href.lastIndexOf('/'));
     let urlLlegada = baseDir + '/llegada.html?id=' + data.id;
-    
-    // También generamos el link del boleto estático por si quieren visualizarlo por separado
-    let urlBoleto = baseDir + '/boleto.html?invitado=' + encodeURIComponent(data.familia) + '&pases=' + data.pasesTotales + '&mesa=' + encodeURIComponent(data.mesa);
 
+    // Renderizado del código QR seguro
     const divQ = document.getElementById('q');
     divQ.innerHTML = '';
     new QRCode(divQ, {text: urlLlegada, width: 160, height: 160});
     
-    // Mensaje formal de WhatsApp incluyendo ambos contextos si es necesario
+    // Construcción del mensaje formal final
     document.getElementById('msg').value = '✨ *' + nombreEventoGlobal.toUpperCase() + '* ✨\n\n' +
                    'Estimado/a *' + data.familia + '*,\n\n' +
                    'Nos complace enormemente invitarle a compartir con nosotros este momento tan especial.\n\n' +
@@ -143,7 +158,7 @@ function actualizarVistaYMensaje(data) {
 function s(){
     const inputTel = document.getElementById('t');
     const txtMsg = document.getElementById('msg');
-    if(!inputTel.value) return alert('Capture WhatsApp');
+    if(!inputTel.value) return alert('Por favor, capture el número de WhatsApp.');
     window.open('https://api.whatsapp.com/send?phone=' + inputTel.value + '&text=' + encodeURIComponent(txtMsg.value), '_blank');
 }
 </script>
