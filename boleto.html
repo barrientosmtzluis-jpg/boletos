@@ -1,105 +1,253 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mi Pase Digital - XV Anapau</title>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Montserrat', sans-serif; }
-        body { background: #f3f4f6; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
-        .container { width: 100%; max-width: 400px; }
-        .ticket { background: linear-gradient(135deg, #1e3a8a, #0f172a); color: #fff; padding: 30px 20px; border-radius: 16px; text-align: center; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.4); border: 1px solid #1e40af; }
-        .ticket h3 { text-transform: uppercase; letter-spacing: 2px; font-size: 14px; color: #93c5fd; margin-bottom: 5px; }
-        .event-title { font-size: 22px; font-weight: 700; color: #f43f5e; margin-bottom: 15px; letter-spacing: 1px; }
-        .line { border-top: 2px dashed rgba(255,255,255,0.2); margin: 20px 0; }
-        .qr { background: #fff; padding: 15px; border-radius: 12px; display: inline-block; margin-top: 15px; }
-        .info-p { font-size: 13px; color: #cbd5e1; margin-bottom: 3px; text-transform: uppercase; letter-spacing: 1px; }
-        .info-value { font-size: 24px; font-weight: 700; color: #f59e0b; margin-bottom: 15px; }
-        .mesa-value { font-size: 20px; font-weight: 700; color: #10b981; margin-bottom: 15px; }
-        .alerta-duplicado { background: #ef4444; color: white; font-weight: bold; padding: 12px; border-radius: 8px; margin-bottom: 15px; display: none; }
-        #msgStatus { font-weight: 600; color: #1e3a8a; font-size: 16px; text-align: center; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mi Pase Digital - XV Anapau</title>
+
+https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap
+.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+<style>
+*{
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
+    font-family:'Montserrat',sans-serif;
+}
+
+body{
+    background:#f3f4f6;
+    padding:20px;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    min-height:100vh;
+}
+
+.container{
+    width:100%;
+    max-width:400px;
+}
+
+.ticket{
+    background:linear-gradient(135deg,#1e3a8a,#0f172a);
+    color:#fff;
+    padding:30px 20px;
+    border-radius:16px;
+    text-align:center;
+    box-shadow:0 10px 25px -5px rgba(0,0,0,.4);
+    border:1px solid #1e40af;
+}
+
+.ticket h3{
+    text-transform:uppercase;
+    letter-spacing:2px;
+    font-size:14px;
+    color:#93c5fd;
+    margin-bottom:5px;
+}
+
+.event-title{
+    font-size:22px;
+    font-weight:700;
+    color:#f43f5e;
+    margin-bottom:15px;
+    letter-spacing:1px;
+}
+
+.line{
+    border-top:2px dashed rgba(255,255,255,.2);
+    margin:20px 0;
+}
+
+.qr{
+    background:#fff;
+    padding:15px;
+    border-radius:12px;
+    display:inline-block;
+    margin-top:15px;
+}
+
+.info-p{
+    font-size:13px;
+    color:#cbd5e1;
+    margin-bottom:3px;
+    text-transform:uppercase;
+    letter-spacing:1px;
+}
+
+.info-value{
+    font-size:24px;
+    font-weight:700;
+    color:#f59e0b;
+    margin-bottom:15px;
+}
+
+.mesa-value{
+    font-size:20px;
+    font-weight:700;
+    color:#10b981;
+    margin-bottom:15px;
+}
+
+.alerta-duplicado{
+    background:#ef4444;
+    color:white;
+    font-weight:bold;
+    padding:12px;
+    border-radius:8px;
+    margin-bottom:15px;
+    display:none;
+}
+
+#msgStatus{
+    font-weight:600;
+    color:#1e3a8a;
+    font-size:16px;
+    text-align:center;
+}
+</style>
 </head>
+
 <body>
 
 <div id="msgStatus">Cargando tu pase digital...</div>
 
-<div class="container" id="ticketBlock" style="display: none;">
-    <div class="card ticket">
+<div class="container" id="ticketBlock" style="display:none;">
+    <div class="ticket">
+
         <div class="event-title">XV AÑOS ANAPAU</div>
+
         <h3>Pase Digital Inteligente</h3>
+
         <div class="line"></div>
-        
-        <div id="alertaPantalla" class="alerta-duplicado">⚠️ ¡ESTE ACCESO YA FUE UTILIZADO!</div>
+
+        <div id="alertaPantalla" class="alerta-duplicado">
+            ⚠️ ¡ESTE ACCESO YA FUE UTILIZADO!
+        </div>
 
         <p class="info-p">Invitación para la familia:</p>
         <div class="info-value" id="tNombre">Cargando...</div>
-        
+
         <p class="info-p">Pases Asignados:</p>
-        <h2 id="tPases" style="font-size: 22px; color: #fff; margin-bottom: 15px;">-</h2>
-        
+        <h2 id="tPases" style="font-size:22px;color:white;margin-bottom:15px;">-</h2>
+
         <p class="info-p">Ubicación de Mesa:</p>
         <div class="mesa-value" id="tMesa">-</div>
 
         <div class="line"></div>
-        <div class="qr"><div id="qrcode"></div></div>
-        <p id="lblDisponibles" style="font-size: 13px; color: #a1a1aa; margin-top: 15px;"></p>
+
+        <div class="qr">
+            <div id="qrcode"></div>
+        </div>
+
+        <p id="lblDisponibles" style="font-size:13px;color:#a1a1aa;margin-top:15px;"></p>
+
     </div>
 </div>
 
 <script>
+
 const FIREBASE_BASE_URL = "https://xvpau-36eff-default-rtdb.firebaseio.com/";
 
-window.addEventListener('DOMContentLoaded', async () => {
+window.addEventListener("DOMContentLoaded", async () => {
+
     const params = new URLSearchParams(window.location.search);
-    const ticketId = params.get('id');
+    const ticketId = params.get("id");
 
     if (!ticketId) {
-        document.getElementById('msgStatus').textContent = "❌ ID ausente.";
+        document.getElementById("msgStatus").textContent = "❌ ID ausente.";
         return;
     }
 
     try {
-        let res = await fetch(`${FIREBASE_BASE_URL}invitados/${ticketId}.json`);
-        let data = await res.json();
+
+        const response = await fetch(
+            `${FIREBASE_BASE_URL}invitados/${ticketId}.json`
+        );
+
+        const data = await response.json();
 
         if (!data) {
-            document.getElementById('msgStatus').textContent = "❌ Boleto no encontrado.";
+            document.getElementById("msgStatus").textContent =
+                "❌ Boleto no encontrado.";
             return;
         }
 
-        // --- LÓGICA DE DETECCIÓN DE CAMPOS ---
-        // Buscamos variantes comunes de los nombres en tu DB
-        const total = data.pasesTotales || data.total || data.pases || 0;
-        const restantes = (typeof data.pasesRestantes !== 'undefined') ? data.pasesRestantes : (data.restantes || 0);
+        const total = Number(
+            data.pasesTotales ??
+            data.total ??
+            data.pases ??
+            0
+        );
 
-        document.getElementById("tNombre").innerText = data.familia || "Invitado";
-        document.getElementById("tPases").innerText = total + (total == 1 ? " Persona" : " Personas");
-        document.getElementById("tMesa").innerText = data.mesa || "Mesa A";
-        
-        const lblDisponibles = document.getElementById("lblDisponibles");
+        /* CORRECCIÓN PRINCIPAL */
+        const restantes = Number(
+            data.pasesRestantes ??
+            data.restantes ??
+            total
+        );
 
-        if (restantes <= 0) {
+        document.getElementById("tNombre").innerText =
+            data.familia || "Invitado";
+
+        document.getElementById("tPases").innerText =
+            total + (total === 1 ? " Persona" : " Personas");
+
+        document.getElementById("tMesa").innerText =
+            data.mesa || "Mesa A";
+
+        const lblDisponibles =
+            document.getElementById("lblDisponibles");
+
+        if (restantes === 0) {
+
             document.getElementById("alertaPantalla").style.display = "block";
-            lblDisponibles.innerHTML = "🚫 Pases disponibles: <strong style='color:#ef4444;'>0</strong>";
+
+            lblDisponibles.innerHTML =
+                "🚫 Pases disponibles: <strong style='color:#ef4444;'>0</strong>";
+
         } else {
-            lblDisponibles.innerHTML = "✅ Pases activos: <strong style='color:#4ade80;'>" + restantes + "</strong>";
+
+            lblDisponibles.innerHTML =
+                "✅ Pases activos: <strong style='color:#4ade80;'>"
+                + restantes +
+                "</strong>";
+
         }
 
+        document.getElementById("qrcode").innerHTML = "";
+
         new QRCode(document.getElementById("qrcode"), {
-            text: 'https://barrientosmtzluis-jpg.github.io/llegada.html?id=' + ticketId,
-            width: 160, height: 160, correctLevel: 1
+            text:
+                "https://barrientosmtzluis-jpg.github.io/llegada.html?id=" +
+                ticketId,
+            width: 160,
+            height: 160,
+            correctLevel: QRCode.CorrectLevel.M
         });
 
-        document.getElementById('msgStatus').style.display = 'none';
-        document.getElementById('ticketBlock').style.display = 'block';
+        document.getElementById("msgStatus").style.display = "none";
+        document.getElementById("ticketBlock").style.display = "block";
 
-    } catch (e) {
-        document.getElementById('msgStatus').textContent = "❌ Error de conexión.";
+        console.log("Datos Firebase:", data);
+        console.log("Pases Totales:", total);
+        console.log("Pases Restantes:", restantes);
+
+    } catch (error) {
+
+        console.error(error);
+
+        document.getElementById("msgStatus").textContent =
+            "❌ Error de conexión.";
+
     }
+
 });
+
 </script>
+
 </body>
 </html>
