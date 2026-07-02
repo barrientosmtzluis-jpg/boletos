@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Panel Profesional - Registro</title>
+    <style>
+        body{font-family:Arial, sans-serif;background:#eef2f7;margin:0}.wrap{max-width:900px;margin:30px auto;background:#fff;padding:24px;border-radius:12px;box-shadow:0 2px 10px #0002}
+        .grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}input,textarea,button{width:100%;padding:10px;margin:6px 0;box-sizing:border-box}
+        button{background:#0a7cff;color:#fff;border:0;border-radius:8px;font-weight:bold;cursor:pointer}
+        button.btn-success{background:#28a745} button.btn-success:hover{background:#218838}
+        .card{border:1px solid #ddd;padding:15px;border-radius:10px}
+        h1#nombreEventoHeader { margin-top: 0; color: #0a7cff; border-bottom: 2px solid #eef2f7; padding-bottom: 10px; }
+        .btn-logout { background: #6b7280; padding: 5px 10px; font-size: 12px; float: right; width: auto; margin: 0; }
+        .btn-logout:hover { background: #4b5563; }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+
+<script>
+    if (sessionStorage.getItem('panel_session_active') !== 'true') {
+        window.location.replace('index.html');
+    }
+</script>
+
+<div class='wrap'>
+    <button class="btn-logout" onclick="cerrarSesion()">Cerrar Sesión 🔓</button>
+    <h1 id="nombreEventoHeader">Cargando evento...</h1>
+    <h2>Panel Profesional de Boletos Electrónicos</h2>
+    
+    <div class='grid'>
+        <div>
+            <label>Invitado / Familia</label>
+            <input id="n" placeholder="Ej. Familia Barrientos" oninput="u()">
+            <label>Pases Totales</label>
+            <input id="p" type="number" value="1" min="1" oninput="u()">
+            <label>Mesa</label>
+            <input id="m" value='Mesa A' oninput="u()">
+            
+            <button class="btn-success" onclick="registrarInvitadoFirebase()">1. Generar y Registrar Boleto</button>
+            
+            <hr>
+            <label>WhatsApp</label>
+            <input id="t" placeholder="Ej. 5215512345678">
+            <textarea id="msg" rows="10" placeholder="El mensaje se generará automáticamente tras registrar el boleto..."></textarea>
+            <button onclick="s()">2. Enviar por WhatsApp</button>
+        </div>
+        <div class='card'>
+            <h3>Vista previa del QR (Control de Acceso Puerta)</h3>
+            <h2 id="tn">-</h2>
+            <p id="tp">Pases: -</p>
+            <p id="tm">Mesa: -</p>
+            <div id="q" style="display: flex; justify-content: center; margin-top: 10px;"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+const FIREBASE_BASE_URL = "https://xvpau-36eff-default-rtdb.firebaseio.com/";
+let nombreEventoGlobal = "Invitación Especial"; 
+
+window.addEventListener('DOMContentLoaded', async () => {
+    let cacheNombre = localStorage.getItem('eventoNombre_cache');
+    if (cacheNombre) {
+        nombreEventoGlobal = cacheNombre;
+        document.getElementById('nombreEventoHeader').textContent = nombreEventoGlobal;
+    }
+    u();
+
+    try {
+        let res = await fetch(`${FIREBASE_BASE_URL}configuracion.json`);
+        if (res.ok) {
+            let data = await res.json();
+            if (data && data.evento) {
+                nombreEventoGlobal = data.evento;
+                localStorage.setItem('eventoNombre_cache', data.evento);
+                document.getElementById('nombreEventoHeader').textContent = nombreEventoGlobal;
+                u(); 
+            }
+        }
+    } catch (e) { console.error("Error cargando configuración:", e); }
+});
+
+function u() {
+    const nameInput = document.getElementById('n').value.trim();
+    const pasesInput = document.getElementById('p').value || 1;
+    const mesaInput = document.getElementById('m').value || 'Mesa';
+
+    document.getElementById('tn').textContent = nameInput || '-';
+    document.getElementById('tp').textContent = 'Pases: ' + pasesInput;
+    document.getElementById('tm').textContent = 'Mesa: ' + mesaInput;
+}
+
+async function registrarInvitadoFirebase() {
+    const name = document.getElementById('n').value.trim();
+    const pases = parseInt(document.getElementById('p').value) || 1;
+    const mesa = document.getElementById('m').value.trim();
+
+    if (!name) return alert('Por favor, ingrese el nombre del invitado.');
+
+    const ticketId = "TKT-" + Date.now();
+
+    const invitadoData = {
+        id: ticketId,
+        familia: name,
+        pasesTotales: pases,
+        pasesRestantes: pases, 
+        mesa: mesa || "Mesa A",
+        fechaRegistro: new Date().toISOString()
+    };
+
+    try {
+        let res = await fetch(`${FIREBASE_BASE_URL}invitados/${ticketId}.json`, {
+            method: 'PUT',
+            body: JSON.stringify(invitadoData),
+            headers: { 'Content-Type': 'application/json' }
+        });
+
+        if (res.ok) {
+            alert('¡Boleto guardado en Firebase con éxito!');
+            actualizarVistaYMensajeFinal(invitadoData);
+        } else {
+            alert('Error al guardar en la base de datos de Firebase.');
+        }
+    } catch (error) {
+        console.error("Error de red:", error);
+        alert('Error de red al intentar registrar el boleto.');
+    }
+}
+
+function actualizarVistaYMensajeFinal(data) {
+    document.getElementById('tn').textContent = data.familia;
+    document.getElementById('tp').textContent = 'Pases: ' + data.pasesTotales;
+    document.getElementById('tm').textContent = 'Mesa: ' + data.mesa;
+    
+    let urlLlegada = 'https://barrientosmtzluis-jpg.github.io/XV-ANAPAU/llegada.html?id=' + data.id;
+    const divQ = document.getElementById('q');
+    divQ.innerHTML = '';
+    new QRCode(divQ, {text: urlLlegada, width: 160, height: 160});
+    
+    let urlBoletoInvitado = 'https://barrientosmtzluis-jpg.github.io/XV-ANAPAU/boleto.html?id=' + data.id;
+
+    document.getElementById('msg').value = '✨ *' + nombreEventoGlobal.toUpperCase() + '* ✨\n\n' +
+                   'Estimado/a *' + data.familia + '*,\n\n' +
+                   'Nos complace enormemente invitarle a compartir con nosotros este momento tan especial.\n\n' +
+                   'A continuación, le compartimos los detalles de acceso:\n\n' +
+                   '📖 *Invitación Digital:* https://www.qrcreator.dev/es-ES/p/9824EADF\n' +
+                   '🌐 *Página Web del Evento:* https://barrientosmtzluis-jpg.github.io/XV-ANAPAU/\n\n' +
+                   '━━━━━━━━━━━━━━━━━━━━━━\n' +
+                   '🎟️ *SU PASE DIGITAL DE ACCESO*\n' +
+                   '• *Pases asignados:* ' + data.pasesTotales + '\n' +
+                   '• *Mesa reservada:* ' + data.mesa + '\n\n' +
+                   '👉 Descarga y consulta tu pase digital con código QR para el acceso aquí:\n' + urlBoletoInvitado + '\n' +
+                   '━━━━━━━━━━━━━━━━━━━━━━\n\n' +
+                   '¡Le esperamos!';
+}
+
+function s(){
+    const inputTel = document.getElementById('t');
+    const txtMsg = document.getElementById('msg');
+    if(!inputTel.value) return alert('Por favor, capture el número de WhatsApp.');
+    window.open('https://api.whatsapp.com/send?phone=' + inputTel.value + '&text=' + encodeURIComponent(txtMsg.value), '_blank');
+}
+
+function cerrarSesion() {
+    sessionStorage.removeItem('panel_session_active');
+    window.location.replace('index.html');
+}
+</script>
+</body>
+</html>
