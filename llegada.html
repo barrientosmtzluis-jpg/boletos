@@ -3,47 +3,61 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Control de Accesos - Llegada de Invitados</title>
+    <title>Recepción - Control de Entrada</title>
     <style>
-        body { font-family: Arial, sans-serif; background: #1f2937; color: #fff; margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 15px; box-sizing: border-box; }
-        .card { background: #111827; padding: 25px; border-radius: 16px; box-shadow: 0 4px 25px rgba(0,0,0,0.5); width: 100%; max-width: 450px; text-align: center; border: 1px solid #374151; }
-        h1 { color: #3b82f6; font-size: 22px; margin-top: 0; }
-        .info-box { background: #1f2937; padding: 15px; border-radius: 8px; margin: 15px 0; text-align: left; border: 1px solid #4b5563; }
-        .info-box p { margin: 8px 0; font-size: 16px; color: #d1d5db; }
-        .info-box strong { color: #fff; }
-        .badge { display: inline-block; padding: 5px 10px; border-radius: 20px; font-weight: bold; font-size: 14px; }
-        .badge-green { background: #059669; color: #fff; }
-        .badge-red { background: #dc2626; color: #fff; }
-        label { display: block; font-weight: bold; margin-top: 20px; text-align: left; color: #9ca3af; }
-        input { width: 100%; padding: 12px; margin: 8px 0 15px 0; border: 1px solid #4b5563; background: #374151; color: #fff; border-radius: 8px; font-size: 18px; text-align: center; box-sizing: border-box; }
-        button { background: #2563eb; color: #fff; border: 0; padding: 14px; border-radius: 8px; width: 100%; font-size: 16px; cursor: pointer; font-weight: bold; transition: background 0.2s; }
-        button:hover { background: #1d4ed8; }
-        button:disabled { background: #4b5563; cursor: not-allowed; }
-        .status-msg { margin-top: 15px; font-weight: bold; font-size: 15px; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f3f4f6; margin: 0; padding: 20px; }
+        .container { max-width: 500px; margin: 40px auto; background: #fff; padding: 30px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); text-align: center; }
+        h1 { color: #4f46e5; margin-bottom: 5px; }
+        .status-badge { display: inline-block; padding: 6px 15px; border-radius: 20px; font-weight: bold; font-size: 14px; margin-bottom: 20px; }
+        .status-pendiente { background: #fef3c7; color: #d97706; }
+        .status-parcial { background: #e0f2fe; color: #0369a1; }
+        .status-completo { background: #d1fae5; color: #065f46; }
+        .data-box { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 12px; padding: 15px; margin: 15px 0; text-align: left; }
+        .data-row { display: flex; justify-content: space-between; margin: 8px 0; font-size: 16px; }
+        .data-label { color: #6b7280; font-weight: 500; }
+        .data-value { color: #1f2937; font-weight: bold; }
+        .highlight { font-size: 20px; color: #4f46e5; }
+        input[type="number"] { width: 100px; padding: 10px; font-size: 18px; text-align: center; border: 2px solid #6366f1; border-radius: 8px; margin: 10px 0; }
+        button { width: 100%; padding: 14px; background: #6366f1; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        button:hover { background: #4f46e5; }
+        button:disabled { background: #9ca3af; cursor: not-allowed; }
+        .error-msg { color: #dc2626; font-weight: bold; margin-top: 20px; }
     </style>
 </head>
 <body>
 
-<div class="card">
-    <h1>📍 Control de Accesos</h1>
-    <div id="loading">Cargando información del boleto...</div>
+<div class="container">
+    <div id="loading">Obteniendo información del boleto...</div>
     
     <div id="content" style="display: none;">
-        <div class="info-box">
-            <p>👪 <strong>Invitado:</strong> <span id="lblFamilia">-</span></p>
-            <p>🪑 <strong>Mesa Asignada:</strong> <span id="lblMesa">-</span></p>
-            <p>🎟️ <strong>Pases Originales:</strong> <span id="lblPasesTotales">-</span></p>
-            <p>🔄 <strong>Pases Disponibles:</strong> <span id="badgePases" class="badge badge-green">-</span></p>
+        <h1 id="lblFamilia">-</h1>
+        <div id="badgeEstado" class="status-badge">Pendiente</div>
+        
+        <div class="data-box">
+            <div class="data-row">
+                <span class="data-label">Mesa Asignada:</span>
+                <span class="data-value highlight" id="lblMesa">-</span>
+            </div>
+            <hr style="border: 0; border-top: 1px solid #e5e7eb;">
+            <div class="data-row">
+                <span class="data-label">Pases Totales:</span>
+                <span class="data-value" id="lblTotales">0</span>
+            </div>
+            <div class="data-row">
+                <span class="data-label">Pases Ya Usados:</span>
+                <span class="data-value" style="color: #ef4444;" id="lblUsados">0</span>
+            </div>
+            <div class="data-row" style="font-weight: bold;">
+                <span class="data-label" style="color: #10b981;">Disponibles Ahora:</span>
+                <span class="data-value" style="color: #10b981; font-size: 18px;" id="lblRestantes">0</span>
+            </div>
         </div>
 
-        <div id="actionForm">
-            <label>¿Cuántas personas ingresan ahora?</label>
-            <input type="number" id="inputIngreso" value="1" min="1" oninput="validarLimites()">
-            
-            <button id="btnRegistrar" onclick="registrarIngreso()">Registrar Entrada</button>
+        <div id="actionArea">
+            <p style="margin-bottom: 5px; font-weight: 500;">¿Cuántas personas ingresan en este momento?</p>
+            <input type="number" id="txtAsistencia" min="1" value="1"><br>
+            <button id="btnRegistrar" onclick="registrarIngreso()">Confirmar Entrada</button>
         </div>
-        
-        <div id="statusMessage" class="status-msg"></div>
     </div>
 </div>
 
@@ -52,125 +66,108 @@ const FIREBASE_BASE_URL = "https://xvpau-36eff-default-rtdb.firebaseio.com/";
 let ticketId = null;
 let ticketData = null;
 
-// Captura el ID de la URL al escanear el QR (?id=TKT-XXXXX)
-window.addEventListener('DOMContentLoaded', () => {
-    const params = new URLSearchParams(window.location.search);
-    ticketId = params.get('id');
-
-    if (!ticketId) {
-        document.getElementById('loading').textContent = "❌ Código de acceso no válido o ID ausente.";
+// Leer parámetros de la URL al cargar
+window.onload = function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    ticketId = urlParams.get('id');
+    
+    if(!ticketId) {
+        document.getElementById('loading').innerHTML = "<p class='error-msg'>Código de boleto inválido o no suministrado.</p>";
         return;
     }
-    obtenerDatosBoleto();
-});
+    cargarDatosBoleto();
+};
 
-// Busca en Firebase la información exacta generada por el panel
-async function obtenerDatosBoleto() {
+async function cargarDatosBoleto() {
     try {
         let res = await fetch(`${FIREBASE_BASE_URL}invitados/${ticketId}.json`);
-        if (!res.ok) throw new Error("Error de conexión");
-        
-        ticketData = await res.json();
-        
-        if (!ticketData) {
-            document.getElementById('loading').textContent = "❌ El boleto no existe en el sistema.";
-            return;
+        if(res.ok) {
+            ticketData = await res.json();
+            if(!ticketData) {
+                document.getElementById('loading').innerHTML = "<p class='error-msg'>El boleto no existe en la base de datos.</p>";
+                return;
+            }
+            renderizarInterfaz();
         }
-
-        // Mapea la información a la interfaz del portero/staff
-        document.getElementById('lblFamilia').textContent = ticketData.familia;
-        document.getElementById('lblMesa').textContent = ticketData.mesa || 'Sin asignar';
-        document.getElementById('lblPasesTotales').textContent = ticketData.pasesTotales;
-        
-        actualizarBadgePases(ticketData.pasesRestantes);
-
-        document.getElementById('loading').style.display = 'none';
-        document.getElementById('content').style.display = 'block';
-
-    } catch (error) {
-        console.error(error);
-        document.getElementById('loading').textContent = "❌ Error al conectar con la base de datos.";
+    } catch (e) {
+        document.getElementById('loading').innerHTML = "<p class='error-msg'>Error de conexión con la base de datos.</p>";
     }
 }
 
-// Controla el estado visual del boleto (Activo / Denegado)
-function actualizarBadgePases(restantes) {
-    const badge = document.getElementById('badgePases');
-    badge.textContent = restantes + " restantes";
+function renderizarInterfaz() {
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('content').style.display = 'block';
     
-    const inputIngreso = document.getElementById('inputIngreso');
-    const btnRegistrar = document.getElementById('btnRegistrar');
-    const statusMessage = document.getElementById('statusMessage');
+    document.getElementById('lblFamilia').textContent = ticketData.familia;
+    document.getElementById('lblMesa').textContent = ticketData.mesa;
+    document.getElementById('lblTotales').textContent = ticketData.pases_totales;
+    document.getElementById('lblUsados').textContent = ticketData.pases_usados || 0;
+    document.getElementById('lblRestantes').textContent = ticketData.pases_restantes;
+    
+    // Forzar el máximo permitido en el input según lo que reste disponible
+    document.getElementById('txtAsistencia').max = ticketData.pases_restantes;
+    document.getElementById('txtAsistencia').value = ticketData.pases_restantes;
 
-    if (restantes <= 0) {
-        badge.className = "badge badge-red";
-        inputIngreso.disabled = true;
-        inputIngreso.value = 0;
-        btnRegistrar.disabled = true;
-        statusMessage.textContent = "🚫 ACCESO DENEGADO: Todos los pases ya fueron utilizados.";
-        statusMessage.style.color = "#ef4444";
+    // Actualizar badges visuales de estado
+    let badge = document.getElementById('badgeEstado');
+    badge.className = "status-badge";
+    if(ticketData.pases_restantes === 0) {
+        badge.textContent = "ACCESO COMPLETADO";
+        badge.classList.add("status-completo");
+        document.getElementById('actionArea').innerHTML = "<p style='color:#10b981; font-weight:bold;'>Todo el grupo ha ingresado correctamente.</p>";
+    } else if (ticketData.pases_usados > 0 && ticketData.pases_restantes > 0) {
+        badge.textContent = "ACCESO PARCIAL";
+        badge.classList.add("status-parcial");
     } else {
-        badge.className = "badge badge-green";
-        inputIngreso.disabled = false;
-        inputIngreso.max = restantes;
-        inputIngreso.value = restantes; // Sugiere pasar a todos los restantes por defecto
-        statusMessage.textContent = "✅ Boleto Activo";
-        statusMessage.style.color = "#10b981";
-        btnRegistrar.disabled = false;
+        badge.textContent = "SIN INGRESAR";
+        badge.classList.add("status-pendiente");
     }
 }
 
-// Evita que por error teclen un número mayor de los pases que quedan disponibles
-function validarLimites() {
-    if (!ticketData) return;
-    const inputIngreso = document.getElementById('inputIngreso');
-    let val = parseInt(inputIngreso.value) || 0;
-
-    if (val > ticketData.pasesRestantes) {
-        inputIngreso.value = ticketData.pasesRestantes;
-    } else if (val < 1 && ticketData.pasesRestantes > 0) {
-        inputIngreso.value = 1;
-    }
-}
-
-// Descuenta pases en Firebase usando PATCH sin borrar otros datos de registro
 async function registrarIngreso() {
-    const cantidadIngreso = parseInt(document.getElementById('inputIngreso').value) || 0;
-
-    if (cantidadIngreso <= 0) {
-        return alert("Ingrese una cantidad válida de personas.");
+    let cantIngresa = parseInt(document.getElementById('txtAsistencia').value) || 0;
+    
+    if(cantIngresa <= 0) {
+        return alert("La cantidad a ingresar debe ser mayor a 0.");
     }
-    if (cantidadIngreso > ticketData.pasesRestantes) {
-        return alert(`No puedes ingresar más personas de las permitidas. Solo quedan ${ticketData.pasesRestantes} pases.`);
+    if(cantIngresa > ticketData.pases_restantes) {
+        return alert("No puedes ingresar más personas de los pases que restan disponibles (" + ticketData.pases_restantes + ").");
     }
 
-    const nuevosRestantes = ticketData.pasesRestantes - cantidadIngreso;
-    const btnRegistrar = document.getElementById('btnRegistrar');
+    document.getElementById('btnRegistrar').disabled = true;
+    document.getElementById('btnRegistrar').textContent = "Procesando...";
+
+    // Cálculos matemáticos en tiempo real
+    let nuevosUsados = (ticketData.pases_usados || 0) + cantIngresa;
+    let nuevosRestantes = ticketData.pases_totales - nuevosUsados;
+    let nuevoEstado = nuevosRestantes === 0 ? "Completado" : "Parcial";
+
+    // Preparar objeto de actualización parcial para Firebase
+    let updateData = {
+        pases_usados: nuevosUsados,
+        pases_restantes: nuevosRestantes,
+        estado: nuevoEstado
+    };
 
     try {
-        btnRegistrar.disabled = true;
-        btnRegistrar.textContent = "Procesando...";
-        
         let res = await fetch(`${FIREBASE_BASE_URL}invitados/${ticketId}.json`, {
-            method: 'PATCH',
-            body: JSON.stringify({ pasesRestantes: nuevosRestantes }),
-            headers: { 'Content-Type': 'application/json' }
+            method: 'PATCH', // Usamos PATCH para modificar únicamente esos campos sin tumbar la familia o mesa
+            body: JSON.stringify(updateData)
         });
 
-        if (res.ok) {
-            ticketData.pasesRestantes = nuevosRestantes;
-            actualizarBadgePases(nuevosRestantes);
-            alert(`¡Ingreso registrado correctamente!\nEntraron: ${cantidadIngreso} personas.`);
+        if(res.ok) {
+            alert("¡Ingreso registrado con éxito!");
+            // Volver a descargar datos para actualizar la UI limpiamente
+            location.reload();
         } else {
-            alert("Error al actualizar los datos en el servidor.");
-            btnRegistrar.disabled = false;
+            alert("Error al actualizar los datos en la base de datos.");
+            document.getElementById('btnRegistrar').disabled = false;
+            document.getElementById('btnRegistrar').textContent = "Confirmar Entrada";
         }
-    } catch (error) {
-        console.error(error);
-        alert("Error de red al procesar el ingreso.");
-        btnRegistrar.disabled = false;
-    } finally {
-        btnRegistrar.textContent = "Registrar Entrada";
+    } catch(err) {
+        alert("Error de red.");
+        document.getElementById('btnRegistrar').disabled = false;
+        document.getElementById('btnRegistrar').textContent = "Confirmar Entrada";
     }
 }
 </script>
