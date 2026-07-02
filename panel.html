@@ -46,7 +46,7 @@
                 <hr>
                 <label>WhatsApp (Ej: 5215512345678)</label>
                 <input id="t" placeholder="521...">
-                <textarea id="msg" rows="8" placeholder="El mensaje aparecerá aquí..."></textarea>
+                <textarea id="msg" rows="10" placeholder="El mensaje aparecerá aquí..."></textarea>
                 <button onclick="s()">2. Enviar por WhatsApp</button>
             </div>
             <div class='card'>
@@ -63,6 +63,7 @@
 <script>
 const FIREBASE_BASE_URL = "https://xvpau-36eff-default-rtdb.firebaseio.com/";
 
+// Verifica configuración inicial al cargar la página
 window.onload = async function() {
     try {
         let res = await fetch(`${FIREBASE_BASE_URL}config.json`);
@@ -75,6 +76,7 @@ window.onload = async function() {
             }
         }
     } catch (error) {
+        console.error("Error cargando configuración:", error);
         document.getElementById('configPanel').style.display = 'block';
     }
 };
@@ -100,6 +102,7 @@ function forzarConfiguracion() {
     document.getElementById('configPanel').style.display = 'block';
 }
 
+// Actualiza la tarjeta de vista previa lateral en tiempo real
 function u() {
     document.getElementById('tn').textContent = document.getElementById('n').value.trim() || '-';
     document.getElementById('tp').textContent = 'Pases: ' + document.getElementById('p').value;
@@ -109,8 +112,12 @@ function u() {
 async function registrarInvitadoFirebase() {
     const name = document.getElementById('n').value.trim();
     if (!name) return alert('Ingrese nombre del invitado.');
+    
     const ticketId = "TKT-" + Date.now();
-    const data = { id: ticketId, familia: name, pases: document.getElementById('p').value, mesa: document.getElementById('m').value };
+    const pases = document.getElementById('p').value;
+    const mesa = document.getElementById('m').value;
+    const data = { id: ticketId, familia: name, pases: pases, mesa: mesa };
+    
     let res = await fetch(`${FIREBASE_BASE_URL}invitados/${ticketId}.json`, { method: 'PUT', body: JSON.stringify(data) });
     if (res.ok) {
         alert('Boleto guardado con éxito.');
@@ -118,10 +125,37 @@ async function registrarInvitadoFirebase() {
     }
 }
 
-function generarTextoMensaje(name, pases, mesa) {
-    let urlBoleto = `https://barrientosmtzluis-jpg.github.io/boletos/?invitado=${encodeURIComponent(name)}&pases=${pases}&mesa=${encodeURIComponent(mesa)}`;
+// Conecta los datos con el área de texto y renderiza el QR real
+function actualizarVistaYMensaje(data) {
+    // URL final para el repositorio del pase interactivo
+    let urlBoleto = `https://barrientosmtzluis-jpg.github.io/boletos/?invitado=${encodeURIComponent(data.familia)}&pases=${data.pases}&mesa=${encodeURIComponent(data.mesa)}&id=${data.id}`;
+
+    // Actualiza el componente QR
+    const divQ = document.getElementById('q');
+    divQ.innerHTML = '';
+    new QRCode(divQ, {text: urlBoleto, width: 160, height: 160});
+    
+    // Inserta el texto formateado en el textarea
+    document.getElementById('msg').value = generarTextoMensaje(data.familia, data.pases, data.mesa, urlBoleto);
+}
+
+// Devuelve la plantilla de mensaje limpia para WhatsApp
+function generarTextoMensaje(name, pases, mesa, urlBoleto) {
     return '✨ ¡Tenemos una invitación muy especial para ti! ✨\n\n' +
-        'Estimada familia / amigo ' + name + ',\n\n' +
+        'Estimada familia / amigo *' + name + '*,\n\n' +
         'Nos complace enormemente invitarte a compartir con nosotros un momento inolvidable.\n\n' +
         '👉 Nuestra Invitación Digital:\nhttps://www.qrcreator.dev/es-ES/p/9824EADF\n\n' +
-        '🎫 Pase Digital válido para ' + pases + ' personas.\n'
+        '🎫 Pase Digital válido para ' + pases + ' personas.\n' +
+        '📍 Mesa asignada: *' + mesa + '*\n\n' +
+        '🔗 Ver tu pase de acceso rápido aquí:\n' + urlBoleto;
+}
+
+function s(){
+    let tel = document.getElementById('t').value;
+    let msg = document.getElementById('msg').value;
+    if(!tel || !msg) return alert('Por favor genera el boleto y escribe el teléfono.');
+    window.open('https://api.whatsapp.com/send?phone=' + tel + '&text=' + encodeURIComponent(msg), '_blank');
+}
+</script>
+</body>
+</html>
