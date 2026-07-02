@@ -64,9 +64,7 @@
 <script>
 const FIREBASE_BASE_URL = "https://xvpau-36eff-default-rtdb.firebaseio.com/";
 
-// Bloqueo de Seguridad + Validación de Configuración previa en Firebase
 window.onload = async function() {
-    // Validar si el usuario pasó por la pantalla de Login primero
     if (sessionStorage.getItem('panel_session_active') !== 'true') {
         alert('Acceso denegado. Por favor inicia sesión.');
         window.location.replace('index.html');
@@ -77,11 +75,9 @@ window.onload = async function() {
         let res = await fetch(`${FIREBASE_BASE_URL}config.json`);
         if (res.ok) {
             const config = await res.json();
-            // Si ya hay un evento registrado en Firebase, abre el panel directo
             if (config && config.nombre) {
                 iniciarPanel(config);
             } else {
-                // Si la BD está en blanco, obliga a configurar la información
                 document.getElementById('configPanel').style.display = 'block';
             }
         }
@@ -99,8 +95,6 @@ async function configurarEvento() {
     if(!nombre || !inv || !mesas) return alert('Por favor completa todos los campos de configuración.');
 
     const config = { nombre, totalInvitados: inv, totalMesas: mesas };
-    
-    // Almacena la estructura del evento en Firebase
     await fetch(`${FIREBASE_BASE_URL}config.json`, { method: 'PUT', body: JSON.stringify(config) });
     iniciarPanel(config);
 }
@@ -127,10 +121,19 @@ async function registrarInvitadoFirebase() {
     if (!name) return alert('Ingrese nombre del invitado.');
     
     const ticketId = "TKT-" + Date.now();
-    const pases = document.getElementById('p').value;
+    const pases = parseInt(document.getElementById('p').value) || 1;
     const mesa = document.getElementById('m').value;
     
-    const data = { id: ticketId, familia: name, pases: pases, mesa: mesa, estado: "Pendiente" };
+    // Nueva estructura con contadores de control de acceso solicitados
+    const data = { 
+        id: ticketId, 
+        familia: name, 
+        pases_totales: pases, 
+        pases_usados: 0, 
+        pases_restantes: pases, 
+        mesa: mesa, 
+        estado: "Pendiente" 
+    };
     
     let res = await fetch(`${FIREBASE_BASE_URL}invitados/${ticketId}.json`, { method: 'PUT', body: JSON.stringify(data) });
     if (res.ok) {
@@ -141,14 +144,14 @@ async function registrarInvitadoFirebase() {
 
 function actualizarVistaYMensaje(data) {
     let path = window.location.href.split('/').slice(0, -1).join('/');
-    // Envía únicamente el ID correspondiente para que 'llegada.html' lo lea desde Firebase
-    let urlBoleto = path + '/boleto.html?id=' + data.id;
+    // Apunta al archivo llegada.html que procesará la entrada
+    let urlBoleto = path + '/llegada.html?id=' + data.id;
 
     const divQ = document.getElementById('q');
     divQ.innerHTML = '';
     new QRCode(divQ, {text: urlBoleto, width: 160, height: 160});
     
-    document.getElementById('msg').value = generarTextoMensaje(data.familia, data.pases, data.mesa, urlBoleto);
+    document.getElementById('msg').value = generarTextoMensaje(data.familia, data.pases_totales, data.mesa, urlBoleto);
 }
 
 function generarTextoMensaje(name, pases, mesa, urlBoleto) {
