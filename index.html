@@ -103,6 +103,8 @@ text-align:center;
 
 .qr{background:#fff;padding:10px;border-radius:10px;display:inline-block;margin-top:10px;}
 </style>
+
+
 </head>
 
 <body>
@@ -163,144 +165,87 @@ text-align:center;
 </div>
 </div>
 
-<script>
-const TOTAL_DEFECTO = 200;
 
-/* INIT */
-function init(){
-    if(localStorage.getItem("lugares_max") === null){
-        localStorage.setItem("lugares_max", TOTAL_DEFECTO);
+       update();
     }
-    if(localStorage.getItem("lugares") === null){
-        localStorage.setItem("lugares", localStorage.getItem("lugares_max"));
-    }
-    mostrar();
-    update();
-}
-
-/* ON LOAD */
-window.onload = function(){
-    const url = new URLSearchParams(location.search);
-
-    if(url.get("invitado")){
-        document.getElementById("nombre").value = url.get("invitado") || "";
-        document.getElementById("pases").value = url.get("pases") || "1";
-        document.getElementById("mesa").value = url.get("mesa") || "General";
-    }
-
-    init(); 
 };
 
-/* MOSTRAR LUGARES ACTUALES */
-function mostrar(){
-    let l = localStorage.getItem("lugares");
-    let max = localStorage.getItem("lugares_max") || TOTAL_DEFECTO;
+function cambiarLugaresManual(valor){
 
-    if(l === null){
-        l = max;
-        localStorage.setItem("lugares", l);
-    }
-    
-    document.getElementById("lugares").value = l;
-    document.getElementById("btnReiniciar").innerHTML = `<i class="fas fa-undo"></i> Reiniciar (${max})`;
-}
-
-/* MODIFICAR LUGARES MANUALMENTE */
-function cambiarLugaresManual(valor) {
     let cantidad = parseInt(valor);
-    if (isNaN(cantidad) || cantidad < 0) cantidad = 0;
 
-    localStorage.setItem("lugares", cantidad);
-    localStorage.setItem("lugares_max", cantidad);
-
-    document.getElementById("btnReiniciar").innerHTML = `<i class="fas fa-undo"></i> Reiniciar (${cantidad})`;
-    update();
-}
-
-/* REINICIAR CONTADOR */
-function reiniciarContador() {
-    let max = localStorage.getItem("lugares_max") || TOTAL_DEFECTO;
-    if(confirm(`¿Estás seguro de que deseas reiniciar el contador a ${max} lugares?`)) {
-        localStorage.setItem("lugares", max);
-        mostrar();
-        update();
+    if(isNaN(cantidad) || cantidad < 0){
+        cantidad = 0;
     }
+
+    database.ref("inventario_lugares").set(cantidad);
+
+    document.getElementById("btnReiniciar").innerHTML =
+    `<i class="fas fa-undo"></i> Reiniciar (${cantidad})`;
 }
 
-/* UPDATE */
+function reiniciarContador(){
+
+    let cantidad = parseInt(document.getElementById("lugares").value) || TOTAL_DEFECTO;
+
+    database.ref("inventario_lugares").set(cantidad);
+
+    alert("Contador reiniciado");
+}
+
 function update(){
+
     let n = document.getElementById("nombre").value || "Invitado";
     let p = document.getElementById("pases").value || "1";
     let m = document.getElementById("mesa").value || "Mesa 1";
-    
-    // Obtenemos cuántos lugares hay en el sistema en este preciso instante
-    let lugaresActuales = localStorage.getItem("lugares") || TOTAL_DEFECTO;
 
     document.getElementById("tNombre").innerText = n;
     document.getElementById("tPases").innerText = p;
     document.getElementById("tMesa").innerText = m;
 
-    // 🌟 CAMBIO CLAVE: Ahora se envía la variable '&restantes' con el valor actual del sistema a boleto.html
-    let urlBoleto = `https://barrientosmtzluis-jpg.github.io/boletos/boleto.html?invitado=${encodeURIComponent(n)}&pases=${p}&mesa=${encodeURIComponent(m)}&restantes=${lugaresActuales}`;
+    let urlBoleto =
+    `https://barrientosmtzluis-jpg.github.io/boletos/boleto.html?invitado=${encodeURIComponent(n)}&pases=${p}&mesa=${encodeURIComponent(m)}`;
 
-    // La vista previa del panel genera el QR directo a la página web del boleto real
-    try {
-        let qrContainer = document.getElementById("qrcode");
-        qrContainer.innerHTML = ""; 
-        new QRCode(qrContainer, {
-            text: urlBoleto,
-            width: 128,
-            height: 128
-        });
-    } catch(e) {
-        console.error("Error al generar QR:", e);
-    }
+    let qrContainer = document.getElementById("qrcode");
+    qrContainer.innerHTML = "";
 
-    let mensajeFormateado = "✨ ¡Tenemos una invitación muy especial para ti! ✨\n\n" +
-    `Estimada familia / amigo *${n}*,\n\n` +
-    "Nos complace enormemente invitarte a compartir con nosotros un momento inolvidable. En el siguiente enlace podrás conocer todos los detalles de nuestro evento, itinerario y locación:\n\n" +
-    "👉 Invitación Digital:\n" +
-    "https://www.qrcreator.dev/es-ES/p/9824EADF\n\n" +
-     "👉 WEB del Evento:\n" +
-    "https://barrientosmtzluis-jpg.github.io/XV-ANAPAU/\n\n" +
-    `🎫 De igual manera, te hacemos llegar tu Pase Digital Inteligente válido para *${p}* personas.\n` +
-    `📍 Mesa asignada: *${m}*\n\n` +
-    "Para ingresar de forma ágil el día del evento, solo haz clic aquí abajo y presenta el código QR desde tu pantalla:\n\n" +
-    "👉 Tu Boleto de Acceso:\n" +
-    urlBoleto + "\n\n" +
-    "¡Tu presencia hará que este día sea aún más especial! Esperamos contar contigo. ✨🥂";
+    new QRCode(qrContainer,{
+        text:urlBoleto,
+        width:128,
+        height:128
+    });
 
-    document.getElementById("msg").value = mensajeFormateado;
+    document.getElementById("msg").value =
+`✨ ¡Tenemos una invitación muy especial para ti! ✨
+
+Familia ${n}
+
+🎫 Pase válido para ${p} personas
+📍 ${m}
+
+Tu boleto:
+
+${urlBoleto}`;
 }
 
-/* SEND */
 function send(){
+
     let tel = document.getElementById("tel").value.trim();
-    let p = parseInt(document.getElementById("pases").value) || 0;
-    let l = parseInt(localStorage.getItem("lugares")) || 0;
 
     if(!tel){
-        alert("Por favor, introduce un número de teléfono válido.");
+        alert("Ingrese un teléfono");
         return;
     }
-
-    if(l - p < 0){
-        if(!confirm("No hay suficientes lugares disponibles. ¿Deseas continuar?")) return;
-    }
-
-    // Descontar inmediatamente del panel local para llevar el control de pases emitidos
-    localStorage.setItem("lugares", l - p);
-    mostrar();
-    update(); 
 
     let msg = document.getElementById("msg").value;
 
     window.open(
-    `https://api.whatsapp.com/send?phone=${tel}&text=${encodeURIComponent(msg)}`, 
-    '_blank'
+    `https://api.whatsapp.com/send?phone=${tel}&text=${encodeURIComponent(msg)}`,
+    "_blank"
     );
 }
 </script>
+
 
 </body>
 </html>
