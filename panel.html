@@ -134,13 +134,18 @@ function actualizarVistaYMensajeFinal(data) {
     document.getElementById('tp').textContent = 'Pases: ' + data.pasesTotales;
     document.getElementById('tm').textContent = 'Mesa: ' + data.mesa;
     
+    // 1. QR del Panel -> Se mantiene para el acceso en puerta
     let urlLlegada = 'https://barrientosmtzluis-jpg.github.io/XV-ANAPAU/llegada.html?id=' + data.id;
     const divQ = document.getElementById('q');
     divQ.innerHTML = '';
     new QRCode(divQ, {text: urlLlegada, width: 160, height: 160});
     
-    let urlBoletoInvitado = 'https://barrientosmtzluis-jpg.github.io/XV-ANAPAU/boleto.html?id=' + data.id;
+    // 2. CAMBIO AQUÍ: Ahora el link apunta a /boletos/ en lugar de la raíz
+    // Asegúrate de que en tu repositorio de GitHub tengas una carpeta llamada 'boletos' 
+    // y que el archivo boleto.html esté dentro de ella.
+    let urlBoletoInvitado = 'https://barrientosmtzluis-jpg.github.io/boletos/boleto.html?id=' + data.id;
 
+    // Construcción del mensaje para WhatsApp
     document.getElementById('msg').value = '✨ *' + nombreEventoGlobal.toUpperCase() + '* ✨\n\n' +
                    'Estimado/a *' + data.familia + '*,\n\n' +
                    'Nos complace enormemente invitarle a compartir con nosotros este momento tan especial.\n\n' +
