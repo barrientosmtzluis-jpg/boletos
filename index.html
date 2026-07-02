@@ -163,8 +163,6 @@
 </div>
 
 <script>
-// 1. CONFIGURACIÓN DE FIREBASE
-// ⚠️ IMPORTANTE: Reemplaza estos datos ficticios con tus credenciales reales de Firebase Console
 const firebaseConfig = {
     apiKey: "TU_API_KEY_REAL",
     authDomain: "TU_PROYECTO_REAL.firebaseapp.com",
@@ -175,7 +173,6 @@ const firebaseConfig = {
     appId: "TU_APP_ID_REAL"
 };
 
-// Inicializar Firebase de forma segura
 let database;
 try {
     firebase.initializeApp(firebaseConfig);
@@ -185,9 +182,8 @@ try {
 }
 
 const TOTAL_DEFECTO = 200;
-let lugaresGlobales = TOTAL_DEFECTO; // Variable para almacenar el conteo actual en tiempo real
+let lugaresGlobales = TOTAL_DEFECTO;
 
-// 2. ESCUCHADOR EN TIEMPO REAL
 if (database) {
     database.ref("inventario_lugares").on("value", function(snapshot) {
         let cantidadActual = snapshot.val();
@@ -205,7 +201,6 @@ if (database) {
     });
 }
 
-// 3. FUNCIONES DE FLUJO Y CONTROL
 function cambiarLugaresManual(valor){
     let cantidad = parseInt(valor);
     if(isNaN(cantidad) || cantidad < 0) cantidad = 0;
@@ -268,18 +263,15 @@ function send(){
         return;
     }
 
-    // Validación para evitar sobrecupo
     if (lugaresGlobales < pasesA_Descontar) {
         alert(`❌ No puedes enviar la invitación. Solo quedan ${lugaresGlobales} lugares disponibles y estás intentando asignar ${pasesA_Descontar}.`);
         return;
     }
 
-    // Descontar los lugares en Firebase antes de redirigir
     if(database) {
         let nuevoTotal = lugaresGlobales - pasesA_Descontar;
         database.ref("inventario_lugares").set(nuevoTotal)
             .then(() => {
-                // Si la base de datos se actualiza con éxito, envía el mensaje
                 let msg = document.getElementById("msg").value;
                 window.open(
                     `https://api.whatsapp.com/send?phone=${tel}&text=${encodeURIComponent(msg)}`,
@@ -294,7 +286,6 @@ function send(){
     }
 }
 
-// Ejecución inicial de vista previa al cargar la página
 update();
 </script>
 
