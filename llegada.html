@@ -52,7 +52,7 @@ const FIREBASE_BASE_URL = "https://xvpau-36eff-default-rtdb.firebaseio.com/";
 let ticketId = null;
 let ticketData = null;
 
-// Ejecución automática al abrir el enlace del QR
+// Captura el ID de la URL al escanear el QR (?id=TKT-XXXXX)
 window.addEventListener('DOMContentLoaded', () => {
     const params = new URLSearchParams(window.location.search);
     ticketId = params.get('id');
@@ -64,7 +64,7 @@ window.addEventListener('DOMContentLoaded', () => {
     obtenerDatosBoleto();
 });
 
-// Busca el ID del boleto en tu base de datos de Firebase
+// Busca en Firebase la información exacta generada por el panel
 async function obtenerDatosBoleto() {
     try {
         let res = await fetch(`${FIREBASE_BASE_URL}invitados/${ticketId}.json`);
@@ -77,7 +77,7 @@ async function obtenerDatosBoleto() {
             return;
         }
 
-        // Inyección de datos desde Firebase a la interfaz
+        // Mapea la información a la interfaz del portero/staff
         document.getElementById('lblFamilia').textContent = ticketData.familia;
         document.getElementById('lblMesa').textContent = ticketData.mesa || 'Sin asignar';
         document.getElementById('lblPasesTotales').textContent = ticketData.pasesTotales;
@@ -93,6 +93,7 @@ async function obtenerDatosBoleto() {
     }
 }
 
+// Controla el estado visual del boleto (Activo / Denegado)
 function actualizarBadgePases(restantes) {
     const badge = document.getElementById('badgePases');
     badge.textContent = restantes + " restantes";
@@ -112,14 +113,14 @@ function actualizarBadgePases(restantes) {
         badge.className = "badge badge-green";
         inputIngreso.disabled = false;
         inputIngreso.max = restantes;
-        inputIngreso.value = restantes; // Sugiere registrar el total disponible por defecto
+        inputIngreso.value = restantes; // Sugiere pasar a todos los restantes por defecto
         statusMessage.textContent = "✅ Boleto Activo";
         statusMessage.style.color = "#10b981";
         btnRegistrar.disabled = false;
     }
 }
 
-// Validación en tiempo real para evitar errores manuales en la entrada
+// Evita que por error teclen un número mayor de los pases que quedan disponibles
 function validarLimites() {
     if (!ticketData) return;
     const inputIngreso = document.getElementById('inputIngreso');
@@ -132,7 +133,7 @@ function validarLimites() {
     }
 }
 
-// Descuenta los pases seleccionados de Firebase
+// Descuenta pases en Firebase usando PATCH sin borrar otros datos de registro
 async function registrarIngreso() {
     const cantidadIngreso = parseInt(document.getElementById('inputIngreso').value) || 0;
 
@@ -150,7 +151,6 @@ async function registrarIngreso() {
         btnRegistrar.disabled = true;
         btnRegistrar.textContent = "Procesando...";
         
-        // Actualización PATCH enfocada únicamente en alterar el contador de pases remanentes
         let res = await fetch(`${FIREBASE_BASE_URL}invitados/${ticketId}.json`, {
             method: 'PATCH',
             body: JSON.stringify({ pasesRestantes: nuevosRestantes }),
