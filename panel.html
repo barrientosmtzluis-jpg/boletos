@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <title>Panel Profesional - Registro</title>
     <style>
-        body{font-family:Arial;background:#eef2f7;margin:0}.wrap{max-width:900px;margin:30px auto;background:#fff;padding:24px;border-radius:12px;box-shadow:0 2px 10px #0002}
+        body{font-family:Arial, sans-serif;background:#eef2f7;margin:0}.wrap{max-width:900px;margin:30px auto;background:#fff;padding:24px;border-radius:12px;box-shadow:0 2px 10px #0002}
         .grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}input,textarea,button{width:100%;padding:10px;margin:6px 0;box-sizing:border-box}
         button{background:#0a7cff;color:#fff;border:0;border-radius:8px;font-weight:bold;cursor:pointer}
         button.btn-success{background:#28a745} button.btn-success:hover{background:#218838}
@@ -24,7 +24,7 @@
             <label>Invitado / Familia</label>
             <input id="n" placeholder="Ej. Familia Barrientos" oninput="u()">
             <label>Pases Totales</label>
-            <input id="p" type="number" value="1" oninput="u()">
+            <input id="p" type="number" value="1" min="1" oninput="u()">
             <label>Mesa</label>
             <input id="m" value='Mesa A' oninput="u()">
             
@@ -50,6 +50,7 @@
 const FIREBASE_BASE_URL = "https://xvpau-36eff-default-rtdb.firebaseio.com/";
 let nombreEventoGlobal = "Invitación Especial"; 
 
+// Al cargar la página, traemos el nombre del evento de la configuración de Firebase
 window.addEventListener('DOMContentLoaded', async () => {
     let cacheNombre = localStorage.getItem('eventoNombre_cache');
     if (cacheNombre) {
@@ -72,6 +73,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     } catch (e) { console.error("Error cargando configuración:", e); }
 });
 
+// FUNCIÓN PARA ACTUALIZAR LA VISTA PREVIA EN TIEMPO REAL
 function u() {
     const nameInput = document.getElementById('n').value.trim();
     const pasesInput = document.getElementById('p').value || 1;
@@ -82,6 +84,7 @@ function u() {
     document.getElementById('tm').textContent = 'Mesa: ' + mesaInput;
 }
 
+// FUNCIÓN PARA REGISTRAR EN FIREBASE EL NUEVO NODO
 async function registrarInvitadoFirebase() {
     const name = document.getElementById('n').value.trim();
     const pases = parseInt(document.getElementById('p').value) || 1;
@@ -119,21 +122,22 @@ async function registrarInvitadoFirebase() {
     }
 }
 
+// PROCESA LAS URL SEPARADAS: QR PARA STAFF Y LINK DE CONSULTA PARA EL INVITADO
 function actualizarVistaYMensajeFinal(data) {
     document.getElementById('tn').textContent = data.familia;
     document.getElementById('tp').textContent = 'Pases: ' + data.pasesTotales;
     document.getElementById('tm').textContent = 'Mesa: ' + data.mesa;
     
-    // 1. QR del Panel -> Abre directamente la validación del Staff en puerta
+    // 1. QR en pantalla del Panel de Administración -> Apunta directo al validador en puerta
     let urlLlegada = 'https://barrientosmtzluis-jpg.github.io/XV-ANAPAU/llegada.html?id=' + data.id;
     const divQ = document.getElementById('q');
     divQ.innerHTML = '';
     new QRCode(divQ, {text: urlLlegada, width: 160, height: 160});
     
-    // 2. URL del Boleto Digital -> Es el link personal y estético para el Invitado
+    // 2. URL para el Invitado -> Apunta al boleto personal estético que autogenerará su propio QR
     let urlBoletoInvitado = 'https://barrientosmtzluis-jpg.github.io/XV-ANAPAU/boleto.html?id=' + data.id;
 
-    // Construcción del mensaje para WhatsApp
+    // Construcción limpia y formal del mensaje para WhatsApp
     document.getElementById('msg').value = '✨ *' + nombreEventoGlobal.toUpperCase() + '* ✨\n\n' +
                    'Estimado/a *' + data.familia + '*,\n\n' +
                    'Nos complace enormemente invitarle a compartir con nosotros este momento tan especial.\n\n' +
