@@ -10,7 +10,19 @@
         /* Barra de Navegación */
         .navbar { background: #0a7cff; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; color: #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
         .navbar h1 { margin: 0; font-size: 32px; font-weight: 800; letter-spacing: -0.5px; }
-        .btn-logout { background: rgba(255, 255, 255, 0.2); color: #fff; border: 1px solid rgba(255, 255, 255, 0.3); padding: 4px 10px; font-size: 11px; border-radius: 4px; cursor: pointer; transition: background 0.2s; }
+        
+        /* Botón de cierre de sesión extra pequeño */
+        .btn-logout { 
+            background: rgba(255, 255, 255, 0.15); 
+            color: #fff; 
+            border: 1px solid rgba(255, 255, 255, 0.3); 
+            padding: 3px 8px; 
+            font-size: 10px; 
+            border-radius: 3px; 
+            cursor: pointer; 
+            text-transform: uppercase;
+            transition: background 0.2s; 
+        }
         .btn-logout:hover { background: rgba(255, 255, 255, 0.3); }
         
         /* Contenedor Principal */
@@ -44,12 +56,12 @@
 </script>
 
 <div class="navbar">
-    <h1 id="nombreEventoHeader">Cargando evento...</h1>
+    <h1>PANEL DE ADMINISTRACION</h1>
     <button class="btn-logout" onclick="cerrarSesion()">Cerrar Sesión</button>
 </div>
 
 <div class='wrap'>
-    <h2>Panel Profesional de Boletos Electrónicos</h2>
+    <h2>Registro de Boletos Electrónicos</h2>
     <div class='grid'>
         <div>
             <label for="n">Invitado / Familia</label>
@@ -78,23 +90,6 @@
 
 <script>
 const FIREBASE_BASE_URL = "https://xvpau-36eff-default-rtdb.firebaseio.com/";
-let nombreEventoGlobal = "Invitación Especial";
-
-window.addEventListener('DOMContentLoaded', async () => {
-    let cacheNombre = localStorage.getItem('eventoNombre_cache');
-    if (cacheNombre) { nombreEventoGlobal = cacheNombre; document.getElementById('nombreEventoHeader').textContent = nombreEventoGlobal; }
-    try {
-        let res = await fetch(`${FIREBASE_BASE_URL}configuracion.json`);
-        if (res.ok) {
-            let data = await res.json();
-            if (data && data.evento) {
-                nombreEventoGlobal = data.evento;
-                localStorage.setItem('eventoNombre_cache', data.evento);
-                document.getElementById('nombreEventoHeader').textContent = nombreEventoGlobal;
-            }
-        }
-    } catch (e) { console.error(e); }
-});
 
 function u() {
     document.getElementById('tn').textContent = document.getElementById('n').value.trim() || '-';
@@ -118,7 +113,7 @@ function actualizarVistaYMensajeFinal(data) {
     new QRCode(divQ, {text: urlLlegada, width: 160, height: 160});
     
     let urlBoletoInvitado = 'https://barrientosmtzluis-jpg.github.io/boletos/boleto.html?id=' + data.id;
-    document.getElementById('msg').value = '✨ *' + nombreEventoGlobal.toUpperCase() + '* ✨\n\n' +
+    document.getElementById('msg').value = '✨ *PANEL DE ADMINISTRACION* ✨\n\n' +
         'Estimado/a *' + data.familia + '*,\n\n' +
         '🎟️ *SU PASE DIGITAL*\n• Pases: ' + data.pasesTotales + '\n• Mesa: ' + data.mesa + '\n\n' +
         'Acceso aquí: ' + urlBoletoInvitado;
