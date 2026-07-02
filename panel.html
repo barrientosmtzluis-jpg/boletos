@@ -1,216 +1,44 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>Panel Profesional - Registro</title>
-    <style>
-        body { font-family: Arial, sans-serif; background: #eef2f7; margin: 0; }
-        /* Barra de Navegación / Superior */
-        .navbar { background: #0a7cff; padding: 12px 24px; display: flex; justify-content: space-between; align-items: center; color: #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        .navbar h1 { margin: 0; font-size: 20px; font-weight: bold; }
-        .btn-logout { background: #dc2626; color: #fff; border: 0; padding: 8px 14px; border-radius: 6px; font-weight: bold; cursor: pointer; transition: background 0.2s; }
-        .btn-logout:hover { background: #b91c1c; }
-        
-        /* Contenedor Principal */
-        .wrap { max-width: 950px; margin: 30px auto; background: #fff; padding: 24px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-        h2 { color: #333; margin-top: 0; margin-bottom: 20px; font-size: 22px; border-bottom: 2px solid #eef2f7; padding-bottom: 10px; }
-        
-        /* Grid de trabajo */
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
-        @media (max-width: 768px) { .grid { grid-template-columns: 1fr; } }
-        
-        label { display: block; font-weight: bold; color: #4b5563; margin-top: 12px; margin-bottom: 4px; }
-        input, textarea, button { width: 100%; padding: 11px; margin: 4px 0 12px 0; box-sizing: border-box; border-radius: 8px; border: 1px solid #ccc; font-size: 15px; }
-        input:focus, textarea:focus { border-color: #0a7cff; outline: none; }
-        
-        button { background: #0a7cff; color: #fff; border: 0; font-weight: bold; cursor: pointer; transition: background 0.2s; font-size: 16px; }
-        button:hover { background: #0062cc; }
-        button.btn-success { background: #10b981; margin-top: 10px; }
-        button.btn-success:hover { background: #059669; }
-        
-        /* Tarjeta de Vista Previa */
-        .card { border: 1px solid #e5e7eb; padding: 20px; border-radius: 12px; background: #f9fafb; text-align: center; display: flex; flex-direction: column; justify-content: center; }
-        .card h3 { margin-top: 0; color: #4b5563; font-size: 16px; text-transform: uppercase; letter-spacing: 1px; }
-        #tn { font-size: 24px; color: #111827; margin: 15px 0 5px 0; word-wrap: break-word; }
-        #tp { font-size: 18px; color: #4b5563; font-weight: bold; margin: 5px 0; }
-        #tm { font-size: 16px; color: #10b981; font-weight: bold; margin: 5px 0 20px 0; }
-        #q { display: flex; justify-content: center; margin-top: 10px; background: white; padding: 15px; display: inline-block; margin: 0 auto; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-    </style>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-</head>
-<body>
-
-<script>
-    if (sessionStorage.getItem('panel_session_active') !== 'true') {
-        window.location.replace('index.html');
+<style>
+    /* ... (mantén tus estilos anteriores y añade/modifica estos) */
+    
+    /* Barra de Navegación / Superior */
+    .navbar { 
+        background: #0a7cff; 
+        padding: 15px 30px; 
+        display: flex; 
+        justify-content: space-between; 
+        align-items: center; 
+        color: #fff; 
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1); 
     }
-</script>
+    
+    /* Nombre del evento mucho más grande */
+    .navbar h1 { 
+        margin: 0; 
+        font-size: 32px; /* Aumentado de 20px a 32px */
+        font-weight: 800; 
+        letter-spacing: -0.5px;
+    }
+    
+    /* Botón de cierre de sesión mucho más pequeño y discreto */
+    .btn-logout { 
+        background: rgba(255, 255, 255, 0.2); 
+        color: #fff; 
+        border: 1px solid rgba(255, 255, 255, 0.3); 
+        padding: 4px 10px; 
+        font-size: 11px; 
+        border-radius: 4px; 
+        font-weight: normal; 
+        cursor: pointer; 
+        transition: background 0.2s; 
+    }
+    .btn-logout:hover { 
+        background: rgba(255, 255, 255, 0.3); 
+    }
+    /* ... */
+</style>
 
 <div class="navbar">
     <h1 id="nombreEventoHeader">Cargando evento...</h1>
-    <button class="btn-logout" onclick="cerrarSesion()">Cerrar Sesión 🔒</button>
+    <button class="btn-logout" onclick="cerrarSesion()">Cerrar Sesión</button>
 </div>
-
-<div class='wrap'>
-    <h2>Panel Profesional de Boletos Electrónicos</h2>
-    
-    <div class='grid'>
-        <div>
-            <label for="n">Invitado / Familia</label>
-            <input id="n" placeholder="Ej. Familia Barrientos Hernandez" oninput="u()">
-            
-            <label for="p">Pases Totales</label>
-            <input id="p" type="number" value="1" min="1" oninput="u()">
-            
-            <label for="m">Mesa Asignada</label>
-            <input id="m" value='Mesa A' oninput="u()">
-            
-            <button class="btn-success" onclick="registrarInvitadoFirebase()">1. Generar y Registrar Boleto</button>
-            
-            <hr style="border: 0; border-top: 1px solid #e5e7eb; margin: 20px 0;">
-            
-            <label for="t">Número de WhatsApp</label>
-            <input id="t" placeholder="Ej. 5215512345678">
-            
-            <label for="msg">Mensaje para Enviar</label>
-            <textarea id="msg" rows="8" placeholder="El mensaje formal con los links se generará aquí de manera automática tras presionar el botón verde..."></textarea>
-            
-            <button onclick="s()">2. Enviar por WhatsApp</button>
-        </div>
-        
-        <div class='card'>
-            <h3>Vista previa del QR (Control Puerta)</h3>
-            <h2 id="tn">-</h2>
-            <p id="tp">Pases: -</p>
-            <p id="tm">Mesa: -</p>
-            <div id="q-box">
-                <div id="q"></div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<script>
-const FIREBASE_BASE_URL = "https://xvpau-36eff-default-rtdb.firebaseio.com/";
-let nombreEventoGlobal = "Invitación Especial"; 
-
-// Carga inicial del nombre del evento desde la configuración de Firebase
-window.addEventListener('DOMContentLoaded', async () => {
-    let cacheNombre = localStorage.getItem('eventoNombre_cache');
-    if (cacheNombre) {
-        nombreEventoGlobal = cacheNombre;
-        document.getElementById('nombreEventoHeader').textContent = nombreEventoGlobal;
-    }
-    u();
-
-    try {
-        let res = await fetch(`${FIREBASE_BASE_URL}configuracion.json`);
-        if (res.ok) {
-            let data = await res.json();
-            if (data && data.evento) {
-                nombreEventoGlobal = data.evento;
-                localStorage.setItem('eventoNombre_cache', data.evento);
-                document.getElementById('nombreEventoHeader').textContent = nombreEventoGlobal;
-                u(); 
-            }
-        }
-    } catch (e) { console.error("Error cargando configuración:", e); }
-});
-
-// Función de actualización en tiempo real para la vista previa lateral
-function u() {
-    const nameInput = document.getElementById('n').value.trim();
-    const pasesInput = document.getElementById('p').value || 1;
-    const mesaInput = document.getElementById('m').value || 'Mesa';
-
-    document.getElementById('tn').textContent = nameInput || '-';
-    document.getElementById('tp').textContent = 'Pases: ' + pasesInput;
-    document.getElementById('tm').textContent = 'Mesa: ' + mesaInput;
-}
-
-// Registro en Firebase y generación del flujo dinámico
-async function registrarInvitadoFirebase() {
-    const name = document.getElementById('n').value.trim();
-    const pases = parseInt(document.getElementById('p').value) || 1;
-    const mesa = document.getElementById('m').value.trim();
-
-    if (!name) return alert('Por favor, ingrese el nombre del invitado.');
-
-    const ticketId = "TKT-" + Date.now();
-
-    const invitadoData = {
-        id: ticketId,
-        familia: name,
-        pasesTotales: pases,
-        pasesRestantes: pases, 
-        mesa: mesa || "Mesa A",
-        fechaRegistro: new Date().toISOString()
-    };
-
-    try {
-        let res = await fetch(`${FIREBASE_BASE_URL}invitados/${ticketId}.json`, {
-            method: 'PUT',
-            body: JSON.stringify(invitadoData),
-            headers: { 'Content-Type': 'application/json' }
-        });
-
-        if (res.ok) {
-            alert('¡Boleto guardado en Firebase con éxito!');
-            actualizarVistaYMensajeFinal(invitadoData);
-        } else {
-            alert('Error al guardar en la base de datos de Firebase. Verifica la conexión.');
-        }
-    } catch (error) {
-        console.error("Error de red:", error);
-        alert('Error de red al intentar registrar el boleto.');
-    }
-}
-
-// Modifica la interfaz e inyecta los links finales al área de texto de WhatsApp
-function actualizarVistaYMensajeFinal(data) {
-    document.getElementById('tn').textContent = data.familia;
-    document.getElementById('tp').textContent = 'Pases: ' + data.pasesTotales;
-    document.getElementById('tm').textContent = 'Mesa: ' + data.mesa;
-    
-    // 1. QR del Panel Administrativo -> Abre la pantalla del portero de forma directa
-    let urlLlegada = 'https://barrientosmtzluis-jpg.github.io/boletos/llegada.html?id=' + data.id;
-    const divQ = document.getElementById('q');
-    divQ.innerHTML = '';
-    new QRCode(divQ, {text: urlLlegada, width: 160, height: 160});
-    
-    // 2. Link Estético del Invitado -> Va directo al boleto premium
-    let urlBoletoInvitado = 'https://barrientosmtzluis-jpg.github.io/boletos/boleto.html?id=' + data.id;
-
-    // Construcción del mensaje formateado para enviar por WhatsApp
-    document.getElementById('msg').value = '✨ *' + nombreEventoGlobal.toUpperCase() + '* ✨\n\n' +
-                   'Estimado/a *' + data.familia + '*,\n\n' +
-                   'Nos complace enormemente invitarle a compartir con nosotros este momento tan especial.\n\n' +
-                   'A continuación, le compartimos los detalles de acceso:\n\n' +
-                   '📖 *Invitación Digital:* https://www.qrcreator.dev/es-ES/p/9824EADF\n' +
-                   '🌐 *Página Web del Evento:* https://barrientosmtzluis-jpg.github.io/XV-ANAPAU/\n\n' +
-                   '━━━━━━━━━━━━━━━━━━━━━━\n' +
-                   '🎟️ *SU PASE DIGITAL DE ACCESO*\n' +
-                   '• *Pases asignados:* ' + data.pasesTotales + '\n' +
-                   '• *Mesa reservada:* ' + data.mesa + '\n\n' +
-                   '👉 Descarga y consulta tu pase digital con código QR para el acceso aquí:\n' + urlBoletoInvitado + '\n' +
-                   '━━━━━━━━━━━━━━━━━━━━━━\n\n' +
-                   '¡Le esperamos!';
-}
-
-// Ejecuta la ventana externa para despachar el mensaje por WhatsApp API
-function s(){
-    const inputTel = document.getElementById('t');
-    const txtMsg = document.getElementById('msg');
-    if(!inputTel.value) return alert('Por favor, capture el número de WhatsApp.');
-    window.open('https://api.whatsapp.com/send?phone=' + inputTel.value + '&text=' + encodeURIComponent(txtMsg.value), '_blank');
-}
-
-// Destruye los datos del sessionStorage y te regresa a la pantalla de clave
-function cerrarSesion() {
-    sessionStorage.removeItem('panel_session_active');
-    window.location.replace('index.html');
-}
-</script>
-</body>
-</html>
