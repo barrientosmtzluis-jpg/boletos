@@ -38,7 +38,7 @@
 
         <div id="actionForm">
             <label>¿Cuántas personas ingresan ahora?</label>
-            <input type="number" id="inputIngreso" value="1" min="1">
+            <input type="number" id="inputIngreso" value="1" min="1" oninput="validarLimites()">
             
             <button id="btnRegistrar" onclick="registrarIngreso()">Registrar Entrada</button>
         </div>
@@ -75,7 +75,7 @@ async function obtenerDatosBoleto() {
             return;
         }
 
-        // Mostrar los datos en la interfaz
+        // Mapeo exacto de los campos generados por el Panel Profesional de Registro
         document.getElementById('lblFamilia').textContent = ticketData.familia;
         document.getElementById('lblMesa').textContent = ticketData.mesa || 'Sin asignar';
         document.getElementById('lblPasesTotales').textContent = ticketData.pasesTotales;
@@ -102,15 +102,31 @@ function actualizarBadgePases(restantes) {
     if (restantes <= 0) {
         badge.className = "badge badge-red";
         inputIngreso.disabled = true;
+        inputIngreso.value = 0;
         btnRegistrar.disabled = true;
         statusMessage.textContent = "🚫 ACCESO DENEGADO: Todos los pases de este boleto ya fueron utilizados.";
         statusMessage.style.color = "#ef4444";
     } else {
         badge.className = "badge badge-green";
+        inputIngreso.disabled = false;
         inputIngreso.max = restantes;
-        inputIngreso.value = restantes; // Por defecto sugiere pasar todos los que le quedan
+        inputIngreso.value = restantes; // Sugiere pasar a todos los restantes de manera predeterminada
         statusMessage.textContent = "✅ Boleto Activo";
         statusMessage.style.color = "#10b981";
+        btnRegistrar.disabled = false;
+    }
+}
+
+// NUEVA FUNCIÓN: Previene de forma proactiva que el usuario intente ingresar un número mayor por teclado
+function validarLimites() {
+    const inputIngreso = document.getElementById('inputIngreso');
+    const btnRegistrar = document.getElementById('btnRegistrar');
+    let val = parseInt(inputIngreso.value) || 0;
+
+    if (val > ticketData.pasesRestantes) {
+        inputIngreso.value = ticketData.pasesRestantes;
+    } else if (val < 1 && ticketData.pasesRestantes > 0) {
+        inputIngreso.value = 1;
     }
 }
 
@@ -124,13 +140,15 @@ async function registrarIngreso() {
         return alert(`No puedes ingresar más personas de las permitidas. Solo quedan ${ticketData.pasesRestantes} pases.`);
     }
 
-    // Calcular el nuevo saldo de boletos
+    // Calcular la deducción del saldo de accesos
     const nuevosRestantes = ticketData.pasesRestantes - cantidadIngreso;
+    const btnRegistrar = document.getElementById('btnRegistrar');
 
     try {
-        document.getElementById('btnRegistrar').disabled = true;
+        btnRegistrar.disabled = true;
+        btnRegistrar.textContent = "Procesando...";
         
-        // Guardar la actualización directamente en Firebase (PATCH)
+        // Ejecución PATCH en la base de datos de Firebase
         let res = await fetch(`${FIREBASE_BASE_URL}invitados/${ticketId}.json`, {
             method: 'PATCH',
             body: JSON.stringify({ pasesRestantes: nuevosRestantes }),
@@ -140,15 +158,17 @@ async function registrarIngreso() {
         if (res.ok) {
             ticketData.pasesRestantes = nuevosRestantes;
             actualizarBadgePases(nuevosRestantes);
-            alert(`¡Ingreso registrado correctamente! Entraron ${cantidadIngreso} personas.`);
+            alert(`¡Ingreso registrado correctamente!\nIngresaron: ${cantidadIngreso} personas.`);
         } else {
             alert("Error al actualizar los datos en el servidor.");
-            document.getElementById('btnRegistrar').disabled = false;
+            btnRegistrar.disabled = false;
         }
     } catch (error) {
         console.error(error);
         alert("Error de red al procesar el ingreso.");
-        document.getElementById('btnRegistrar').disabled = false;
+        btnRegistrar.disabled = false;
+    } finally {
+        btnRegistrar.textContent = "Registrar Entrada";
     }
 }
 </script>
