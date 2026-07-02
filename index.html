@@ -144,7 +144,7 @@
             <label>Vista previa del mensaje:</label>
             <textarea id="msg" rows="10"></textarea>
 
-            <button onclick="send()"><i class="fab fa-whatsapp"></i> Enviar WhatsApp</button>
+            <button onclick="send()"><i class="fab fa-whatsapp"></i> Enviar e Invitar</button>
         </div>
 
         <div class="card ticket">
@@ -164,54 +164,62 @@
 
 <script>
 // 1. CONFIGURACIÓN DE FIREBASE
-// Reemplaza estos datos con las credenciales de tu proyecto de Firebase
+// ⚠️ IMPORTANTE: Reemplaza estos datos ficticios con tus credenciales reales de Firebase Console
 const firebaseConfig = {
-    apiKey: "TU_API_KEY",
-    authDomain: "TU_PROYECTO.firebaseapp.com",
-    databaseURL: "https://TU_PROYECTO-default-rtdb.firebaseio.com",
-    projectId: "TU_PROYECTO",
-    storageBucket: "TU_PROYECTO.appspot.com",
-    messagingSenderId: "TU_SENDER_ID",
-    appId: "TU_APP_ID"
+    apiKey: "TU_API_KEY_REAL",
+    authDomain: "TU_PROYECTO_REAL.firebaseapp.com",
+    databaseURL: "https://TU_PROYECTO_REAL-default-rtdb.firebaseio.com",
+    projectId: "TU_PROYECTO_REAL",
+    storageBucket: "TU_PROYECTO_REAL.appspot.com",
+    messagingSenderId: "TU_SENDER_ID_REAL",
+    appId: "TU_APP_ID_REAL"
 };
 
-// Inicializar Firebase
-firebase.initializeApp(firebaseConfig);
-const database = firebase.database();
+// Inicializar Firebase de forma segura
+let database;
+try {
+    firebase.initializeApp(firebaseConfig);
+    database = firebase.database();
+} catch (error) {
+    console.error("Error al inicializar Firebase. Verifica tus credenciales.", error);
+}
 
 const TOTAL_DEFECTO = 200;
+let lugaresGlobales = TOTAL_DEFECTO; // Variable para almacenar el conteo actual en tiempo real
 
 // 2. ESCUCHADOR EN TIEMPO REAL
-// Sincroniza el input y el botón con el valor real en Firebase de forma inmediata
-database.ref("inventario_lugares").on("value", function(snapshot) {
-    let cantidadActual = snapshot.val();
-    
-    // Si la referencia no existe aún en Firebase, inicializarla con el valor por defecto
-    if (cantidadActual === null) {
-        database.ref("inventario_lugares").set(TOTAL_DEFECTO);
-        cantidadActual = TOTAL_DEFECTO;
-    }
-    
-    document.getElementById("lugares").value = cantidadActual;
-    document.getElementById("btnReiniciar").innerHTML = `<i class="fas fa-undo"></i> Reiniciar (${cantidadActual})`;
-});
+if (database) {
+    database.ref("inventario_lugares").on("value", function(snapshot) {
+        let cantidadActual = snapshot.val();
+        
+        if (cantidadActual === null) {
+            database.ref("inventario_lugares").set(TOTAL_DEFECTO);
+            cantidadActual = TOTAL_DEFECTO;
+        }
+        
+        lugaresGlobales = parseInt(cantidadActual);
+        document.getElementById("lugares").value = cantidadActual;
+        document.getElementById("btnReiniciar").innerHTML = `<i class="fas fa-undo"></i> Reiniciar (${cantidadActual})`;
+    }, function(error) {
+        console.error("Error de permisos en Firebase Realtime Database: ", error);
+    });
+}
 
 // 3. FUNCIONES DE FLUJO Y CONTROL
 function cambiarLugaresManual(valor){
     let cantidad = parseInt(valor);
+    if(isNaN(cantidad) || cantidad < 0) cantidad = 0;
 
-    if(isNaN(cantidad) || cantidad < 0){
-        cantidad = 0;
+    if(database) {
+        database.ref("inventario_lugares").set(cantidad);
     }
-
-    // Envía el cambio inmediato a Firebase
-    database.ref("inventario_lugares").set(cantidad);
 }
 
 function reiniciarContador(){
-    // Restablece Firebase al valor por defecto (200) o al valor que captures del input actual
-    database.ref("inventario_lugares").set(TOTAL_DEFECTO);
-    alert("Contador reiniciado en Firebase a " + TOTAL_DEFECTO);
+    if(database) {
+        database.ref("inventario_lugares").set(TOTAL_DEFECTO);
+        alert("Contador reiniciado en Firebase a " + TOTAL_DEFECTO);
+    }
 }
 
 function update(){
@@ -228,11 +236,15 @@ function update(){
     let qrContainer = document.getElementById("qrcode");
     qrContainer.innerHTML = "";
 
-    new QRCode(qrContainer,{
-        text:urlBoleto,
-        width:128,
-        height:128
-    });
+    try {
+        new QRCode(qrContainer,{
+            text:urlBoleto,
+            width:128,
+            height:128
+        });
+    } catch(e) {
+        console.error("Error al generar el código QR: ", e);
+    }
 
     document.getElementById("msg").value =
 `✨ ¡Tenemos una invitación muy especial para ti! ✨
@@ -249,18 +261,37 @@ ${urlBoleto}`;
 
 function send(){
     let tel = document.getElementById("tel").value.trim();
+    let pasesA_Descontar = parseInt(document.getElementById("pases").value) || 1;
 
     if(!tel){
-        alert("Ingrese un teléfono");
+        alert("Ingrese un número de teléfono válido.");
         return;
     }
 
-    let msg = document.getElementById("msg").value;
+    // Validación para evitar sobrecupo
+    if (lugaresGlobales < pasesA_Descontar) {
+        alert(`❌ No puedes enviar la invitación. Solo quedan ${lugaresGlobales} lugares disponibles y estás intentando asignar ${pasesA_Descontar}.`);
+        return;
+    }
 
-    window.open(
-        `https://api.whatsapp.com/send?phone=${tel}&text=${encodeURIComponent(msg)}`,
-        "_blank"
-    );
+    // Descontar los lugares en Firebase antes de redirigir
+    if(database) {
+        let nuevoTotal = lugaresGlobales - pasesA_Descontar;
+        database.ref("inventario_lugares").set(nuevoTotal)
+            .then(() => {
+                // Si la base de datos se actualiza con éxito, envía el mensaje
+                let msg = document.getElementById("msg").value;
+                window.open(
+                    `https://api.whatsapp.com/send?phone=${tel}&text=${encodeURIComponent(msg)}`,
+                    "_blank"
+                );
+            })
+            .catch((error) => {
+                alert("Hubo un error al actualizar los lugares en la base de datos: " + error.message);
+            });
+    } else {
+        alert("La base de datos no está conectada. Verifica la configuración de Firebase.");
+    }
 }
 
 // Ejecución inicial de vista previa al cargar la página
