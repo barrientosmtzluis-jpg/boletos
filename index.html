@@ -2,141 +2,158 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Configuración del Evento</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Panel Profesional - Registro</title>
     <style>
-        body { font-family: Arial, sans-serif; background: #eef2f7; margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; }
-        .card { background: #fff; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; max-width: 400px; box-sizing: border-box; }
-        h2 { margin-top: 0; color: #333; text-align: center; }
-        label { font-weight: bold; display: block; margin-top: 15px; color: #555; }
-        input { width: 100%; padding: 10px; margin: 6px 0 15px 0; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
-        button { background: #0a7cff; color: #fff; border: 0; padding: 12px; border-radius: 8px; width: 100%; font-size: 16px; cursor: pointer; font-weight: bold; }
-        button:hover { background: #0066d6; }
-        
-        /* Clase para ocultar contenedores dinámicamente */
-        .oculto { display: none !important; }
+        body{font-family:Arial;background:#eef2f7;margin:0}.wrap{max-width:900px;margin:30px auto;background:#fff;padding:24px;border-radius:12px;box-shadow:0 2px 10px #0002}
+        .grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}input,textarea,button{width:100%;padding:10px;margin:6px 0;box-sizing:border-box}
+        button{background:#0a7cff;color:#fff;border:0;border-radius:8px;font-weight:bold;cursor:pointer}
+        button.btn-success{background:#28a745} button.btn-success:hover{background:#218838}
+        .card{border:1px solid #ddd;padding:15px;border-radius:10px}
+        h1#nombreEventoHeader { margin-top: 0; color: #0a7cff; border-bottom: 2px solid #eef2f7; padding-bottom: 10px; }
     </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
 <body>
-
-<div class="card" id="vistaLogin">
-    <h2>Acceso al Sistema</h2>
+<div class='wrap'>
+    <h1 id="nombreEventoHeader">Cargando evento...</h1>
+    <h2>Panel Profesional de Boletos Electrónicos</h2>
     
-    <label>Usuario</label>
-    <input type="text" id="loginUsuario" placeholder="Ej. Administrador">
-    
-    <label>Contraseña</label>
-    <input type="password" id="loginPassword" placeholder="••••••••">
-    
-    <button onclick="validarAcceso()">Iniciar Sesión</button>
-</div>
-
-<div class="card oculto" id="vistaConfiguracion">
-    <h2>Configuración de Evento</h2>
-    
-    <label>Nombre del Evento</label>
-    <input type="text" id="eventoNombre" placeholder="Ej. XV Años Pau">
-    
-    <label>Cantidad de Invitados</label>
-    <input type="number" id="totalInvitados" placeholder="Ej. 150">
-    
-    <label>Cantidad de Mesas</label>
-    <input type="number" id="totalMesas" placeholder="Ej. 15">
-    
-    <button onclick="guardarConfiguracion()">Ingresar al Panel</button>
+    <div class='grid'>
+        <div>
+            <label>Invitado / Familia</label>
+            <input id="n" placeholder="Ej. Familia Barrientos" oninput="u()">
+            <label>Pases Totales</label>
+            <input id="p" type="number" value="1" oninput="u()">
+            <label>Mesa</label>
+            <input id="m" value='Mesa A' oninput="u()">
+            
+            <button class="btn-success" onclick="registrarInvitadoFirebase()">1. Generar y Registrar Boleto</button>
+            
+            <hr>
+            <label>WhatsApp</label>
+            <input id="t" placeholder="Ej. 5215512345678">
+            <textarea id="msg" rows="10" placeholder="El mensaje se generará automáticamente tras registrar el boleto..."></textarea>
+            <button onclick="s()">2. Enviar por WhatsApp</button>
+        </div>
+        <div class='card'>
+            <h3>Vista previa del QR (Control de Acceso Puerta)</h3>
+            <h2 id="tn">-</h2>
+            <p id="tp">Pases: -</p>
+            <p id="tm">Mesa: -</p>
+            <div id="q" style="display: flex; justify-content: center; margin-top: 10px;"></div>
+        </div>
+    </div>
 </div>
 
 <script>
-const FIREBASE_URL = "https://xvpau-36eff-default-rtdb.firebaseio.com/configuracion.json";
+const FIREBASE_BASE_URL = "https://xvpau-36eff-default-rtdb.firebaseio.com/";
+let nombreEventoGlobal = "Invitación Especial"; 
 
-// 1. FUNCIÓN PARA VALIDAR EL LOGIN LOCAL
-function validarAcceso() {
-    const usuario = document.getElementById('loginUsuario').value.trim();
-    const contrasena = document.getElementById('loginPassword').value;
-
-    if (usuario === "Administrador" && contrasena === "password") {
-        // Ocultamos el login y mostramos el formulario de configuración
-        document.getElementById('vistaLogin').classList.add('oculto');
-        document.getElementById('vistaConfiguracion').classList.remove('oculto');
-        
-        // Ejecutamos la carga de datos de Firebase ahora que el usuario está adentro
-        cargarDatosFirebase();
-    } else {
-        alert('Usuario o contraseña incorrectos. Intente de nuevo.');
+window.addEventListener('DOMContentLoaded', async () => {
+    let cacheNombre = localStorage.getItem('eventoNombre_cache');
+    if (cacheNombre) {
+        nombreEventoGlobal = cacheNombre;
+        document.getElementById('nombreEventoHeader').textContent = nombreEventoGlobal;
     }
-}
+    u();
 
-// Permitir dar "Enter" en el campo de contraseña para loguearse rápido
-document.getElementById('loginPassword').addEventListener('keypress', function(e) {
-    if (e.key === 'Enter') validarAcceso();
-});
-
-
-// 2. FUNCIÓN PARA INTENTAR PRELLENAR LOS CAMPOS DESDE EL CACHÉ O DESDE FIREBASE
-async function cargarDatosFirebase() {
-    // Primero intentamos jalar del almacenamiento local (es instantáneo)
-    const localNombre = localStorage.getItem('eventoNombre_cache');
-    const localInvitados = localStorage.getItem('totalInvitados_cache');
-    const localMesas = localStorage.getItem('totalMesas_cache');
-
-    if (localNombre) document.getElementById('eventoNombre').value = localNombre;
-    if (localInvitados) document.getElementById('totalInvitados').value = localInvitados;
-    if (localMesas) document.getElementById('totalMesas').value = localMesas;
-
-    // Intentamos actualizar en segundo plano con lo que esté guardado en Firebase
     try {
-        let response = await fetch(FIREBASE_URL);
-        if (response.ok) {
-            let data = await response.json();
-            if (data) {
-                if (data.evento) document.getElementById('eventoNombre').value = data.evento;
-                if (data.maxInvitados) document.getElementById('totalInvitados').value = data.maxInvitados;
-                if (data.maxMesas) document.getElementById('totalMesas').value = data.maxMesas;
+        let res = await fetch(FIREBASE_BASE_URL + "configuracion.json");
+        if (res.ok) {
+            let data = await res.json();
+            if (data && data.evento) {
+                nombreEventoGlobal = data.evento;
+                localStorage.setItem('eventoNombre_cache', data.evento);
+                document.getElementById('nombreEventoHeader').textContent = nombreEventoGlobal;
+                u(); 
             }
         }
-    } catch (error) {
-        console.warn("Firebase offline o bloqueado temporalmente. Usando datos locales:", error);
-    }
+    } catch (e) { console.error("Error cargando configuración:", e); }
+});
+
+function u() {
+    const nameInput = document.getElementById('n').value.trim();
+    const pasesInput = document.getElementById('p').value || 1;
+    const mesaInput = document.getElementById('m').value || 'Mesa';
+
+    document.getElementById('tn').textContent = nameInput || '-';
+    document.getElementById('tp').textContent = 'Pases: ' + pasesInput;
+    document.getElementById('tm').textContent = 'Mesa: ' + mesaInput;
 }
 
-// 3. FUNCIÓN PARA GUARDAR EN FIREBASE Y REDIRECCIONAR
-async function guardarConfiguracion() {
-    const nombre = document.getElementById('eventoNombre').value.trim();
-    const invitados = document.getElementById('totalInvitados').value;
-    const mesas = document.getElementById('totalMesas').value;
+async function registrarInvitadoFirebase() {
+    const name = document.getElementById('n').value.trim();
+    const pases = parseInt(document.getElementById('p').value) || 1;
+    const mesa = document.getElementById('m').value.trim();
 
-    if (!nombre || !invitados || !mesas) {
-        return alert('Por favor, completa todos los campos.');
-    }
+    if (!name) return alert('Por favor, ingrese el nombre del invitado.');
 
-    const data = {
-        evento: nombre,
-        maxInvitados: parseInt(invitados),
-        maxMesas: parseInt(mesas)
+    const ticketId = "TKT-" + Date.now();
+
+    const invitadoData = {
+        id: ticketId,
+        familia: name,
+        pasesTotales: pases,
+        pasesRestantes: pases, 
+        mesa: mesa || "Mesa A",
+        fechaRegistro: new Date().toISOString()
     };
 
-    // Guardar en LocalStorage obligatoriamente como respaldo de emergencia
-    localStorage.setItem('eventoNombre_cache', nombre);
-    localStorage.setItem('totalInvitados_cache', invitados);
-    localStorage.setItem('totalMesas_cache', mesas);
-
     try {
-        let response = await fetch(FIREBASE_URL, {
-            method: 'PUT', 
-            body: JSON.stringify(data),
+        let res = await fetch(`${FIREBASE_BASE_URL}invitados/${ticketId}.json`, {
+            method: 'PUT',
+            body: JSON.stringify(invitadoData),
             headers: { 'Content-Type': 'application/json' }
         });
 
-        if (response.ok) {
-            window.location.href = "panel.html";
+        if (res.ok) {
+            alert('¡Boleto guardado en Firebase con éxito!');
+            actualizarVistaYMensajeFinal(invitadoData);
         } else {
-            console.error('Error de respuesta en Firebase. Avanzando en modo local.');
-            window.location.href = "panel.html";
+            alert('Error al guardar en la base de datos de Firebase.');
         }
     } catch (error) {
-        console.warn('Error de red. Avanzando al panel con almacenamiento local.');
-        window.location.href = "panel.html";
+        console.error("Error de red:", error);
+        alert('Error de red al intentar registrar el boleto.');
     }
+}
+
+function actualizarVistaYMensajeFinal(data) {
+    document.getElementById('tn').textContent = data.familia;
+    document.getElementById('tp').textContent = 'Pases: ' + data.pasesTotales;
+    document.getElementById('tm').textContent = 'Mesa: ' + data.mesa;
+    
+    // 1. QR del Panel -> Abre directamente la validación del Staff en puerta
+    let urlLlegada = 'https://barrientosmtzluis-jpg.github.io/XV-ANAPAU/llegada.html?id=' + data.id;
+    const divQ = document.getElementById('q');
+    divQ.innerHTML = '';
+    new QRCode(divQ, {text: urlLlegada, width: 160, height: 160});
+    
+    // 2. URL del Boleto Digital -> Es el link personal y estético para el Invitado
+    let urlBoletoInvitado = 'https://barrientosmtzluis-jpg.github.io/XV-ANAPAU/boleto.html?id=' + data.id;
+
+    // Construcción del mensaje para WhatsApp
+    document.getElementById('msg').value = '✨ *' + nombreEventoGlobal.toUpperCase() + '* ✨\n\n' +
+                   'Estimado/a *' + data.familia + '*,\n\n' +
+                   'Nos complace enormemente invitarle a compartir con nosotros este momento tan especial.\n\n' +
+                   'A continuación, le compartimos los detalles de acceso:\n\n' +
+                   '📖 *Invitación Digital:* https://www.qrcreator.dev/es-ES/p/9824EADF\n' +
+                   '🌐 *Página Web del Evento:* https://barrientosmtzluis-jpg.github.io/XV-ANAPAU/\n\n' +
+                   '━━━━━━━━━━━━━━━━━━━━━━\n' +
+                   '🎟️ *SU PASE DIGITAL DE ACCESO*\n' +
+                   '• *Pases asignados:* ' + data.pasesTotales + '\n' +
+                   '• *Mesa reservada:* ' + data.mesa + '\n\n' +
+                   '👉 Descarga y consulta tu pase digital con código QR para el acceso aquí:\n' + urlBoletoInvitado + '\n' +
+                   '━━━━━━━━━━━━━━━━━━━━━━\n\n' +
+                   '¡Le esperamos!';
+}
+
+function s(){
+    const inputTel = document.getElementById('t');
+    const txtMsg = document.getElementById('msg');
+    if(!inputTel.value) return alert('Por favor, capture el número de WhatsApp.');
+    window.open('https://api.whatsapp.com/send?phone=' + inputTel.value + '&text=' + encodeURIComponent(txtMsg.value), '_blank');
 }
 </script>
 </body>
