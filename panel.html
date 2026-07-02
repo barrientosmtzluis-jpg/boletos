@@ -17,7 +17,7 @@
         .btn-small{padding:5px 10px; font-size: 12px; width: auto; background:#ef4444;}
         .card{border:1px solid #e5e7eb;padding:20px;border-radius:15px;background:#f9fafb;text-align:center}
         h1{color:#4f46e5;margin-top:0;border-bottom:2px solid #eef2f7;padding-bottom:10px; display:flex; justify-content:space-between; align-items:center}
-        #configPanel { padding: 40px; text-align: center; display: none; } /* Oculto por defecto hasta verificar */
+        #configPanel { padding: 40px; text-align: center; display: none; }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
@@ -63,22 +63,18 @@
 <script>
 const FIREBASE_BASE_URL = "https://xvpau-36eff-default-rtdb.firebaseio.com/";
 
-// NUEVO: Al cargar la página, verifica si ya hay un evento configurado en Firebase
 window.onload = async function() {
     try {
         let res = await fetch(`${FIREBASE_BASE_URL}config.json`);
         if (res.ok) {
             const config = await res.json();
             if (config && config.nombre) {
-                // Si ya existe configuración, saltamos directo al panel principal
                 iniciarPanel(config);
             } else {
-                // Si está vacío, mostramos el formulario de configuración
                 document.getElementById('configPanel').style.display = 'block';
             }
         }
     } catch (error) {
-        console.error("Error al conectar con Firebase:", error);
         document.getElementById('configPanel').style.display = 'block';
     }
 };
@@ -87,12 +83,9 @@ async function configurarEvento() {
     const nombre = document.getElementById('cfg_nombre').value;
     const inv = document.getElementById('cfg_invitados').value;
     const mesas = document.getElementById('cfg_mesas').value;
-
     if(!nombre) return alert('Por favor ingresa el nombre del evento');
-
     const config = { nombre, totalInvitados: inv, totalMesas: mesas };
     await fetch(`${FIREBASE_BASE_URL}config.json`, { method: 'PUT', body: JSON.stringify(config) });
-    
     iniciarPanel(config);
 }
 
@@ -102,7 +95,6 @@ function iniciarPanel(data) {
     document.getElementById('titleEvent').textContent = data.nombre;
 }
 
-// NUEVO: Permite regresar a la configuración si el usuario lo desea sin resetear todo
 function forzarConfiguracion() {
     document.getElementById('mainPanel').style.display = 'none';
     document.getElementById('configPanel').style.display = 'block';
@@ -119,7 +111,6 @@ async function registrarInvitadoFirebase() {
     if (!name) return alert('Ingrese nombre del invitado.');
     const ticketId = "TKT-" + Date.now();
     const data = { id: ticketId, familia: name, pases: document.getElementById('p').value, mesa: document.getElementById('m').value };
-
     let res = await fetch(`${FIREBASE_BASE_URL}invitados/${ticketId}.json`, { method: 'PUT', body: JSON.stringify(data) });
     if (res.ok) {
         alert('Boleto guardado con éxito.');
@@ -127,32 +118,10 @@ async function registrarInvitadoFirebase() {
     }
 }
 
-function actualizarVistaYMensaje(data) {
-    // Generar la URL del boleto con el formato requerido
-    let urlBoleto = `https://barrientosmtzluis-jpg.github.io/boletos/?invitado=${encodeURIComponent(data.familia)}&pases=${data.pases}&mesa=${encodeURIComponent(data.mesa)}`;
-
-    const divQ = document.getElementById('q');
-    divQ.innerHTML = '';
-    new QRCode(divQ, {text: urlBoleto, width: 160, height: 160});
-    
-    document.getElementById('msg').value = '✨ ¡Tenemos una invitación muy especial para ti! ✨\n\n' +
-        'Estimada familia / amigo ' + data.familia + ',\n\n' +
-        'Nos complace enormemente invitarte a compartir con nosotros un momento inolvidable. En el siguiente enlace podrás conocer todos los detalles de nuestro evento, itinerario y locación:\n\n' +
+function generarTextoMensaje(name, pases, mesa) {
+    let urlBoleto = `https://barrientosmtzluis-jpg.github.io/boletos/?invitado=${encodeURIComponent(name)}&pases=${pases}&mesa=${encodeURIComponent(mesa)}`;
+    return '✨ ¡Tenemos una invitación muy especial para ti! ✨\n\n' +
+        'Estimada familia / amigo ' + name + ',\n\n' +
+        'Nos complace enormemente invitarte a compartir con nosotros un momento inolvidable.\n\n' +
         '👉 Nuestra Invitación Digital:\nhttps://www.qrcreator.dev/es-ES/p/9824EADF\n\n' +
-        '👉 Sitio WEB del evento:\nhttps://barrientosmtzluis-jpg.github.io/XV-ANAPAU/\n\n' +
-        '🎫 De igual manera, te hacemos llegar tu Pase Digital Inteligente válido para ' + data.pases + ' personas.\n' +
-        '📍 Mesa asignada: ' + data.mesa + '\n\n' +
-        'Para ingresar de forma ágil el día del evento, solo haz clic aquí abajo y presenta el código QR desde tu pantalla:\n\n' +
-        '👉 Tu Boleto de Acceso:\n' + urlBoleto + '\n\n' +
-        '¡Tu presencia hará que este día sea aún más especial! Esperamos contar contigo. ✨🥂';
-}
-
-function s(){
-    let tel = document.getElementById('t').value;
-    let msg = document.getElementById('msg').value;
-    if(!tel || !msg) return alert('Por favor genera el boleto y escribe el teléfono.');
-    window.open('https://api.whatsapp.com/send?phone=' + tel + '&text=' + encodeURIComponent(msg), '_blank');
-}
-</script>
-</body>
-</html>
+        '🎫 Pase Digital válido para ' + pases + ' personas.\n'
