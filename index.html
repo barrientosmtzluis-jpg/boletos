@@ -4,15 +4,31 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Acceso al Sistema - Panel Profesional</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body { font-family: Arial, sans-serif; background: #eef2f7; margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
-        .login-card { background: #fff; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; max-width: 360px; text-align: center; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: #eef2f7; margin: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; box-sizing: border-box; }
+        .login-card { background: #fff; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; max-width: 360px; text-align: center; box-sizing: border-box; margin-bottom: 25px; }
         h2 { color: #0a7cff; margin-top: 0; margin-bottom: 20px; }
         label { display: block; text-align: left; font-weight: bold; color: #4b5563; margin-bottom: 6px; }
         input { width: 100%; padding: 12px; margin-bottom: 20px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 16px; text-align: center; }
         button { background: #0a7cff; color: #fff; border: 0; padding: 12px; border-radius: 8px; width: 100%; font-size: 16px; font-weight: bold; cursor: pointer; transition: background 0.2s; }
         button:hover { background: #0062cc; }
         .error-msg { color: #dc2626; font-size: 14px; font-weight: bold; margin-bottom: 15px; display: none; }
+        
+        /* Enlace de Olvidé Contraseña */
+        .forgot-password { display: inline-block; margin-top: 15px; color: #4b5563; font-size: 14px; text-decoration: none; font-weight: 600; transition: color 0.2s; }
+        .forgot-password:hover { color: #0a7cff; text-decoration: underline; }
+
+        /* Estilos del Footer Corporativo - PIXELINK Creations */
+        .brand-footer { text-align: center; max-width: 360px; width: 100%; color: #6b7280; font-size: 12px; line-height: 1.6; }
+        .brand-footer .created-by { font-size: 13px; font-weight: bold; color: #374151; margin-bottom: 8px; letter-spacing: 0.5px; }
+        .brand-footer .created-by span { color: #0a7cff; }
+        .brand-footer .social-links { display: flex; justify-content: center; gap: 15px; margin: 10px 0; }
+        .brand-footer .social-links a { color: #4b5563; font-size: 16px; transition: color 0.2s; text-decoration: none; }
+        .brand-footer .social-links a:hover { color: #0a7cff; }
+        .brand-footer .contact-info { display: flex; flex-direction: column; gap: 4px; font-size: 11px; }
+        .brand-footer .contact-info a { color: #6b7280; text-decoration: none; }
+        .brand-footer .contact-info a:hover { text-decoration: underline; }
     </style>
 </head>
 <body>
@@ -26,7 +42,29 @@
         <input type="password" id="password" placeholder="Introduce la clave secreta" required autocomplete="current-password">
         <button type="submit">Ingresar al Sistema</button>
     </form>
+
+    <a href="#" class="forgot-password" onclick="recuperarPassword(event)">
+        <i class="fa-brands fa-whatsapp"></i> ¿Olvidaste tu contraseña?
+    </a>
 </div>
+
+<footer class="brand-footer">
+    <div class="created-by">Creado por <span>PIXELINK Creations</span></div>
+    <div>Soluciones de desarrollo web, identidad digital y sistemas inteligentes a tu medida.</div>
+    
+    <div class="social-links">
+        <a href="#" target="_blank" title="Facebook"><i class="fa-brands fa-facebook"></i></a>
+        <a href="#" target="_blank" title="Instagram"><i class="fa-brands fa-instagram"></i></a>
+        <a href="#" target="_blank" title="TikTok"><i class="fa-brands fa-tiktok"></i></a>
+        <a href="https://wa.me/529841174935" target="_blank" title="WhatsApp Corporativo"><i class="fa-brands fa-whatsapp"></i></a>
+    </div>
+
+    <div class="contact-info">
+        <div><i class="fa-solid fa-envelope"></i> <a href="mailto:contacto@pixelink.com">contacto@pixelink.com</a></div>
+        <div><i class="fa-solid fa-phone"></i> <a href="tel:+529841174935">+52 984 117 4935</a></div>
+        <div style="margin-top: 5px; font-size: 10px; color: #9ca3af;">&copy; 2026 PIXELINK Creations. Todos los derechos reservados.</div>
+    </div>
+</footer>
 
 <script>
 // ⚠️ CONTRASEÑA DE ACCESO LOCAL AL PANEL
@@ -47,6 +85,17 @@ function validarAcceso(event) {
         errorDiv.style.display = 'block';
         document.getElementById('password').value = '';
     }
+}
+
+// Función automatizada para el olvido de contraseña
+function recuperarPassword(event) {
+    event.preventDefault();
+    
+    const numeroSoporte = "529841174935"; // Código internacional de México + número
+    const mensajeSoporte = "Hola PIXELINK Creations, requiero asistencia de soporte técnico. Olvidé la contraseña de acceso de mi Panel Profesional de Boletos Electrónicos. Por favor, ayúdenme a verificar mis credenciales de administrador.";
+    
+    // Abre WhatsApp con el mensaje estructurado de manera segura
+    window.open('https://api.whatsapp.com/send?phone=' + numeroSoporte + '&text=' + encodeURIComponent(mensajeSoporte), '_blank');
 }
 </script>
 
