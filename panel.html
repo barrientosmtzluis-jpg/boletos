@@ -142,7 +142,7 @@ async function registrarInvitadoFirebase() {
 function actualizarVistaYMensaje(data) {
     let path = window.location.href.split('/').slice(0, -1).join('/');
     // Envía únicamente el ID correspondiente para que 'llegada.html' lo lea desde Firebase
-    let urlBoleto = path + '/llegada.html?id=' + data.id;
+    let urlBoleto = path + '/boleto.html?id=' + data.id;
 
     const divQ = document.getElementById('q');
     divQ.innerHTML = '';
