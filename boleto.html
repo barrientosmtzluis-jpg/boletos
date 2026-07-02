@@ -55,7 +55,7 @@
 <script>
 const NUMERO_CONTROL = "529841174935";
 
-// ⚠️ CORRECCIÓN CRÍTICA: Añade tus credenciales completas del proyecto aquí
+// ⚠️ REEMPLAZA CON TUS CREDENCIALES REALES DE FIREBASE
 const firebaseConfig = {
     apiKey: "TU_API_KEY_REAL",
     authDomain: "xvpau-36eff.firebaseapp.com",
@@ -66,7 +66,6 @@ const firebaseConfig = {
     appId: "TU_APP_ID"
 };
 
-// Inicialización Segura de Firebase
 let database;
 try {
     firebase.initializeApp(firebaseConfig);
@@ -88,23 +87,19 @@ window.onload = function(){
     let pases = parseInt(urlParams.get("pases")) || 1;
     let mesa = urlParams.get("mesa") || "General";
 
-    // Generar ID único limpio de caracteres especiales
     let boletoId = btoa(encodeURIComponent(nombre + "-" + mesa + "-" + pases)).replace(/=/g,"");
 
-    // Renderizar datos iniciales inmediatos en la interfaz
     document.getElementById("tNombre").innerText = nombre;
     document.getElementById("tPases").innerText = pases + (pases == 1 ? " Persona" : " Personas");
     document.getElementById("tMesa").innerText = mesa;
 
     let enlaceActual = window.location.href;
 
-    // Consultar Base de Datos con manejo de errores
     database.ref("boletos/" + boletoId)
     .once("value")
     .then(snapshot => {
 
         if(snapshot.exists()){
-            // CASO A: El boleto ya fue quemado/escaneado antes
             database.ref("inventario_lugares")
             .once("value")
             .then(inv => {
@@ -122,7 +117,6 @@ ${enlaceActual}`
             return;
         }
 
-        // CASO B: Primera vez que se procesa el boleto
         database.ref("inventario_lugares")
         .transaction(current => {
             let actual = (current === null) ? 200 : parseInt(current);
@@ -138,7 +132,6 @@ ${enlaceActual}`
 
             let restantes = parseInt(snapshotFinal.val()) || 0;
 
-            // Registrar el boleto como quemado
             database.ref("boletos/" + boletoId)
             .set({
                 invitado: nombre,
@@ -147,7 +140,6 @@ ${enlaceActual}`
                 fecha: new Date().toISOString(),
                 restantes: restantes
             }).then(() => {
-                // Generar código QR final tras escribir con éxito
                 generarCodigoQR(
 `Luis, llegó la familia ${nombre}
 Pases: ${pases}
@@ -159,7 +151,7 @@ ${enlaceActual}`
         });
     })
     .catch(error => {
-        console.error("Error general de Firebase (Verifica si tus reglas de Realtime Database están en true): ", error);
+        console.error("Error general de Firebase: ", error);
         document.getElementById("tNombre").innerText = "Error de Acceso (Permiso Denegado)";
     });
 };
