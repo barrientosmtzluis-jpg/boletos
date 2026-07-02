@@ -1,89 +1,69 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tu Invitación Digital</title>
+    <style>
+        body { font-family: sans-serif; display: flex; justify-content: center; padding: 20px; background: #f0f2f5; }
+        .card { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); text-align: center; max-width: 400px; width: 100%; }
+        h1 { color: #6366f1; }
+        .info { margin: 20px 0; font-size: 1.2rem; }
+        .status { padding: 10px; border-radius: 8px; margin-top: 20px; font-weight: bold; }
+        .valido { background: #dcfce7; color: #166534; }
+        .error { background: #fee2e2; color: #991b1b; }
+    </style>
+</head>
+<body>
+
+<div class="card" id="cargando">
+    <h2>Validando boleto...</h2>
+</div>
+
+<div class="card" id="resultado" style="display:none;">
+    <h1>¡Bienvenido!</h1>
+    <div class="info">
+        <p><strong>Familia:</strong> <span id="nombre"></span></p>
+        <p><strong>Pases:</strong> <span id="pases"></span></p>
+        <p><strong>Mesa:</strong> <span id="mesa"></span></p>
+    </div>
+    <div id="estadoDiv" class="status"></div>
+</div>
+
 <script>
 const FIREBASE_BASE_URL = "https://xvpau-36eff-default-rtdb.firebaseio.com/";
 
-window.onload = async function() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const ticketId = urlParams.get('id');
-    
-    if(!ticketId) {
-        document.getElementById('loading').innerHTML = "<p style='color:red;'>Error: Enlace de pase inválido.</p>";
+window.onload = async () => {
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get('id');
+
+    if (!id) {
+        document.getElementById('cargando').innerHTML = "<h2>Error: Código no válido</h2>";
         return;
     }
 
     try {
-        // 1. Cargar la configuración general del evento
-        try {
-            let resCfg = await fetch(`${FIREBASE_BASE_URL}config.json`);
-            if(resCfg.ok) {
-                let config = await resCfg.json();
-                if(config && config.nombre) {
-                    document.getElementById('evtName').textContent = config.nombre.toUpperCase();
-                }
-            }
-        } catch (cfgError) {
-            console.warn("No se pudo cargar la configuración del evento, usando nombre por defecto.", cfgError);
-        }
+        let res = await fetch(`${FIREBASE_BASE_URL}invitados/${id}.json`);
+        let data = await res.json();
 
-        // 2. Cargar datos específicos del boleto
-        let resTkt = await fetch(`${FIREBASE_BASE_URL}invitados/${ticketId}.json`);
-        
-        // Si Firebase responde con un error de permisos o ruta inválida
-        if(!resTkt.ok) {
-            document.getElementById('loading').innerHTML = `<p style='color:red;'>Error del servidor (${resTkt.status}). Verifica las reglas de tu base de datos.</p>`;
-            return;
-        }
-
-        let data = await resTkt.json();
-        if(!data) {
-            document.getElementById('loading').innerHTML = "<p style='color:red;'>El pase digital no existe o fue cancelado.</p>";
-            return;
-        }
-
-        // Ocultar "cargando" y mostrar pase
-        document.getElementById('loading').style.display = 'none';
-        document.getElementById('ticket').style.display = 'block';
-
-        // Inyectar datos en la interfaz de forma segura
-        document.getElementById('lblFamilia').textContent = data.familia || "Invitado Especial";
-        document.getElementById('lblMesa').textContent = data.mesa || "Por asignar";
-        document.getElementById('lblTotales').textContent = data.pases_totales || 0;
-        document.getElementById('lblUsados').textContent = data.pases_usados || 0;
-        
-        // Calcular restantes en JS por si no viene en la base de datos
-        let pasesTotales = parseInt(data.pases_totales) || 0;
-        let pasesUsados = parseInt(data.pases_usados) || 0;
-        let pasesRestantes = data.pases_restantes !== undefined ? data.pases_restantes : (pasesTotales - pasesUsados);
-        
-        document.getElementById('lblRestantes').textContent = pasesRestantes;
-
-        // Manejar banners de estado visuales para el invitado
-        let badge = document.getElementById('badgeEstado');
-        if(pasesRestantes <= 0) {
-            badge.textContent = "TODOS LOS PASES UTILIZADOS";
-            badge.className = "status-banner status-completo";
-        } else if(pasesUsados > 0) {
-            badge.textContent = "ACCESO PARCIAL REGISTRADO";
-            badge.className = "status-banner status-parcial";
+        if (data) {
+            document.getElementById('cargando').style.display = 'none';
+            document.getElementById('resultado').style.display = 'block';
+            
+            document.getElementById('nombre').textContent = data.familia;
+            document.getElementById('pases').textContent = data.pases_totales;
+            document.getElementById('mesa').textContent = data.mesa;
+            
+            const estadoDiv = document.getElementById('estadoDiv');
+            estadoDiv.textContent = "Acceso Confirmado";
+            estadoDiv.className = "status valido";
         } else {
-            badge.textContent = "PASE VÁLIDO PARA INGRESAR";
-            badge.className = "status-banner status-pendiente";
+            document.getElementById('cargando').innerHTML = "<h2>Boleto no encontrado en el sistema</h2>";
         }
-
-        // Generar el código QR dinámico usando ticketId de la URL (CORREGIDO)
-        let path = window.location.href.split('/').slice(0, -1).join('/');
-        let urlLlegada = path + '/llegada.html?id=' + ticketId; // <- CAMBIADO: data.id por ticketId
-        
-        // Limpiar contenedor por si acaso y generar QR
-        document.getElementById("qrcode").innerHTML = "";
-        new QRCode(document.getElementById("qrcode"), { 
-            text: urlLlegada, 
-            width: 150, 
-            height: 150 
-        });
-
-    } catch(e) {
-        console.error(e);
-        document.getElementById('loading').innerHTML = "<p style='color:red;'>Error de conexión o de lectura al cargar el boleto.</p>";
+    } catch (e) {
+        document.getElementById('cargando').innerHTML = "<h2>Error de conexión con el servidor</h2>";
     }
 };
 </script>
+</body>
+</html>
