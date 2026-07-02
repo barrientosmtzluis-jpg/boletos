@@ -1,12 +1,73 @@
-<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Panel Profesional</title><style>
-body{font-family:Arial;background:#eef2f7;margin:0}.wrap{max-width:900px;margin:30px auto;background:#fff;padding:24px;border-radius:12px;box-shadow:0 2px 10px #0002}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}input,textarea,button{width:100%;padding:10px;margin:6px 0}button{background:#0a7cff;color:#fff;border:0;border-radius:8px}.card{border:1px solid #ddd;padding:15px;border-radius:10px}
-</style><script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script></head><body>
-<div class='wrap'><h2>Panel Profesional de Boletos Electrónicos</h2><div class='grid'>
-<div><label>Invitado</label><input id=n oninput=u()><label>Pases</label><input id=p type=number value=1 oninput=u()><label>Mesa</label><input id=m value='Mesa A' oninput=u()><label>WhatsApp</label><input id=t><textarea id=msg rows=8></textarea><button onclick=s()>Enviar por WhatsApp</button></div>
-<div class='card'><h3>Vista previa</h3><h2 id=tn></h2><p id=tp></p><p id=tm></p><div id=q></div></div></div></div>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configuración del Evento</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #eef2f7; margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; }
+        .card { background: #fff; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; max-width: 400px; box-sizing: border-box; }
+        h2 { margin-top: 0; color: #333; text-align: center; }
+        label { font-weight: bold; display: block; margin-top: 15px; color: #555; }
+        input { width: 100%; padding: 10px; margin: 6px 0 15px 0; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
+        button { background: #0a7cff; color: #fff; border: 0; padding: 12px; border-radius: 8px; width: 100%; font-size: 16px; cursor: pointer; font-weight: bold; }
+        button:hover { background: #0066d6; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2>Configuración de Evento</h2>
+    
+    <label>Nombre del Evento</label>
+    <input type="text" id="eventoNombre" placeholder="Ej. XV Años Pau">
+    
+    <label>Cantidad de Invitados</label>
+    <input type="number" id="totalInvitados" placeholder="Ej. 150">
+    
+    <label>Cantidad de Mesas</label>
+    <input type="number" id="totalMesas" placeholder="Ej. 15">
+    
+    <button onclick="guardarConfiguracion()">Ingresar al Panel</button>
+</div>
+
 <script>
-function u(){let n=nombre=n.value||'Invitado',p=pases.value||1,m=mesa.value||'Mesa';tn.textContent=n;tp.textContent='Pases: '+p;tm.textContent='Mesa: '+m;let url='boleto.html?invitado='+encodeURIComponent(n)+'&pases='+p+'&mesa='+encodeURIComponent(m);q.innerHTML='';new QRCode(q,{text:url,width:160,height:160});msg.value='🎫 Invitación\n'+n+'\nPases:'+p+'\nMesa:'+m+'\n'+url;}
-let nombre=n,pases=p,mesa=m;u();
-function s(){if(!t.value)return alert('Capture WhatsApp');window.open('https://api.whatsapp.com/send?phone='+t.value+'&text='+encodeURIComponent(msg.value),'_blank')}
-</script></body></html>
+const FIREBASE_URL = "https://xvpau-36eff-default-rtdb.firebaseio.com/configuracion.json";
+
+async function guardarConfiguracion() {
+    const nombre = document.getElementById('eventoNombre').value.trim();
+    const invitados = document.getElementById('totalInvitados').value;
+    const mesas = document.getElementById('totalMesas').value;
+
+    if (!nombre || !invitados || !mesas) {
+        return alert('Por favor, completa todos los campos.');
+    }
+
+    const data = {
+        evento: nombre,
+        maxInvitados: parseInt(invitados),
+        maxMesas: parseInt(mesas)
+    };
+
+    try {
+        // Guardamos las variables globales en Firebase Realtime Database
+        let response = await fetch(FIREBASE_URL, {
+            method: 'PUT', // PUT reemplaza o crea los datos de configuración global
+            body: JSON.stringify(data),
+            headers: { 'Content-Type': 'application/json' }
+        });
+
+        if (response.ok) {
+            // Redireccionamos al panel de control
+            window.location.href = "panel.html";
+        } else {
+            alert('Error al conectar con Firebase.');
+        }
+    } catch (error) {
+        console.error(error);
+        alert('Error de red al guardar los datos.');
+    }
+}
+</script>
+</body>
+</html>
