@@ -3,92 +3,115 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tu Invitación Digital</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <title>Tu Pase Digital - Acceso Rápido</title>
     <style>
-        body { font-family: sans-serif; display: flex; justify-content: center; padding: 20px; background: #f0f2f5; }
-        .card { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); text-align: center; max-width: 400px; width: 100%; }
-        h1 { color: #6366f1; }
-        .info { margin: 20px 0; font-size: 1.2rem; }
-        button { background: #10b981; color: white; border: none; padding: 15px; border-radius: 8px; width: 100%; font-size: 16px; cursor: pointer; }
-        #qr-container { display: flex; justify-content: center; margin-top: 20px; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f3f4f6; margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; box-sizing: border-box; }
+        .ticket-card { max-width: 400px; width: 100%; background: #ffffff; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.08); text-align: center; border: 2px solid #eef2f7; }
+        h1 { color: #4f46e5; margin-bottom: 5px; font-size: 26px; }
+        h2 { color: #1f2937; margin: 15px 0 5px 0; font-size: 22px; }
+        p { color: #6b7280; margin: 5px 0; font-size: 16px; }
+        .badge-mesa { display: inline-block; background: #eeebff; color: #6366f1; padding: 6px 16px; border-radius: 20px; font-weight: bold; margin-top: 10px; font-size: 14px; }
+        #qrcode { background: white; padding: 15px; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); display: inline-block; margin-top: 25px; }
+        .loading { font-size: 18px; color: #4f46e5; font-weight: 500; }
+        .error-msg { color: #ef4444; font-weight: bold; }
     </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
 <body>
 
-<div class="card" id="main-content">
-    <div id="cargando"><h2>Validando boleto...</h2></div>
+<div class="ticket-card" id="ticketContainer">
+    <div id="loader" class="loading">Cargando tu pase digital desde el servidor...</div>
     
-    <div id="resultado" style="display:none;">
-        <h1>¡Bienvenido!</h1>
-        <div class="info">
-            <p><strong>Familia:</strong> <span id="nombre"></span></p>
-            <p><strong>Pases:</strong> <span id="pases"></span></p>
-            <p><strong>Mesa:</strong> <span id="mesa"></span></p>
-        </div>
+    <div id="ticketContent" style="display: none;">
+        <span>✨ ¡Te esperamos! ✨</span>
+        <h1 id="eventTitle">XV Años</h1>
+        <hr style="border: 0; border-top: 1px dashed #e5e7eb; margin: 20px 0;">
         
-        <div id="qr-container"></div>
-        <p><small>Este es tu código de acceso.</small></p>
-
-        <button id="btnLlegada" onclick="registrarLlegada()">Registrar mi Llegada</button>
-        <p id="msgLlegada" style="display:none; color: green; font-weight: bold;"></p>
+        <p>Invitado / Familia</p>
+        <h2 id="guestName">-</h2>
+        
+        <p id="guestPases">Pases asignados: -</p>
+        <div class="badge-mesa" id="guestMesa">Mesa: -</div>
+        
+        <br>
+        <div id="qrcode"></div>
+        <p style="font-size: 12px; color: #9ca3af; margin-top: 15px;">Presenta este código QR en la entrada el día del evento.</p>
     </div>
 </div>
 
 <script>
 const FIREBASE_BASE_URL = "https://xvpau-36eff-default-rtdb.firebaseio.com/";
-let ticketId = "";
 
-window.onload = async () => {
-    const params = new URLSearchParams(window.location.search);
-    ticketId = params.get('id');
+window.onload = async function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const ticketId = urlParams.get('id');
 
     if (!ticketId) {
-        document.getElementById('cargando').innerHTML = "<h2>Error: Código no válido</h2>";
+        mostrarError("Error: Enlace de pase inválido.");
         return;
     }
 
     try {
+        // 1. Jalamos la información de Firebase usando el ID de la URL
         let res = await fetch(`${FIREBASE_BASE_URL}invitados/${ticketId}.json`);
-        let data = await res.json();
-
-        if (data) {
-            document.getElementById('cargando').style.display = 'none';
-            document.getElementById('resultado').style.display = 'block';
+        
+        if (res.ok) {
+            const data = await res.json();
             
-            document.getElementById('nombre').textContent = data.familia;
-            document.getElementById('pases').textContent = data.pases_totales;
-            document.getElementById('mesa').textContent = data.mesa;
+            if (data) {
+                // 2. Colocamos la información descargada en la pantalla
+                document.getElementById('guestName').textContent = data.familia;
+                document.getElementById('guestPases').textContent = `Pases válidos: ${data.pases_totales}`;
+                document.getElementById('guestMesa').textContent = `📍 Mesa: ${data.mesa}`;
+                
+                // Intentamos cargar el nombre configurado del evento
+                await obtenerNombreEvento();
 
-            // Generar el QR nuevamente con la URL actual
-            new QRCode(document.getElementById('qr-container'), window.location.href);
+                // 3. Definimos la URL de redirección del QR hacia llegadas.html
+                let path = window.location.href.split('/').slice(0, -1).join('/');
+                let urlLlegadas = `${path}/llegadas.html?id=${data.id}`;
 
-            // Verificar si ya se registró la llegada
-            if(data.estado === "Llegó") {
-                document.getElementById('btnLlegada').style.display = 'none';
-                document.getElementById('msgLlegada').style.display = 'block';
-                document.getElementById('msgLlegada').textContent = "¡Entrada ya registrada!";
+                // 4. Generamos el código QR apuntando a llegadas.html
+                new QRCode(document.getElementById("qrcode"), {
+                    text: urlLlegadas,
+                    width: 180,
+                    height: 180,
+                    colorDark : "#000000",
+                    colorLight : "#ffffff",
+                    correctLevel : QRCode.CorrectLevel.H
+                });
+
+                // Cambiamos vistas de carga
+                document.getElementById('loader').style.display = 'none';
+                document.getElementById('ticketContent').style.display = 'block';
+            } else {
+                mostrarError("El boleto consultado no existe.");
             }
         } else {
-            document.getElementById('cargando').innerHTML = "<h2>Boleto no encontrado</h2>";
+            mostrarError("No se pudo conectar con la base de datos.");
         }
-    } catch (e) {
-        document.getElementById('cargando').innerHTML = "<h2>Error de conexión</h2>";
+    } catch (error) {
+        console.error(error);
+        mostrarError("Error de conexión. Inténtalo de nuevo.");
     }
 };
 
-async function registrarLlegada() {
+async function obtenerNombreEvento() {
     try {
-        await fetch(`${FIREBASE_BASE_URL}invitados/${ticketId}/estado.json`, { 
-            method: 'PUT', 
-            body: JSON.stringify("Llegó") 
-        });
-        document.getElementById('btnLlegada').style.display = 'none';
-        document.getElementById('msgLlegada').style.display = 'block';
-        document.getElementById('msgLlegada').textContent = "Llegada registrada con éxito.";
-    } catch (e) {
-        alert("Error al registrar llegada");
-    }
+        let res = await fetch(`${FIREBASE_BASE_URL}config.json`);
+        if (res.ok) {
+            const config = await res.json();
+            if (config && config.nombre) {
+                document.getElementById('eventTitle').textContent = config.nombre;
+            }
+        }
+    } catch(e) { }
+}
+
+function mostrarError(mensaje) {
+    const loader = document.getElementById('loader');
+    loader.className = "error-msg";
+    loader.textContent = mensaje;
 }
 </script>
 </body>
