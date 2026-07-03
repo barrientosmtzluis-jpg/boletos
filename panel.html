@@ -32,13 +32,11 @@
         #mainPanel { display: none; }
         #q { background: white; padding: 10px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
     </style>
-    <!-- Librería QR -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
 <body>
 
 <div class="wrap" id="app">
-    <!-- Panel de Configuración Inicial -->
     <div id="configPanel">
         <h2>Configuración del Evento</h2>
         <p style="color:#6b7280; font-size:14px; margin-bottom:20px;">Por favor, ingresa los datos base del evento para habilitar el gestor.</p>
@@ -48,15 +46,12 @@
         <button id="btnGuardarConfig" onclick="configurarEvento()">Guardar y Habilitar Panel</button>
     </div>
 
-    <!-- Panel Principal de Operación -->
     <div id="mainPanel">
         <h1>
             <span id="titleEvent">Cargando evento...</span> 
-            <button class="btn-small" onclick="forzarConfiguracion()">Configurar</button>
-        </h1>
+            </h1>
         
         <div class="grid">
-            <!-- Formulario Izquierdo -->
             <div>
                 <label for="inp_familia">Invitado / Familia</label>
                 <input id="inp_familia" placeholder="Ej. Familia Pérez Mendoza" oninput="actualizarVistaPrevia()">
@@ -80,7 +75,6 @@
                 <button onclick="enviarWhatsApp()">2. Enviar por WhatsApp</button>
             </div>
             
-            <!-- Tarjeta de Vista Previa / QR Derecho -->
             <div class="card">
                 <h3>Código QR de Acceso</h3>
                 <h2 id="view_familia">-</h2>
@@ -132,10 +126,6 @@ function iniciarPanel(data) {
 function mostrarConfiguracion() {
     document.getElementById('mainPanel').style.display = 'none';
     document.getElementById('configPanel').style.display = 'block';
-}
-
-function forzarConfiguracion() {
-    mostrarConfiguracion();
 }
 
 async function configurarEvento() {
@@ -216,19 +206,26 @@ async function registrarInvitadoFirebase() {
 }
 
 function actualizarVistaYMensaje(data) {
-    // Asegurar que los textos muestren los datos reales ya guardados
     document.getElementById('view_familia').textContent = data.familia;
     document.getElementById('view_pases').textContent = 'Pases: ' + data.pases_totales;
     document.getElementById('view_mesa').textContent = 'Mesa: ' + data.mesa;
 
     let path = window.location.href.split('/').slice(0, -1).join('/');
+    
+    // URL modificada para redirigir a la página de llegadas incluyendo los datos del invitado
+    let urlLlegadas = path + '/llegadas.html?id=' + data.id + 
+                      '&familia=' + encodeURIComponent(data.familia) + 
+                      '&pases=' + data.pases_totales + 
+                      '&mesa=' + encodeURIComponent(data.mesa);
+
+    // Mantenemos la URL del boleto individual por separado para la consulta del cliente
     let urlBoleto = path + '/boleto.html?id=' + data.id;
 
-    // Generar o limpiar código QR de forma segura
+    // Generar o limpiar código QR apuntando a la url de llegadas
     const divQ = document.getElementById('q');
     divQ.innerHTML = ''; 
     qrControlador = new QRCode(divQ, {
-        text: urlBoleto, // Se asigna el enlace del boleto final al QR
+        text: urlLlegadas, // Se asigna el enlace de registro de entrada al QR
         width: 160,
         height: 160,
         colorDark : "#000000",
@@ -257,9 +254,7 @@ function enviarWhatsApp(){
     
     if(!tel || !msg) return alert('Por favor, genera primero el boleto y asegúrate de escribir un número telefónico.');
     
-    // Limpia caracteres extraños del número telefónico si los hay
     tel = tel.replace(/[^0-9]/g, '');
-    
     window.open('https://api.whatsapp.com/send?phone=' + tel + '&text=' + encodeURIComponent(msg), '_blank');
 }
 </script>
