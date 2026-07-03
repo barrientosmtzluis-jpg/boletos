@@ -20,7 +20,7 @@
                 <p id="kpi-llegados" class="text-3xl font-bold text-gray-800">0</p>
             </div>
             <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-amber-500">
-                <p class="text-sm text-gray-500 uppercase font-semibold">Lugares Libres Restantes</p>
+                <p class="text-sm text-gray-500 uppercase font-semibold">Lugares Libres Restantes (Total)</p>
                 <p id="kpi-libres" class="text-3xl font-bold text-gray-800">0</p>
             </div>
             <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-green-500">
@@ -42,21 +42,21 @@
                             <tr class="border-b text-gray-400 text-sm">
                                 <th class="pb-3">Código</th>
                                 <th class="pb-3">Familia</th>
-                                <th class="pb-3 text-center">Lugares</th>
+                                <th class="pb-3 text-center">Lugares Asignados</th>
                                 <th class="pb-3 text-center">Mesa</th>
                                 <th class="pb-3 text-center">Estado</th>
                             </tr>
                         </thead>
                         <tbody id="tabla-invitados" class="divide-y text-sm">
-                            </tbody>
+                        </tbody>
                     </table>
                 </div>
             </div>
 
             <div class="bg-white p-6 rounded-xl shadow-sm">
-                <h2 class="text-xl font-bold mb-4">🪑 Distribución de Mesas</h2>
-                <div id="contenedor-mesas" class="grid grid-cols-2 gap-4">
-                    </div>
+                <h2 class="text-xl font-bold mb-4">🪑 Distribución y Faltantes por Mesa</h2>
+                <div id="contenedor-mesas" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                </div>
             </div>
 
         </div>
@@ -66,7 +66,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-        // ⚠️ CONFIGURA AQUÍ TUS CREDENCIALES DE FIREBASE CONSAL
+        // ⚠️ CONFIGURA AQUÍ TUS CREDENCIALES DE FIREBASE
         const firebaseConfig = {
             apiKey: "TU_API_KEY",
             authDomain: "xvpau-36eff.firebaseapp.com",
@@ -77,13 +77,11 @@
             appId: "TU_APP_ID"
         };
 
-        // Inicializar Firebase
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
         let datosInvitados = {};
 
-        // Escuchar el nodo "invitados" en tiempo real
         const invitadosRef = ref(db, 'invitados');
         onValue(invitadosRef, (snapshot) => {
             datosInvitados = snapshot.val() || {};
@@ -102,11 +100,10 @@
             let totalEsperados = 0;
             let controlMesas = {};
 
-            // Recorrer todos los códigos cargados
+            // 1. Procesar información y agrupar por mesas
             Object.keys(datosInvitados).forEach(codigo => {
                 const info = datosInvitados[codigo];
 
-                // Mapeo automático de tus campos (ajusta los nombres si difieren en tu JSON)
                 const familia = info.familia || info.nombre || "Sin Nombre";
                 const pax = parseInt(info.pax || info.lugares) || 0;
                 const mesa = info.mesa || "S/M";
@@ -115,15 +112,22 @@
                 totalEsperados += pax;
                 if (llego) totalLlegados += pax;
 
-                // Agrupar ocupación por número de mesa
+                // Estructura para controlar el estado interno de cada mesa
                 if (!controlMesas[mesa]) {
-                    controlMesas[mesa] = { ocupados: 0 };
+                    controlMesas[mesa] = { 
+                        totalesAsignados: 0, 
+                        ocupados: 0 
+                    };
                 }
+                
+                // Sumamos al total planificado de la mesa
+                controlMesas[mesa].totalesAsignados += pax;
+                // Sumamos solo si ya llegó
                 if (llego) {
                     controlMesas[mesa].ocupados += pax;
                 }
 
-                // Renderizar fila en la tabla si coincide con el buscador
+                // Renderizar fila en la tabla con filtro
                 if (familia.toLowerCase().includes(filtro) || codigo.toLowerCase().includes(filtro)) {
                     const fila = document.createElement('tr');
                     fila.className = "hover:bg-gray-50";
@@ -134,7 +138,7 @@
                         <td class="py-3 text-center"><span class="bg-gray-100 px-2 py-1 rounded text-xs font-bold">Mesa ${mesa}</span></td>
                         <td class="py-3 text-center">
                             <span class="px-2 py-1 rounded-full text-xs font-semibold ${llego ? 'bg-green-100 text-green-800' : 'bg-amber-100 text-amber-800'}">
-                                ${llego ? '🟢 Llegó' : '⚪ Pendiente'}
+                                ${llego ? '🟢 Accedió' : '⚪ Pendiente'}
                             </span>
                         </td>
                     `;
@@ -142,29 +146,49 @@
                 }
             });
 
-            // Actualizar las tarjetas de control (KPIs)
+            // 2. Actualizar KPIs Generales
             document.getElementById('kpi-llegados').innerText = totalLlegados;
             document.getElementById('kpi-libres').innerText = (totalEsperados - totalLlegados);
             document.getElementById('kpi-mesas').innerText = `${Object.keys(controlMesas).filter(m => controlMesas[m].ocupados > 0).length} / ${Object.keys(controlMesas).length}`;
 
-            // Dibujar las tarjetas de las mesas
-            Object.keys(controlMesas).sort((a, b) => a - b).forEach(numMesa => {
+            // 3. Dibujar las tarjetas de las mesas con Lugares Usados y Faltantes
+            Object.keys(controlMesas).sort((a, b) => {
+                if (a === "S/M") return 1;
+                if (b === "S/M") return -1;
+                return a - b;
+            }).forEach(numMesa => {
                 const infoMesa = controlMesas[numMesa];
+                const faltantes = infoMesa.totalesAsignados - infoMesa.ocupados;
+                
                 const mesaDiv = document.createElement('div');
                 
-                const tieneGente = infoMesa.ocupados > 0;
-                const colorEstilo = tieneGente ? 'bg-green-50 border-green-300 text-green-900' : 'bg-gray-50 border-gray-200 text-gray-400';
+                // Cambiar color si la mesa está llena, parcial o vacía
+                let colorEstilo = 'bg-gray-50 border-gray-200 text-gray-500';
+                if (infoMesa.ocupados > 0) {
+                    colorEstilo = faltantes === 0 
+                        ? 'bg-green-100 border-green-400 text-green-900' 
+                        : 'bg-blue-50 border-blue-300 text-blue-900';
+                }
                 
-                mesaDiv.className = `p-3 rounded-xl border ${colorEstilo} transition-all duration-300`;
+                mesaDiv.className = `p-4 rounded-xl border ${colorEstilo} shadow-xs flex flex-col justify-between`;
                 mesaDiv.innerHTML = `
-                    <p class="font-bold text-sm text-center">Mesa ${numMesa}</p>
-                    <p class="text-xs text-center font-medium mt-1">${tieneGente ? `👥 Ocupados: ${infoMesa.ocupados}` : 'Vacía'}</p>
+                    <div>
+                        <p class="font-bold text-base text-center border-b pb-1 mb-2">Mesa ${numMesa}</p>
+                        <div class="text-xs space-y-1">
+                            <p class="flex justify-between"><span>Lugares usados:</span> <strong class="text-sm">${infoMesa.ocupados}</strong></p>
+                            <p class="flex justify-between text-gray-400"><span>Total asignados:</span> <span>${infoMesa.totalesAsignados}</span></p>
+                        </div>
+                    </div>
+                    <div class="mt-3 pt-2 border-t border-dashed border-current/20 text-center">
+                        <p class="text-xs font-bold ${faltantes > 0 ? 'text-amber-600' : 'text-green-700'}">
+                            ${faltantes > 0 ? `⏳ Faltan: ${faltantes} por llegar` : '✅ Mesa Completa'}
+                        </p>
+                    </div>
                 `;
                 contenedorMesas.appendChild(mesaDiv);
             });
         }
 
-        // Escuchar el buscador para filtrar en vivo
         document.getElementById('buscador').addEventListener('input', renderizarDashboard);
     </script>
 </body>
