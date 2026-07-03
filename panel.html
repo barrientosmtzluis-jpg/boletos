@@ -2,60 +2,91 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestor de Eventos XV - Panel</title>
     <style>
-        body{font-family:Segoe UI,Tahoma,sans-serif;background:#f0f2f5;margin:0}
-        .wrap{max-width:900px;margin:30px auto;background:#fff;padding:25px;border-radius:15px;box-shadow:0 4px 15px rgba(0,0,0,0.1)}
-        .grid{display:grid;grid-template-columns:1fr 1fr;gap:25px}
-        @media(max-width:768px){.grid{grid-template-columns:1fr}}
-        input,textarea,button{width:100%;padding:12px;margin:8px 0;box-sizing:border-box;border:1px solid #ddd;border-radius:8px}
-        button{background:#6366f1;color:#fff;border:0;font-weight:bold;cursor:pointer;transition:0.3s}
-        button:hover{background:#4f46e5}
-        .btn-success{background:#10b981}
-        .btn-success:hover{background:#059669}
-        .btn-small{padding:5px 10px; font-size: 12px; width: auto; background:#ef4444;}
-        .card{border:1px solid #e5e7eb;padding:20px;border-radius:15px;background:#f9fafb;text-align:center}
-        h1{color:#4f46e5;margin-top:0;border-bottom:2px solid #eef2f7;padding-bottom:10px; display:flex; justify-content:space-between; align-items:center}
-        #configPanel { padding: 40px; text-align: center; display: none; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; margin: 0; padding: 10px; }
+        .wrap { max-width: 900px; margin: 30px auto; background: #fff; padding: 25px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; }
+        @media(max-width: 768px){ .grid { grid-template-columns: 1fr; } }
+        
+        label { font-weight: 600; color: #374151; display: block; margin-top: 12px; font-size: 14px; }
+        input, textarea, button { width: 100%; padding: 12px; margin: 6px 0 12px 0; box-sizing: border-box; border: 1px solid #ddd; border-radius: 8px; font-size: 15px; }
+        input:focus, textarea:focus { border-color: #6366f1; outline: none; box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2); }
+        
+        button { background: #6366f1; color: #fff; border: 0; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        button:hover { background: #4f46e5; }
+        button:disabled { background: #9ca3af; cursor: not-allowed; }
+        
+        .btn-success { background: #10b981; }
+        .btn-success:hover { background: #059669; }
+        .btn-small { padding: 6px 12px; font-size: 13px; width: auto; background: #ef4444; margin: 0; }
+        .btn-small:hover { background: #dc2626; }
+        
+        .card { border: 1px solid #e5e7eb; padding: 20px; border-radius: 15px; background: #f9fafb; text-align: center; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        h1 { color: #4f46e5; margin-top: 0; border-bottom: 2px solid #eef2f7; padding-bottom: 10px; display: flex; justify-content: space-between; align-items: center; font-size: 24px; }
+        h2 { margin: 10px 0; color: #1f2937; }
+        hr { border: 0; border-top: 1px solid #e5e7eb; margin: 20px 0; }
+        
+        #configPanel { padding: 20px; text-align: center; display: none; }
+        #mainPanel { display: none; }
+        #q { background: white; padding: 10px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
     </style>
+    <!-- Librería QR -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
 <body>
 
-<div class='wrap' id="app">
+<div class="wrap" id="app">
+    <!-- Panel de Configuración Inicial -->
     <div id="configPanel">
         <h2>Configuración del Evento</h2>
         <p style="color:#6b7280; font-size:14px; margin-bottom:20px;">Por favor, ingresa los datos base del evento para habilitar el gestor.</p>
         <input id="cfg_nombre" placeholder="Nombre del Evento (Ej. XV Años de Ana Paula)">
         <input id="cfg_invitados" type="number" placeholder="Cantidad total de invitados esperados">
         <input id="cfg_mesas" type="number" placeholder="Cantidad de mesas">
-        <button onclick="configurarEvento()">Guardar y Habilitar Panel</button>
+        <button id="btnGuardarConfig" onclick="configurarEvento()">Guardar y Habilitar Panel</button>
     </div>
 
-    <div id="mainPanel" style="display:none;">
-        <h1><span id="titleEvent">Evento</span> <button class="btn-small" onclick="forzarConfiguracion()">Configurar</button></h1>
-        <div class='grid'>
+    <!-- Panel Principal de Operación -->
+    <div id="mainPanel">
+        <h1>
+            <span id="titleEvent">Cargando evento...</span> 
+            <button class="btn-small" onclick="forzarConfiguracion()">Configurar</button>
+        </h1>
+        
+        <div class="grid">
+            <!-- Formulario Izquierdo -->
             <div>
-                <label>Invitado / Familia</label>
-                <input id="n" placeholder="Ej. Familia Pérez Mendoza" oninput="u()">
-                <label>Pases Totales</label>
-                <input id="p" type="number" value="1" oninput="u()">
-                <label>Mesa</label>
-                <input id="m" value='Mesa A' oninput="u()">
-                <button class="btn-success" onclick="registrarInvitadoFirebase()">1. Generar Boleto</button>
+                <label for="inp_familia">Invitado / Familia</label>
+                <input id="inp_familia" placeholder="Ej. Familia Pérez Mendoza" oninput="actualizarVistaPrevia()">
+                
+                <label for="inp_pases">Pases Totales</label>
+                <input id="inp_pases" type="number" value="1" min="1" oninput="actualizarVistaPrevia()">
+                
+                <label for="inp_mesa">Mesa</label>
+                <input id="inp_mesa" value="Mesa A" oninput="actualizarVistaPrevia()">
+                
+                <button class="btn-success" id="btnGenerar" onclick="registrarInvitadoFirebase()">1. Generar Boleto</button>
+                
                 <hr>
-                <label>WhatsApp (Ej: 5215512345678)</label>
-                <input id="t" placeholder="521...">
-                <textarea id="msg" rows="10" placeholder="El mensaje aparecerá aquí..."></textarea>
-                <button onclick="s()">2. Enviar por WhatsApp</button>
+                
+                <label for="inp_telefono">WhatsApp (Ej: 5215512345678)</label>
+                <input id="inp_telefono" placeholder="521...">
+                
+                <label for="txt_mensaje">Mensaje Listo para Enviar</label>
+                <textarea id="txt_mensaje" rows="8" placeholder="El mensaje aparecerá aquí una vez generado el boleto..."></textarea>
+                
+                <button onclick="enviarWhatsApp()">2. Enviar por WhatsApp</button>
             </div>
-            <div class='card'>
+            
+            <!-- Tarjeta de Vista Previa / QR Derecho -->
+            <div class="card">
                 <h3>Código QR de Acceso</h3>
-                <h2 id="tn">-</h2>
-                <p id="tp">Pases: -</p>
-                <p id="tm">Mesa: -</p>
-                <div id="q" style="display:flex; justify-content:center; margin-top:10px;"></div>
+                <h2 id="view_familia">-</h2>
+                <p id="view_pases">Pases: -</p>
+                <p id="view_mesa">Mesa: -</p>
+                <div id="q" style="margin-top:15px;"></div>
             </div>
         </div>
     </div>
@@ -63,8 +94,10 @@
 
 <script>
 const FIREBASE_BASE_URL = "https://xvpau-36eff-default-rtdb.firebaseio.com/";
+let qrControlador = null;
 
 window.onload = async function() {
+    // Validar sesión activa
     if (sessionStorage.getItem('panel_session_active') !== 'true') {
         alert('Acceso denegado. Por favor inicia sesión.');
         window.location.replace('index.html');
@@ -78,14 +111,32 @@ window.onload = async function() {
             if (config && config.nombre) {
                 iniciarPanel(config);
             } else {
-                document.getElementById('configPanel').style.display = 'block';
+                mostrarConfiguracion();
             }
+        } else {
+            mostrarConfiguracion();
         }
     } catch (error) {
         console.error("Error cargando base de datos:", error);
-        document.getElementById('configPanel').style.display = 'block';
+        mostrarConfiguracion();
     }
 };
+
+function iniciarPanel(data) {
+    document.getElementById('configPanel').style.display = 'none';
+    document.getElementById('mainPanel').style.display = 'block';
+    document.getElementById('titleEvent').textContent = data.nombre;
+    actualizarVistaPrevia();
+}
+
+function mostrarConfiguracion() {
+    document.getElementById('mainPanel').style.display = 'none';
+    document.getElementById('configPanel').style.display = 'block';
+}
+
+function forzarConfiguracion() {
+    mostrarConfiguracion();
+}
 
 async function configurarEvento() {
     const nombre = document.getElementById('cfg_nombre').value.trim();
@@ -94,37 +145,45 @@ async function configurarEvento() {
     
     if(!nombre || !inv || !mesas) return alert('Por favor completa todos los campos de configuración.');
 
-    const config = { nombre, totalInvitados: inv, totalMesas: mesas };
-    await fetch(`${FIREBASE_BASE_URL}config.json`, { method: 'PUT', body: JSON.stringify(config) });
-    iniciarPanel(config);
+    const btn = document.getElementById('btnGuardarConfig');
+    btn.disabled = true;
+    btn.textContent = "Guardando...";
+
+    try {
+        const config = { nombre, totalInvitados: inv, totalMesas: mesas };
+        let res = await fetch(`${FIREBASE_BASE_URL}config.json`, { method: 'PUT', body: JSON.stringify(config) });
+        if(res.ok) {
+            iniciarPanel(config);
+        } else {
+            alert("Error al guardar en el servidor.");
+        }
+    } catch (e) {
+        alert("Error de conexión.");
+    } finally {
+        btn.disabled = false;
+        btn.textContent = "Guardar y Habilitar Panel";
+    }
 }
 
-function iniciarPanel(data) {
-    document.getElementById('configPanel').style.display = 'none';
-    document.getElementById('mainPanel').style.display = 'block';
-    document.getElementById('titleEvent').textContent = data.nombre;
-}
-
-function forzarConfiguracion() {
-    document.getElementById('mainPanel').style.display = 'none';
-    document.getElementById('configPanel').style.display = 'block';
-}
-
-function u() {
-    document.getElementById('tn').textContent = document.getElementById('n').value.trim() || '-';
-    document.getElementById('tp').textContent = 'Pases: ' + document.getElementById('p').value;
-    document.getElementById('tm').textContent = 'Mesa: ' + document.getElementById('m').value;
+// Actualiza los textos de la tarjeta lateral en tiempo real
+function actualizarVistaPrevia() {
+    document.getElementById('view_familia').textContent = document.getElementById('inp_familia').value.trim() || '-';
+    document.getElementById('view_pases').textContent = 'Pases: ' + (document.getElementById('inp_pases').value || '1');
+    document.getElementById('view_mesa').textContent = 'Mesa: ' + (document.getElementById('inp_mesa').value || '-');
 }
 
 async function registrarInvitadoFirebase() {
-    const name = document.getElementById('n').value.trim();
-    if (!name) return alert('Ingrese nombre del invitado.');
+    const name = document.getElementById('inp_familia').value.trim();
+    if (!name) return alert('Por favor, ingrese el nombre del invitado o familia.');
     
+    const btn = document.getElementById('btnGenerar');
+    btn.disabled = true;
+    btn.textContent = "Generando Boleto...";
+
     const ticketId = "TKT-" + Date.now();
-    const pases = parseInt(document.getElementById('p').value) || 1;
-    const mesa = document.getElementById('m').value;
+    const pases = parseInt(document.getElementById('inp_pases').value) || 1;
+    const mesa = document.getElementById('inp_mesa').value.trim() || "General";
     
-    // Nueva estructura con contadores de control de acceso solicitados
     const data = { 
         id: ticketId, 
         familia: name, 
@@ -135,24 +194,50 @@ async function registrarInvitadoFirebase() {
         estado: "Pendiente" 
     };
     
-    let res = await fetch(`${FIREBASE_BASE_URL}invitados/${ticketId}.json`, { method: 'PUT', body: JSON.stringify(data) });
-    if (res.ok) {
-        alert('Boleto guardado con éxito.');
-        actualizarVistaYMensaje(data);
+    try {
+        let res = await fetch(`${FIREBASE_BASE_URL}invitados/${ticketId}.json`, { 
+            method: 'PUT', 
+            body: JSON.stringify(data) 
+        });
+        
+        if (res.ok) {
+            alert('¡Boleto guardado con éxito en Firebase!');
+            actualizarVistaYMensaje(data);
+        } else {
+            alert('Error al guardar el boleto. Inténtalo de nuevo.');
+        }
+    } catch (error) {
+        console.error(error);
+        alert('Error de red al conectar con Firebase.');
+    } finally {
+        btn.disabled = false;
+        btn.textContent = "1. Generar Boleto";
     }
 }
 
 function actualizarVistaYMensaje(data) {
-    let path = window.location.href.split('/').slice(0, -1).join('/');
-    // Apunta al archivo boleto.html que procesará la entrada
-    let urlBoleto = path + '/boleto.html?id=' + data.id;
-    let urlllegada= path + '/llegada.html?id=' + data.id;
+    // Asegurar que los textos muestren los datos reales ya guardados
+    document.getElementById('view_familia').textContent = data.familia;
+    document.getElementById('view_pases').textContent = 'Pases: ' + data.pases_totales;
+    document.getElementById('view_mesa').textContent = 'Mesa: ' + data.mesa;
 
+    let path = window.location.href.split('/').slice(0, -1).join('/');
+    let urlBoleto = path + '/boleto.html?id=' + data.id;
+
+    // Generar o limpiar código QR de forma segura
     const divQ = document.getElementById('q');
-    divQ.innerHTML = '';
-    new QRCode(divQ, {text: urlllegada, width: 160, height: 160});
+    divQ.innerHTML = ''; 
+    qrControlador = new QRCode(divQ, {
+        text: urlBoleto, // Se asigna el enlace del boleto final al QR
+        width: 160,
+        height: 160,
+        colorDark : "#000000",
+        colorLight : "#ffffff",
+        correctLevel : QRCode.CorrectLevel.H
+    });
     
-    document.getElementById('msg').value = generarTextoMensaje(data.familia, data.pases_totales, data.mesa, urlBoleto);
+    // Rellenar el cuadro de texto del mensaje de WhatsApp
+    document.getElementById('txt_mensaje').value = generarTextoMensaje(data.familia, data.pases_totales, data.mesa, urlBoleto);
 }
 
 function generarTextoMensaje(name, pases, mesa, urlBoleto) {
@@ -166,13 +251,17 @@ function generarTextoMensaje(name, pases, mesa, urlBoleto) {
         '🔗 Ver tu pase de acceso rápido aquí:\n' + urlBoleto;
 }
 
-function s(){
-    let tel = document.getElementById('t').value;
-    let msg = document.getElementById('msg').value;
-    if(!tel || !msg) return alert('Por favor genera el boleto y escribe el teléfono.');
+function enviarWhatsApp(){
+    let tel = document.getElementById('inp_telefono').value.trim();
+    let msg = document.getElementById('txt_mensaje').value.trim();
+    
+    if(!tel || !msg) return alert('Por favor, genera primero el boleto y asegúrate de escribir un número telefónico.');
+    
+    // Limpia caracteres extraños del número telefónico si los hay
+    tel = tel.replace(/[^0-9]/g, '');
+    
     window.open('https://api.whatsapp.com/send?phone=' + tel + '&text=' + encodeURIComponent(msg), '_blank');
 }
 </script>
 </body>
 </html>
-
