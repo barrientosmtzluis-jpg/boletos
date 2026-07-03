@@ -69,7 +69,7 @@ window.onload = async function() {
 
                 // 3. Definimos la URL de redirección del QR hacia llegadas.html
                 let path = window.location.href.split('/').slice(0, -1).join('/');
-                let urlLlegadas = `${path}/llegadas.html?id=${data.id}`;
+                let urlLlegadas = `${path}/llegada.html?id=${data.id}`;
 
                 // 4. Generamos el código QR apuntando a llegadas.html
                 new QRCode(document.getElementById("qrcode"), {
