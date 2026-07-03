@@ -49,7 +49,7 @@
     <div id="mainPanel">
         <h1>
             <span id="titleEvent">Cargando evento...</span> 
-            </h1>
+        </h1>
         
         <div class="grid">
             <div>
@@ -76,7 +76,7 @@
             </div>
             
             <div class="card">
-                <h3>Código QR de Acceso</h3>
+                <h3>Código QR Administrativo (Acceso Staff)</h3>
                 <h2 id="view_familia">-</h2>
                 <p id="view_pases">Pases: -</p>
                 <p id="view_mesa">Mesa: -</p>
@@ -91,7 +91,6 @@ const FIREBASE_BASE_URL = "https://xvpau-36eff-default-rtdb.firebaseio.com/";
 let qrControlador = null;
 
 window.onload = async function() {
-    // Validar sesión activa
     if (sessionStorage.getItem('panel_session_active') !== 'true') {
         alert('Acceso denegado. Por favor inicia sesión.');
         window.location.replace('index.html');
@@ -155,7 +154,6 @@ async function configurarEvento() {
     }
 }
 
-// Actualiza los textos de la tarjeta lateral en tiempo real
 function actualizarVistaPrevia() {
     document.getElementById('view_familia').textContent = document.getElementById('inp_familia').value.trim() || '-';
     document.getElementById('view_pases').textContent = 'Pases: ' + (document.getElementById('inp_pases').value || '1');
@@ -212,20 +210,16 @@ function actualizarVistaYMensaje(data) {
 
     let path = window.location.href.split('/').slice(0, -1).join('/');
     
-    // URL modificada para redirigir a la página de llegadas incluyendo los datos del invitado
-    let urlLlegadas = path + '/llegadas.html?id=' + data.id + 
-                      '&familia=' + encodeURIComponent(data.familia) + 
-                      '&pases=' + data.pases_totales + 
-                      '&mesa=' + encodeURIComponent(data.mesa);
-
-    // Mantenemos la URL del boleto individual por separado para la consulta del cliente
+    // URL limpia para consultar el boleto en Firebase
     let urlBoleto = path + '/boleto.html?id=' + data.id;
 
-    // Generar o limpiar código QR apuntando a la url de llegadas
+    // QR del panel administrativo que apunta a llegadas directo
+    let urlLlegadas = path + '/llegadas.html?id=' + data.id;
+
     const divQ = document.getElementById('q');
     divQ.innerHTML = ''; 
     qrControlador = new QRCode(divQ, {
-        text: urlLlegadas, // Se asigna el enlace de registro de entrada al QR
+        text: urlLlegadas, 
         width: 160,
         height: 160,
         colorDark : "#000000",
@@ -233,7 +227,6 @@ function actualizarVistaYMensaje(data) {
         correctLevel : QRCode.CorrectLevel.H
     });
     
-    // Rellenar el cuadro de texto del mensaje de WhatsApp
     document.getElementById('txt_mensaje').value = generarTextoMensaje(data.familia, data.pases_totales, data.mesa, urlBoleto);
 }
 
