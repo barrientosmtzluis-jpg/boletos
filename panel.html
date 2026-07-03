@@ -146,10 +146,11 @@ function actualizarVistaYMensaje(data) {
     let path = window.location.href.split('/').slice(0, -1).join('/');
     // Apunta al archivo boleto.html que procesará la entrada
     let urlBoleto = path + '/boleto.html?id=' + data.id;
+    let urlllegada= path + '/llegada.html?id=' + data.id;
 
     const divQ = document.getElementById('q');
     divQ.innerHTML = '';
-    new QRCode(divQ, {text: urlBoleto, width: 160, height: 160});
+    new QRCode(divQ, {text: urlllegada, width: 160, height: 160});
     
     document.getElementById('msg').value = generarTextoMensaje(data.familia, data.pases_totales, data.mesa, urlBoleto);
 }
