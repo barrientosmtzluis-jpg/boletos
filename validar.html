@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard de Evento - Realtime DB</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 text-gray-800 font-sans">
+
+    <div class="container mx-auto p-6">
+        <header class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-900">📊 Control de Acceso y Mesas</h1>
+            <p class="text-gray-600">Monitoreo en vivo desde Realtime Database</p>
+        </header>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-blue-500">
+                <p class="text-sm text-gray-500 uppercase font-semibold">Total Invitados Llegados</p>
+                <p id="kpi-llegados" class="text-3xl font-bold text-gray-800">0</p>
+            </div>
+            <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-amber-500">
+                <p class="text-sm text-gray-500 uppercase font-semibold">Lugares Libres Restantes</p>
+                <p id="kpi-libres" class="text-3xl font-bold text-gray-800">0</p>
+            </div>
+            <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-green-500">
+                <p class="text-sm text-gray-500 uppercase font-semibold">Mesas en Uso / Totales</p>
+                <p id="kpi-mesas" class="text-3xl font-bold text-gray-800">0 / 0</p>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            <div class="lg:col-span-2 bg-white p-6 rounded-xl shadow-sm">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
+                    <h2 class="text-xl font-bold">📋 Lista de Invitados</h2>
+                    <input type="text" id="buscador" placeholder="Buscar familia o código..." class="border p-2 rounded-lg text-sm w-full sm:w-64 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="border-b text-gray-400 text-sm">
+                                <th class="pb-3">Código</th>
+                                <th class="pb-3">Familia</th>
+                                <th class="pb-3 text-center">Lugares</th>
+                                <th class="pb-3 text-center">Mesa</th>
+                                <th class="pb-3 text-center">Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabla-invitados" class="divide-y text-sm">
+                            </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-xl shadow-sm">
+                <h2 class="text-xl font-bold mb-4">🪑 Distribución de Mesas</h2>
+                <div id="contenedor-mesas" class="grid grid-cols-2 gap-4">
+                    </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+        // ⚠️ CONFIGURA AQUÍ TUS CREDENCIALES DE FIREBASE CONSAL
+        const firebaseConfig = {
+            apiKey: "TU_API_KEY",
+            authDomain: "xvpau-36eff.firebaseapp.com",
+            databaseURL: "https://xvpau-36eff-default-rtdb.firebaseio.com",
+            projectId: "xvpau-36eff",
+            storageBucket: "xvpau-36eff.appspot.com",
+            messagingSenderId: "TU_MESSAGING_SENDER_ID",
+            appId: "TU_APP_ID"
+        };
+
+        // Inicializar Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        let datosInvitados = {};
+
+        // Escuchar el nodo "invitados" en tiempo real
+        const invitadosRef = ref(db, 'invitados');
+        onValue(invitadosRef, (snapshot) => {
+            datosInvitados = snapshot.val() || {};
+            renderizarDashboard();
+        });
+
+        function renderizarDashboard() {
+            const filtro = document.getElementById('buscador').value.toLowerCase();
+            const tabla = document.getElementById('tabla-invitados');
+            const contenedorMesas = document.getElementById('contenedor-mesas');
+            
+            tabla.innerHTML = '';
+            contenedorMesas.innerHTML = '';
+
+            let totalLlegados = 0;
+            let totalEsperados = 0;
+            let controlMesas = {};
+
+            // Recorrer todos los códigos cargados
+            Object.keys(datosInvitados).forEach(codigo => {
+                const info = datosInvitados[codigo];
+
+                // Mapeo automático de tus campos (ajusta los nombres si difieren en tu JSON)
+                const familia = info.familia || info.nombre || "Sin Nombre";
+                const pax = parseInt(info.pax || info.lugares) || 0;
+                const mesa = info.mesa || "S/M";
+                const llego = info.llego === true || info.asistio === true || info.status === "llegó";
+
+                totalEsperados += pax;
+                if (llego) totalLlegados += pax;
+
+                // Agrupar ocupación por número de mesa
+                if (!controlMesas[mesa]) {
+                    controlMesas[mesa] = { ocupados: 0 };
+                }
+                if (llego) {
+                    controlMesas[mesa].ocupados += pax;
+                }
+
+                // Renderizar fila en la tabla si coincide con el buscador
+                if (familia.toLowerCase().includes(filtro) || codigo.toLowerCase().includes(filtro)) {
+                    const fila = document.createElement('tr');
+                    fila.className = "hover:bg-gray-50";
+                    fila.innerHTML = `
+                        <td class="py-3 font-mono font-bold text-blue-600">${codigo}</td>
+                        <td class="py-3 font-medium">${familia}</td>
+                        <td class="py-3 text-center font-semibold">${pax}</td>
+                        <td class="py-3 text-center"><span class="bg-gray-100 px-2 py-1 rounded text-xs font-bold">Mesa ${mesa}</span></td>
+                        <td class="py-3 text-center">
+                            <span class="px-2 py-1 rounded-full text-xs font-semibold ${llego ? 'bg-green-100 text-green-800' : 'bg-amber-100 text-amber-800'}">
+                                ${llego ? '🟢 Llegó' : '⚪ Pendiente'}
+                            </span>
+                        </td>
+                    `;
+                    tabla.appendChild(fila);
+                }
+            });
+
+            // Actualizar las tarjetas de control (KPIs)
+            document.getElementById('kpi-llegados').innerText = totalLlegados;
+            document.getElementById('kpi-libres').innerText = (totalEsperados - totalLlegados);
+            document.getElementById('kpi-mesas').innerText = `${Object.keys(controlMesas).filter(m => controlMesas[m].ocupados > 0).length} / ${Object.keys(controlMesas).length}`;
+
+            // Dibujar las tarjetas de las mesas
+            Object.keys(controlMesas).sort((a, b) => a - b).forEach(numMesa => {
+                const infoMesa = controlMesas[numMesa];
+                const mesaDiv = document.createElement('div');
+                
+                const tieneGente = infoMesa.ocupados > 0;
+                const colorEstilo = tieneGente ? 'bg-green-50 border-green-300 text-green-900' : 'bg-gray-50 border-gray-200 text-gray-400';
+                
+                mesaDiv.className = `p-3 rounded-xl border ${colorEstilo} transition-all duration-300`;
+                mesaDiv.innerHTML = `
+                    <p class="font-bold text-sm text-center">Mesa ${numMesa}</p>
+                    <p class="text-xs text-center font-medium mt-1">${tieneGente ? `👥 Ocupados: ${infoMesa.ocupados}` : 'Vacía'}</p>
+                `;
+                contenedorMesas.appendChild(mesaDiv);
+            });
+        }
+
+        // Escuchar el buscador para filtrar en vivo
+        document.getElementById('buscador').addEventListener('input', renderizarDashboard);
+    </script>
+</body>
+</html>
