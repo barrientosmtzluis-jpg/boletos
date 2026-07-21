@@ -14,6 +14,7 @@
             <p class="text-gray-600">Monitoreo en vivo desde Realtime Database</p>
         </header>
 
+        <!-- KPIs -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-blue-500">
                 <p class="text-sm text-gray-500 uppercase font-semibold">Total Invitados Llegados</p>
@@ -31,6 +32,7 @@
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             
+            <!-- Lista de Invitados -->
             <div class="lg:col-span-2 bg-white p-6 rounded-xl shadow-sm">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
                     <h2 class="text-xl font-bold">📋 Lista de Invitados</h2>
@@ -53,6 +55,7 @@
                 </div>
             </div>
 
+            <!-- Distribución de Mesas -->
             <div class="bg-white p-6 rounded-xl shadow-sm">
                 <h2 class="text-xl font-bold mb-4">🪑 Distribución y Faltantes por Mesa</h2>
                 <div id="contenedor-mesas" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -105,7 +108,8 @@
                 const info = datosInvitados[codigo];
 
                 const familia = info.familia || info.nombre || "Sin Nombre";
-                const pax = parseInt(info.pax || info.lugares) || 0;
+                // Lectura prioritaria de pase_totales con compatibilidad hacia atrás
+                const pax = parseInt(info.pase_totales || info.pax || info.lugares) || 0;
                 const mesa = info.mesa || "S/M";
                 const llego = info.llego === true || info.asistio === true || info.status === "llegó";
 
@@ -122,7 +126,7 @@
                 
                 // Sumamos al total planificado de la mesa
                 controlMesas[mesa].totalesAsignados += pax;
-                // Sumamos solo si ya llegó
+                // Sumamos al ocupado solo si ya llegó
                 if (llego) {
                     controlMesas[mesa].ocupados += pax;
                 }
@@ -130,14 +134,14 @@
                 // Renderizar fila en la tabla con filtro
                 if (familia.toLowerCase().includes(filtro) || codigo.toLowerCase().includes(filtro)) {
                     const fila = document.createElement('tr');
-                    fila.className = "hover:bg-gray-50";
+                    fila.className = "hover:bg-gray-50 transition-colors";
                     fila.innerHTML = `
                         <td class="py-3 font-mono font-bold text-blue-600">${codigo}</td>
                         <td class="py-3 font-medium">${familia}</td>
                         <td class="py-3 text-center font-semibold">${pax}</td>
                         <td class="py-3 text-center"><span class="bg-gray-100 px-2 py-1 rounded text-xs font-bold">Mesa ${mesa}</span></td>
                         <td class="py-3 text-center">
-                            <span class="px-2 py-1 rounded-full text-xs font-semibold ${llego ? 'bg-green-100 text-green-800' : 'bg-amber-100 text-amber-800'}">
+                            <span class="px-2.5 py-1 rounded-full text-xs font-semibold ${llego ? 'bg-green-100 text-green-800' : 'bg-amber-100 text-amber-800'}">
                                 ${llego ? '🟢 Accedió' : '⚪ Pendiente'}
                             </span>
                         </td>
@@ -151,22 +155,21 @@
             document.getElementById('kpi-libres').innerText = (totalEsperados - totalLlegados);
             document.getElementById('kpi-mesas').innerText = `${Object.keys(controlMesas).filter(m => controlMesas[m].ocupados > 0).length} / ${Object.keys(controlMesas).length}`;
 
-            // 3. Dibujar las tarjetas de las mesas con Lugares Usados y Faltantes
+            // 3. Dibujar las tarjetas de las mesas ordenadas numéricamente
             Object.keys(controlMesas).sort((a, b) => {
                 if (a === "S/M") return 1;
                 if (b === "S/M") return -1;
-                return a - b;
+                return parseInt(a) - parseInt(b);
             }).forEach(numMesa => {
                 const infoMesa = controlMesas[numMesa];
                 const faltantes = infoMesa.totalesAsignados - infoMesa.ocupados;
                 
                 const mesaDiv = document.createElement('div');
-                
-                // Cambiar color si la mesa está llena, parcial o vacía
                 let colorEstilo = 'bg-gray-50 border-gray-200 text-gray-500';
+                
                 if (infoMesa.ocupados > 0) {
                     colorEstilo = faltantes === 0 
-                        ? 'bg-green-100 border-green-400 text-green-900' 
+                        ? 'bg-green-50 border-green-300 text-green-900' 
                         : 'bg-blue-50 border-blue-300 text-blue-900';
                 }
                 
