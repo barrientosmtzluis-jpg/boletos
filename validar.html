@@ -88,10 +88,6 @@
         const invitadosRef = ref(db, 'invitados');
         onValue(invitadosRef, (snapshot) => {
             datosInvitados = snapshot.val() || {};
-            
-            // 🛠️ DIAGNÓSTICO: Esto imprimirá la estructura exacta de tus datos en la consola del navegador (F12)
-            console.log("Datos recibidos de Firebase:", datosInvitados);
-            
             renderizarDashboard();
         });
 
@@ -114,18 +110,9 @@
 
                 const familia = info.familia || info.nombre || "Sin Nombre";
                 
-                // 🔍 Extracción segura: Busca explícitamente en 'pase_totales' (o cualquier otra propiedad si existiera diferencia)
-                let pax = 0;
-                if (info.pase_totales !== undefined && info.pase_totales !== null) {
-                    pax = Number(info.pase_totales);
-                } else if (info.pax !== undefined && info.pax !== null) {
-                    pax = Number(info.pax);
-                } else if (info.lugares !== undefined && info.lugares !== null) {
-                    pax = Number(info.lugares);
-                }
+                // 🎯 Lectura directa desde pases_totales tal cual está en Firebase
+                const pax = Number(info.pases_totales) || 0;
                 
-                if (isNaN(pax)) pax = 0;
-
                 const mesa = info.mesa || "S/M";
                 const llego = info.llego === true || info.asistio === true || info.status === "llegó";
 
